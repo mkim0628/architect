@@ -82,15 +82,18 @@ Every content slide carries three fixed elements ("the master"):
 These are the standard slide types and their fixed structure. Each is a
 builder in `lib/architect_deck.js`.
 
-| Page | Columns | Per column | Right/other | Builder |
-|------|---------|-----------|-------------|---------|
-| **과제 개요** | 2 | left = info table (과제명 · 과제목표 · 참여인력 · 일정 …) | right = **overall architecture** image; BLANK unless the user explicitly provides it | `pageOverview` |
-| **과제 배경** | 3 | 2 content items, each with a matching image (chart/그림/구조도/설계도) | — | `pageColumns` |
-| **과제 필요성** | 2 | 2 content items, each with a matching image (same format as 배경) | — | `pageColumns` |
-| **과제 범위** | 3 | 2 content items each | — | `pageColumns` |
+Standard page order: **1 과제 배경 · 2 과제 필요성 · 3 과제 범위 · 4 과제 개요.**
 
-**Image sourcing rule:** for each content item that needs a visual, find a
-matching image from the web and embed it (`item.image = localPath`). If the web
-is unavailable or no fitting image is found, leave that image area **BLANK**
-(empty bordered box) — do not fabricate a caption. The overall-architecture box
-on 과제 개요 stays blank until the user explicitly supplies it.
+| # | Page | Columns | Per column | Builder |
+|---|------|---------|-----------|---------|
+| 1 | **과제 배경** | 3 | 2 content items, each with a matching image (chart/그림/구조도/설계도) | `pageColumns` |
+| 2 | **과제 필요성** | 2 | 2 content items, each with a matching image (same as 배경) | `pageColumns` |
+| 3 | **과제 범위** | 3 | text-only lists (목적 / In Scope / Out of Scope), `images:false` | `pageColumns` |
+| 4 | **과제 개요** | 2 | left = info table (과제명·과제목표·참여인력·일정); right = **overall architecture** (BLANK unless user provides it) | `pageOverview` |
+
+**Image sourcing rule:** find a matching image from the web (`item.image =
+localPath`). If the web is blocked or no fitting image exists, **generate a
+matching diagram/chart locally** (see `docs/mcr_assets/make_assets.py`) rather
+than leaving it blank. Leave the box blank only as a last resort; never
+fabricate captions or measured numbers. The overall-architecture box on 과제
+개요 stays blank until the user supplies it.

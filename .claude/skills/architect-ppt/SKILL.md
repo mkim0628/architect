@@ -30,25 +30,29 @@ Full token list (colors, fonts, sizes, geometry) is in
 
 ## Per-page rules
 
-Each standard slide type has a fixed structure and a dedicated builder:
+Standard page order and structure. Each type has a dedicated builder:
 
-| Page | Columns | Structure | Builder |
-|------|---------|-----------|---------|
-| **과제 개요** | 2 | **Left** = info table (과제명 · 과제목표 · 참여인력 · 일정 …). **Right** = overall architecture — **BLANK unless the user explicitly supplies it.** | `pageOverview` |
-| **과제 배경** | 3 | Each column holds **2 content items**; each item = short text + a **matching image** found from the web. | `pageColumns` |
-| **과제 필요성** | 2 | Same item format as 과제 배경 (2 items/column, each with its image). | `pageColumns` |
-| **과제 범위** | 3 | 2 content items per column. | `pageColumns` |
+| # | Page | Columns | Structure | Builder |
+|---|------|---------|-----------|---------|
+| 1 | **과제 배경** | 3 | Each column holds **2 content items**; each item = short text + a **matching image**. | `pageColumns` |
+| 2 | **과제 필요성** | 2 | Same item format as 과제 배경 (2 items/column, each with its image). | `pageColumns` |
+| 3 | **과제 범위** | 3 | Text-only lists (목적 / In Scope / Out of Scope) — `images: false`. | `pageColumns` |
+| 4 | **과제 개요** | 2 | **Left** = info table (과제명 · 과제목표 · 참여인력 · 일정 …). **Right** = overall architecture — **BLANK unless the user explicitly supplies it.** | `pageOverview` |
 
-### Image sourcing rule (배경 / 필요성 / 범위)
+### Image sourcing rule (배경 / 필요성)
 
 For every content item that needs a visual (chart, 그림, 구조도, 설계도 등):
 
-1. Search the web for a fitting image (WebSearch / image search).
-2. Download it locally (e.g. `curl -L -o /tmp/item.png <url>`).
-3. Pass the local path as the item's `image`.
-4. **If the web is unavailable or no suitable image is found, leave it BLANK** —
-   `pageColumns`/`pageOverview` draw an empty bordered box. Do **not** invent a
-   caption or a fake chart. (User rule: "web 연결이 안되면 과감하게 빈칸으로 채워".)
+1. Search the web for a fitting image (WebSearch / image search) and download it
+   locally (`curl -L -o /tmp/item.png <url>`); pass the local path as `image`.
+2. **If the web is blocked or no suitable image exists, generate a matching
+   diagram/chart locally** (matplotlib — see `docs/mcr_assets/make_assets.py` for
+   a worked example) and use that. Prefer a generated, on-topic diagram over a
+   blank box. Use English technical labels in figures to avoid CJK-font issues;
+   keep the Korean prose in the bullet text.
+3. Only leave the box **blank** as a last resort (no web, nothing sensible to
+   generate). Never invent a caption or fake measured numbers — mark any
+   illustrative chart as such.
 
 The **overall architecture** box on 과제 개요 stays blank until the user names
 exactly what to put there.
