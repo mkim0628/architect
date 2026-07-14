@@ -1,0 +1,195 @@
+/**
+ * architect_deck.js — reusable generator for the "Architect 과제" slide format.
+ *
+ * Reproduces the Korean corporate deck style captured in reference/design-tokens.md:
+ *   - 4:3 canvas (10" x 7.5")
+ *   - Full-width title band (navy for content, green for lead/section slides)
+ *   - 5-step nav stepper in the top-right, active step highlighted yellow
+ *   - Green / navy section-header bars
+ *   - Navy label + white content info tables
+ *   - Navy diamond bullets, "N / M" page footer
+ *
+ * Usage:
+ *   const A = require("./lib/architect_deck");
+ *   const pptx = A.newDeck();
+ *   const s = A.slide(pptx, { title: "과제 배경", active: 0, band: "navy", page: 2 });
+ *   A.sectionHeader(s, { x: 0.35, y: A.CONTENT_TOP, w: 3, text: "배경", color: "green" });
+ *   await pptx.writeFile({ fileName: "out.pptx" });
+ */
+
+const PptxGenJS = require("pptxgenjs");
+
+const PAGE = { w: 10, h: 7.5 }; // 4:3. Switch to { w: 13.333, h: 7.5 } for 16:9.
+
+const COLORS = {
+  navy:       "1F3864",
+  navyLight:  "2E4C7E",
+  green:      "4E7C3A",
+  greenDark:  "3C5F2C",
+  yellow:     "FFC000",
+  grayBox:    "E9E9E9",
+  grayBorder: "A6A6A6",
+  grayArrow:  "9AA0A6",
+  panelFill:  "F5F6F8",
+  ink:        "262626",
+  white:      "FFFFFF",
+  muted:      "7F7F7F",
+};
+
+const FONT = { head: "Malgun Gothic", body: "Malgun Gothic" };
+
+// Nav-stepper labels. Override by reassigning A.SECTIONS before building.
+let SECTIONS = ["과제 개요", "요구사항", "설계", "검증", "결론"];
+
+const BAND_H = 1.0;
+const MARGIN = 0.35;
+const CONTENT_TOP = BAND_H + 0.18;
+const CONTENT_BOTTOM = PAGE.h - 0.45;
+
+function newDeck() {
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: "ARCH_4x3", width: PAGE.w, height: PAGE.h });
+  pptx.layout = "ARCH_4x3";
+  pptx.theme = { headFontFace: FONT.head, bodyFontFace: FONT.body };
+  return pptx;
+}
+
+/** Add a slide and paint the chrome (title band + nav stepper + footer). Returns the slide. */
+function slide(pptx, opts) {
+  const s = pptx.addSlide();
+  chrome(s, opts);
+  return s;
+}
+
+function chrome(s, opts) {
+  const { title, active = 0, band = "navy", page, total = 33 } = opts;
+  const bandColor = band === "green" ? COLORS.green : COLORS.navy;
+
+  s.addShape("rect", { x: 0, y: 0, w: PAGE.w, h: BAND_H, fill: { color: bandColor }, line: { type: "none" } });
+  s.addText(title, {
+    x: MARGIN, y: 0.12, w: 5.0, h: BAND_H - 0.24, margin: 0,
+    fontFace: FONT.head, fontSize: 30, bold: true, color: COLORS.white,
+    align: "left", valign: "middle",
+  });
+
+  const boxW = 0.86, boxH = 0.30, arrowW = 0.17, gap = 0.03, unit = boxW + arrowW + gap;
+  const totalW = SECTIONS.length * boxW + (SECTIONS.length - 1) * (arrowW + gap);
+  const startX = PAGE.w - MARGIN - totalW;
+  const y = (BAND_H - boxH) / 2;
+  SECTIONS.forEach((label, i) => {
+    const x = startX + i * unit;
+    const isActive = i === active;
+    s.addShape("rect", {
+      x, y, w: boxW, h: boxH,
+      fill: { color: isActive ? COLORS.yellow : COLORS.grayBox },
+      line: { color: isActive ? COLORS.yellow : COLORS.grayBorder, width: 0.75 },
+    });
+    s.addText(label, {
+      x, y, w: boxW, h: boxH, margin: 0,
+      fontFace: FONT.body, fontSize: 9, bold: isActive,
+      color: isActive ? COLORS.navy : "595959", align: "center", valign: "middle",
+    });
+    if (i < SECTIONS.length - 1) {
+      s.addShape("chevron", {
+        x: x + boxW + gap / 2, y: y + 0.02, w: arrowW, h: boxH - 0.04,
+        fill: { color: COLORS.grayArrow }, line: { type: "none" },
+      });
+    }
+  });
+
+  if (page != null) {
+    s.addText(`${page} / ${total}`, {
+      x: PAGE.w - 1.6, y: PAGE.h - 0.4, w: 1.4, h: 0.28, margin: 0,
+      fontFace: FONT.body, fontSize: 10, color: COLORS.muted, align: "right", valign: "middle",
+    });
+  }
+}
+
+/** Colored section-header bar. Returns the y just below the bar. */
+function sectionHeader(s, { x, y, w, text, color = "green", h = 0.34, fontSize = 13 }) {
+  const c = color === "navy" ? COLORS.navy : COLORS.green;
+  s.addShape("rect", { x, y, w, h, fill: { color: c }, line: { type: "none" } });
+  s.addText(text, {
+    x: x + 0.05, y, w: w - 0.1, h, margin: 0,
+    fontFace: FONT.head, fontSize, bold: true, color: COLORS.white, align: "center", valign: "middle",
+  });
+  return y + h;
+}
+
+/**
+ * Info table: navy label column + white content column.
+ * rows: [{ label, lines: [ "text" | {text, bold, color, fontSize, bullet:false} ] }]
+ */
+function infoTable(s, { x, y, w, h, labelW = 1.35, rows }) {
+  const tRows = rows.map((r) => {
+    const runs = r.lines.map((ln) => {
+      const o = typeof ln === "string" ? { text: ln } : ln;
+      return {
+        text: o.text,
+        options: {
+          bullet: o.bullet === false ? false : { characterCode: "2022", indent: 12 },
+          bold: !!o.bold, color: o.color || COLORS.ink,
+          fontFace: FONT.body, fontSize: o.fontSize || 11, breakLine: true, paraSpaceAfter: 2,
+        },
+      };
+    });
+    return [
+      { text: r.label, options: { fill: { color: COLORS.navy }, color: COLORS.white, bold: true, align: "center", valign: "middle", fontFace: FONT.head, fontSize: 11 } },
+      { text: runs, options: { fill: { color: COLORS.white }, valign: "middle", align: "left", margin: [3, 6, 3, 6] } },
+    ];
+  });
+  s.addTable(tRows, {
+    x, y, w, h, colW: [labelW, w - labelW],
+    border: { type: "solid", color: COLORS.grayBorder, pt: 0.75 },
+    fontFace: FONT.body, fontSize: 11, valign: "middle", autoPage: false,
+  });
+}
+
+/**
+ * Bulleted list. items: [ "text" | {text, bold, color, level, fontSize} ]
+ * level 0 → navy diamond (◆); level 1 → en-dash (–).
+ */
+function bulletList(s, { x, y, w, h, items, fontSize = 12 }) {
+  const runs = items.map((it) => {
+    const o = typeof it === "string" ? { text: it } : it;
+    return {
+      text: o.text,
+      options: {
+        bullet: o.bullet === false ? false : { characterCode: o.level ? "2013" : "25C6", indent: o.level ? 12 : 14 },
+        indentLevel: o.level || 0, bold: !!o.bold, color: o.color || COLORS.ink,
+        fontFace: FONT.body, fontSize: o.fontSize || fontSize, breakLine: true, paraSpaceAfter: 6,
+      },
+    };
+  });
+  s.addText(runs, { x, y, w, h, valign: "top", align: "left", margin: 0 });
+}
+
+/** Compute evenly-spaced column boxes. Returns [{x, w}, ...]. */
+function columns(n, { x = MARGIN, w = PAGE.w - 2 * MARGIN, gap = 0.22 } = {}) {
+  const colW = (w - gap * (n - 1)) / n;
+  return Array.from({ length: n }, (_, i) => ({ x: x + i * (colW + gap), w: colW }));
+}
+
+/** Light bordered content box (use for diagrams / grouped content). */
+function panel(s, { x, y, w, h, fill = COLORS.panelFill, border = COLORS.grayBorder }) {
+  s.addShape("rect", { x, y, w, h, fill: { color: fill }, line: { color: border, width: 1 } });
+}
+
+/** Dashed placeholder box with a caption — mark where an image/diagram will go. */
+function placeholder(s, { x, y, w, h, label = "[ 이미지 / 다이어그램 ]" }) {
+  s.addShape("rect", { x, y, w, h, fill: { color: COLORS.panelFill }, line: { color: COLORS.grayBorder, width: 1, dashType: "dash" } });
+  s.addText(label, { x, y, w, h, align: "center", valign: "middle", color: "9AA0A6", fontFace: FONT.body, fontSize: 11 });
+}
+
+/** Big-number stat callout. */
+function statCallout(s, { x, y, w, value, label, color = COLORS.navy }) {
+  s.addText(String(value), { x, y, w, h: 0.7, margin: 0, fontFace: FONT.head, fontSize: 40, bold: true, color, align: "center", valign: "middle" });
+  s.addText(label, { x, y: y + 0.7, w, h: 0.3, margin: 0, fontFace: FONT.body, fontSize: 11, color: COLORS.ink, align: "center", valign: "top" });
+}
+
+module.exports = {
+  PAGE, COLORS, FONT, MARGIN, BAND_H, CONTENT_TOP, CONTENT_BOTTOM,
+  get SECTIONS() { return SECTIONS; },
+  set SECTIONS(v) { SECTIONS = v; },
+  newDeck, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
+};
