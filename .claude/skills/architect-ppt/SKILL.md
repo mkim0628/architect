@@ -30,14 +30,27 @@ Full token list (colors, fonts, sizes, geometry) is in
 
 ## Per-page rules
 
-Standard page order and structure. Each type has a dedicated builder:
+Standard page order and structure. Each type has a dedicated builder.
+**Full per-page specs — exact geometry, colors, and the canonical content
+tables (FR/QA/C/DP/Stakeholder/UC lists transcribed from the source deck) —
+live in [reference/page-specs.md](reference/page-specs.md). Read it before
+building any page.**
 
-| # | Page | Columns | Structure | Builder |
-|---|------|---------|-----------|---------|
-| 1 | **과제 배경** | 3 | Each column holds **2 content items**; each item = short text + a **matching image**. | `pageColumns` |
-| 2 | **과제 필요성** | 2 | Same item format as 과제 배경 (2 items/column, each with its image). | `pageColumns` |
-| 3 | **과제 범위** | 3 | Text-only lists (목적 / In Scope / Out of Scope) — `images: false`. | `pageColumns` |
-| 4 | **과제 개요** | 2 | **Left** = info table (과제명 · 과제목표 · 참여인력 · 일정 …). **Right** = overall architecture — **BLANK unless the user explicitly supplies it.** | `pageOverview` |
+| # | Page | Chapter (`active`) | Structure | Builder(s) |
+|---|------|-----|-----------|---------|
+| 1 | **과제 배경** | 과제 개요 (0) | 3단; each column 2 items = short text + **matching image**. | `pageColumns` |
+| 2 | **과제 필요성** | 과제 개요 (0) | 2단; same item format as 배경. | `pageColumns` |
+| 3 | **과제 범위** | 과제 개요 (0) | 3단 text-only (목적 / In Scope / Out of Scope) — `images: false`. | `pageColumns` |
+| 4 | **과제 개요** | 과제 개요 (0) | 2단; left info table (과제명·과제목표·참여인력·일정), right overall architecture — **BLANK unless user supplies it**. | `pageOverview` |
+| 5 | **Architecture Design Process** | 요구사항 (1) | 4단 process pipeline; `chevronHeader` per column (green/navy alternating): Stakeholder/VOC table → refinement flow + mini QA table → DP thumbnails + ATAM flow → SEI 3-View minis. | `chevronHeader` `specTable` `panel` |
+| 6 | **요구사항 정제** | 요구사항 (1) | Headline (수집 N건 → 정제 M건) + left 기능 요구사항/제약사항 `specTable`s (navy `sectionHeader`) + right use-case diagram panel; `linkButton` in band. | `sectionHeader` `specTable` `linkButton` |
+| 7 | **Utility Tree 활용한 ASR 선정** | 요구사항 (1) | One full-width ASR table (번호/QA/Refinement/Scenario/중요도/난이도/우선순위/선정); Scenario cell = 문장 + `[측정: …]` line; selected rows cream-highlighted + "O". | `specTable` (+`highlightRows`) |
+| 8 | **Architecture Driver 도출** | 요구사항 (1) | FR(navy) / QA(green) / C(brown) `tagBar` groups converging into yellow "Architectural Drivers" ellipse → big down-arrow → 산출물 인용구. | `tagBar` + shapes |
+| 9 | **설계 Point 선정** | 설계 (2) | Left driver rail (`badge` F/Q/C + labels), center module diagram with badges & DP-color highlights, right **5 `dpCard`s** (DP-01~05, colors from `COLORS.dp`). | `badge` `dpCard` `linkButton` |
+
+Band color alternates navy/green page to page (no two adjacent pages the same).
+`active` follows the **chapter**, not the page; footer keeps the global `N / 33`
+numbering.
 
 ### Image sourcing rule (배경 / 필요성)
 
@@ -143,7 +156,13 @@ await A.writeDeck(pptx, "deck.pptx");   // NOT pptx.writeFile — see below
 | `columns(n, {gap})` | Even column boxes `[{x,w}]` |
 | `panel` / `placeholder(s, {x,y,w,h})` | Content box / diagram placeholder |
 | `statCallout(s, {x,y,w,value,label})` | Big-number stat |
-| `COLORS`, `FONT`, `SECTIONS`, `MARGIN`, `CONTENT_TOP`, `CONTENT_BOTTOM` | Tokens (mutable) |
+| `chevronHeader(s, {x,y,w,text,color})` | Arrow/pentagon process banner (P5 컬럼 헤더) |
+| `tagBar(s, {x,y,w,id,tag,text,color})` | Rounded FR/QA/C tag bar — navy/green/brown (P8) |
+| `badge(s, {x,y,text,color})` | Small circle badge F1/Q3/C2 for diagrams (P9) |
+| `dpCard(s, {x,y,w,id,title,items})` | Design-Point card: colored ID + dark title + bullets (P9) |
+| `specTable(s, {x,y,w,colW,header,rows,highlightRows})` | Dark-green-header spec table; cream row highlight (P5–P7) |
+| `linkButton(s, {label,…})` | "…: ▶" jump label, in-band (white) or below-band (ink) |
+| `COLORS` (incl. `cream`,`brown`,`gray70`,`dp{}`), `FONT`, `SECTIONS`, `MARGIN`, `CONTENT_TOP`, `CONTENT_BOTTOM` | Tokens (mutable) |
 
 - **`cols[i].items`** = `[{ text, image? }]`. Omit `image` → blank box. `text`
   can be a string or a `bulletList` run array.

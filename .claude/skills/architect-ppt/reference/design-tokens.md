@@ -34,6 +34,23 @@ Design system extracted from screenshots of the source deck
 **Dominance:** navy is the primary (title bands + tables), green the supporting
 accent (section headers + lead slides), yellow the single sharp accent (active step).
 
+### Extended tokens (요구사항/설계 chapter pages)
+
+| Token | Hex | Use |
+|-------|-----|-----|
+| `cream` | `#FFF2CC` | Selected(선정) row highlight in ASR/spec tables |
+| `brown` | `#843C0C` | Constraints tag bars, C-badges |
+| `gray70` | `#404040` | DP card title bar background |
+| `dp["DP-01"]` | `#00B0F0` | DP-01 실행 구조 (cyan) |
+| `dp["DP-02"]` | `#00B050` | DP-02 스케줄링 (green) |
+| `dp["DP-03"]` | `#ED7D31` | DP-03 중간 표현 (orange) |
+| `dp["DP-04"]` | `#E91E8C` | DP-04 HW 정보 (magenta) |
+| `dp["DP-05"]` | `#7030A0` | DP-05 분산 동작 (purple) |
+
+DP colors must match between the DP cards (P9 right rail) and the DP-area
+highlights drawn on the module diagram. Badge colors: F=navy, Q=greenDark,
+C=brown. Use-case ovals in generated UML: fill `#F5E6C8`, brown outline.
+
 ## Typography
 
 Font family: **Malgun Gothic (맑은 고딕)** for both headings and body

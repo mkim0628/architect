@@ -35,6 +35,17 @@ const COLORS = {
   ink:        "262626",
   white:      "FFFFFF",
   muted:      "7F7F7F",
+  // 요구사항/설계 챕터 페이지용 확장 토큰
+  cream:      "FFF2CC",   // 선정(selected) 행 하이라이트
+  brown:      "843C0C",   // Constraints 태그바 / C-배지
+  gray70:     "404040",   // DP 카드 타이틀 배경
+  dp: {                    // 설계 Point(DP) 카드 헤더 색
+    "DP-01": "00B0F0",     // cyan   — 실행 구조
+    "DP-02": "00B050",     // green  — 스케줄링
+    "DP-03": "ED7D31",     // orange — 중간 표현
+    "DP-04": "E91E8C",     // magenta— HW 정보
+    "DP-05": "7030A0",     // purple — 분산 동작
+  },
 };
 
 const FONT = { head: "Malgun Gothic", body: "Malgun Gothic" };
@@ -289,10 +300,98 @@ function statCallout(s, { x, y, w, value, label, color = COLORS.navy }) {
   s.addText(label, { x, y: y + 0.7, w, h: 0.3, margin: 0, fontFace: FONT.body, fontSize: 11, color: COLORS.ink, align: "center", valign: "top" });
 }
 
+// ───────────────────────── 요구사항/설계 챕터용 빌더 ─────────────────────────
+
+/** Arrow/pentagon-shaped process banner (Architecture Design Process 컬럼 헤더). */
+function chevronHeader(s, { x, y, w, text, color = "green", h = 0.42, fontSize = 12.5 }) {
+  const c = color === "navy" ? COLORS.navy : COLORS.green;
+  s.addShape("homePlate", { x, y, w, h, fill: { color: c }, line: { type: "none" } });
+  s.addText(text, {
+    x: x + 0.05, y, w: w - 0.28, h, margin: 0,
+    align: "center", valign: "middle", color: COLORS.white, bold: true, fontFace: FONT.head, fontSize,
+  });
+  return y + h;
+}
+
+/**
+ * Rounded tag bar: "FR-01 [시스템 지원] 다양한 시스템 구조 지원".
+ * color: "navy" (FR) | "green" (QA) | "brown" (C).
+ */
+function tagBar(s, { x, y, w, h = 0.34, id, tag, text, color = "navy", fontSize = 10 }) {
+  const c = color === "green" ? COLORS.green : color === "brown" ? COLORS.brown : COLORS.navy;
+  s.addShape("roundRect", { x, y, w, h, rectRadius: 0.05, fill: { color: c }, line: { type: "none" } });
+  const runs = [{ text: `${id} `, options: { bold: true, color: COLORS.white, fontSize } }];
+  if (tag) runs.push({ text: `[${tag}] `, options: { bold: true, color: COLORS.white, fontSize } });
+  runs.push({ text, options: { color: COLORS.white, fontSize } });
+  s.addText(runs, { x: x + 0.12, y, w: w - 0.22, h, valign: "middle", align: "left", margin: 0, fontFace: FONT.body });
+  return y + h;
+}
+
+/** Small colored circle badge (F1/Q3/C2 markers on diagrams). color = hex. */
+function badge(s, { x, y, d = 0.3, text, color = COLORS.navy, fontSize = 9 }) {
+  s.addShape("ellipse", { x, y, w: d, h: d, fill: { color }, line: { color: "FFFFFF", width: 0.75 } });
+  s.addText(text, { x: x - 0.06, y: y - 0.02, w: d + 0.12, h: d + 0.04, align: "center", valign: "middle", color: COLORS.white, bold: true, fontSize, margin: 0, fontFace: FONT.head });
+}
+
+/**
+ * DP(Design Point) card: [DP-ID colored box | dark title bar] + bordered bullet body.
+ * items: [ "…" | {text, color, bold} ]  (관례: "(1안)…", "(2안)…", "QA: …")
+ * Returns bottom y.
+ */
+function dpCard(s, { x, y, w, id, title, items, idColor, bodyH, fontSize = 8.5 }) {
+  const headH = 0.3, idW = 0.72;
+  const c = idColor || (COLORS.dp[id] || COLORS.navy);
+  s.addShape("rect", { x, y, w: idW, h: headH, fill: { color: c }, line: { type: "none" } });
+  s.addText(id, { x, y, w: idW, h: headH, align: "center", valign: "middle", color: COLORS.white, bold: true, fontSize: 9.5, margin: 0, fontFace: FONT.head });
+  s.addShape("rect", { x: x + idW, y, w: w - idW, h: headH, fill: { color: COLORS.gray70 }, line: { type: "none" } });
+  s.addText(title, { x: x + idW + 0.07, y, w: w - idW - 0.12, h: headH, align: "left", valign: "middle", color: COLORS.white, bold: true, fontSize: 10, margin: 0, fontFace: FONT.head });
+  const bh = bodyH || (0.21 * items.length + 0.12);
+  s.addShape("rect", { x, y: y + headH, w, h: bh, fill: { color: COLORS.white }, line: { color: COLORS.grayBorder, width: 0.75 } });
+  const runs = items.map((it) => {
+    const o = typeof it === "string" ? { text: it } : it;
+    return { text: o.text, options: { bullet: { characterCode: "2022", indent: 8 }, color: o.color || COLORS.ink, bold: !!o.bold, fontSize: o.fontSize || fontSize, breakLine: true, paraSpaceAfter: 2, fontFace: FONT.body } };
+  });
+  s.addText(runs, { x: x + 0.08, y: y + headH + 0.06, w: w - 0.16, h: bh - 0.12, valign: "top", align: "left", margin: 0 });
+  return y + headH + bh;
+}
+
+/**
+ * Spec table: dark-green header row + bordered body (요구사항/ASR/Stakeholder 표).
+ * header: ["번호","QA",…]; rows: [[cell,…]] where cell = "…" | {text|runs, bold, color, align, fontSize}.
+ * highlightRows: 0-based body row indices filled cream (선정 행).
+ */
+function specTable(s, { x, y, w, colW, header, rows, highlightRows = [], fontSize = 9, headerColor = COLORS.greenDark, headerFontSize }) {
+  const head = header.map((t) => ({ text: t, options: { fill: { color: headerColor }, color: COLORS.white, bold: true, align: "center", valign: "middle", fontFace: FONT.head, fontSize: headerFontSize || fontSize + 1 } }));
+  const body = rows.map((r, ri) => r.map((cell) => {
+    const o = typeof cell === "string" ? { text: cell } : { ...cell };
+    return { text: o.text, options: {
+      fill: { color: highlightRows.includes(ri) ? COLORS.cream : COLORS.white },
+      color: o.color || COLORS.ink, bold: !!o.bold, align: o.align || "left", valign: "middle",
+      fontFace: FONT.body, fontSize: o.fontSize || fontSize, margin: [2, 4, 2, 4],
+    } };
+  }));
+  s.addTable([head, ...body], { x, y, w, colW, border: { type: "solid", color: COLORS.grayBorder, pt: 0.5 }, autoPage: false });
+}
+
+/**
+ * Link/jump label with yellow ▶ (밴드 우하단 "전체 수집된 요구사항 :" 등).
+ * Default position: inside the title band, bottom-right. For a below-band
+ * variant pass y ≈ BAND_H + 0.05 and textColor: COLORS.ink.
+ */
+function linkButton(s, { label, x, y, w = 3.2, h = 0.28, textColor = COLORS.white, fontSize = 10 }) {
+  const bx = x != null ? x : PAGE.w - MARGIN - w;
+  const by = y != null ? y : BAND_H - h - 0.03;
+  s.addText([
+    { text: label + "  ", options: { color: textColor, fontSize, bold: true } },
+    { text: "▶", options: { color: COLORS.yellow, fontSize: fontSize + 1, bold: true } },
+  ], { x: bx, y: by, w, h, align: "right", valign: "middle", margin: 0, fontFace: FONT.body });
+}
+
 module.exports = {
   PAGE, COLORS, FONT, MARGIN, BAND_H, CONTENT_TOP, CONTENT_BOTTOM,
   get SECTIONS() { return SECTIONS; },
   set SECTIONS(v) { SECTIONS = v; },
   newDeck, writeDeck, repackClean, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
   itemColumn, pageColumns, pageOverview,
+  chevronHeader, tagBar, badge, dpCard, specTable, linkButton,
 };
