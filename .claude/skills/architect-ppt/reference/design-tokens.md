@@ -8,12 +8,12 @@ Design system extracted from screenshots of the source deck
 
 | Property | Value |
 |----------|-------|
-| Aspect ratio | **4:3** |
-| Size | 10″ × 7.5″ |
+| Aspect ratio | **16:9** |
+| Size | 13.333″ × 7.5″ |
 | Background | white `#FFFFFF` |
 
-> For a 16:9 variant, set `PAGE = { w: 13.333, h: 7.5 }` in the library and
-> the layout name accordingly. All helpers are inch-based and reflow.
+> For a 4:3 variant, set `PAGE = { w: 10, h: 7.5 }` in the library.
+> All helpers are inch-based and reflow off `PAGE.w`.
 
 ## Colors
 
@@ -77,8 +77,20 @@ Every content slide carries three fixed elements ("the master"):
 - Level 1: en-dash `–` (`characterCode 2013`)
 - Never use Unicode bullet glyphs typed into the text itself; use the bullet property.
 
-## Recurring layout patterns (see `examples/build_deck.js`)
+## Per-page rules (see `examples/build_deck.js`)
 
-1. **Info table + diagram** — left navy-label table, right diagram box (과제 개요).
-2. **Three columns w/ section headers** — green header bar + bullets + image per column (과제 배경).
-3. **Comparison panels + stat callouts** — side-by-side panels, big-number stats (과제 범위).
+These are the standard slide types and their fixed structure. Each is a
+builder in `lib/architect_deck.js`.
+
+| Page | Columns | Per column | Right/other | Builder |
+|------|---------|-----------|-------------|---------|
+| **과제 개요** | 2 | left = info table (과제명 · 과제목표 · 참여인력 · 일정 …) | right = **overall architecture** image; BLANK unless the user explicitly provides it | `pageOverview` |
+| **과제 배경** | 3 | 2 content items, each with a matching image (chart/그림/구조도/설계도) | — | `pageColumns` |
+| **과제 필요성** | 2 | 2 content items, each with a matching image (same format as 배경) | — | `pageColumns` |
+| **과제 범위** | 3 | 2 content items each | — | `pageColumns` |
+
+**Image sourcing rule:** for each content item that needs a visual, find a
+matching image from the web and embed it (`item.image = localPath`). If the web
+is unavailable or no fitting image is found, leave that image area **BLANK**
+(empty bordered box) — do not fabricate a caption. The overall-architecture box
+on 과제 개요 stays blank until the user explicitly supplies it.

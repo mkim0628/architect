@@ -2,7 +2,7 @@
  * architect_deck.js — reusable generator for the "Architect 과제" slide format.
  *
  * Reproduces the Korean corporate deck style captured in reference/design-tokens.md:
- *   - 4:3 canvas (10" x 7.5")
+ *   - 16:9 canvas (13.333" x 7.5")
  *   - Full-width title band (navy for content, green for lead/section slides)
  *   - 5-step nav stepper in the top-right, active step highlighted yellow
  *   - Green / navy section-header bars
@@ -19,7 +19,7 @@
 
 const PptxGenJS = require("pptxgenjs");
 
-const PAGE = { w: 10, h: 7.5 }; // 4:3. Switch to { w: 13.333, h: 7.5 } for 16:9.
+const PAGE = { w: 13.333, h: 7.5 }; // 16:9. Switch to { w: 10, h: 7.5 } for 4:3.
 
 const COLORS = {
   navy:       "1F3864",
@@ -48,8 +48,8 @@ const CONTENT_BOTTOM = PAGE.h - 0.45;
 
 function newDeck() {
   const pptx = new PptxGenJS();
-  pptx.defineLayout({ name: "ARCH_4x3", width: PAGE.w, height: PAGE.h });
-  pptx.layout = "ARCH_4x3";
+  pptx.defineLayout({ name: "ARCH_16x9", width: PAGE.w, height: PAGE.h });
+  pptx.layout = "ARCH_16x9";
   pptx.theme = { headFontFace: FONT.head, bodyFontFace: FONT.body };
   return pptx;
 }
@@ -181,6 +181,69 @@ function placeholder(s, { x, y, w, h, label = "[ 이미지 / 다이어그램 ]" 
   s.addText(label, { x, y, w, h, align: "center", valign: "middle", color: "9AA0A6", fontFace: FONT.body, fontSize: 11 });
 }
 
+/**
+ * A single content column: green/navy header bar, then `items` stacked evenly.
+ * Each item = a short text block (top) + a matching image (below).
+ *   items: [{ text: string | [runs], image?: "/local/path.png" }]
+ * If `image` is omitted the image area is left BLANK (empty bordered box).
+ */
+function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTENT_TOP, bottom = CONTENT_BOTTOM, textFrac = 0.30, gap = 0.18 }) {
+  const below = sectionHeader(s, { x, y: top, w, text: header, color: headerColor });
+  const areaTop = below + 0.15;
+  const areaH = bottom - areaTop;
+  const n = items.length || 1;
+  const slotH = (areaH - gap * (n - 1)) / n;
+  items.forEach((it, i) => {
+    const iy = areaTop + i * (slotH + gap);
+    const textH = Math.max(0.45, slotH * textFrac);
+    const imgY = iy + textH + 0.05;
+    const imgH = slotH - textH - 0.05;
+    const textItems = Array.isArray(it.text) ? it.text : [it.text];
+    bulletList(s, { x: x + 0.05, y: iy, w: w - 0.1, h: textH, items: textItems, fontSize: 11 });
+    if (it.image) {
+      s.addImage({ path: it.image, x, y: imgY, w, h: imgH, sizing: { type: "contain", w, h: imgH } });
+    } else {
+      panel(s, { x, y: imgY, w, h: imgH }); // BLANK per "web 없으면 빈칸" rule
+    }
+  });
+}
+
+/**
+ * Multi-column content page (used by 과제 배경 / 과제 필요성 / 과제 범위).
+ *   cols: [{ header, headerColor?, items: [{text, image?}] }]
+ * Column count is cols.length — 배경/범위 = 3, 필요성 = 2. Each column
+ * conventionally holds 2 items, each with its own matching image.
+ */
+function pageColumns(pptx, { title, page, active = 0, band = "navy", headerColor = "green", cols }) {
+  const s = slide(pptx, { title, active, band, page });
+  const boxes = columns(cols.length);
+  cols.forEach((c, i) => itemColumn(s, {
+    x: boxes[i].x, w: boxes[i].w, header: c.header,
+    headerColor: c.headerColor || headerColor, items: c.items,
+  }));
+  return s;
+}
+
+/**
+ * 과제 개요 page: 2 columns.
+ *   left  = info table (과제명 / 과제목표 / 참여인력 / 일정 …) via `table` rows
+ *   right = overall architecture image (`architecture` path); BLANK if omitted
+ *           (only filled when the user explicitly supplies the architecture).
+ */
+function pageOverview(pptx, { title, page, active = 0, band = "green", table, architecture, labelW = 1.7 }) {
+  const s = slide(pptx, { title, active, band, page });
+  const [L, R] = columns(2);
+  infoTable(s, { x: L.x, y: CONTENT_TOP, w: L.w, h: CONTENT_BOTTOM - CONTENT_TOP, labelW, rows: table });
+  const ry = CONTENT_TOP, rh = CONTENT_BOTTOM - CONTENT_TOP;
+  if (architecture) {
+    s.addImage({ path: architecture, x: R.x, y: ry, w: R.w, h: rh, sizing: { type: "contain", w: R.w, h: rh } });
+  } else {
+    panel(s, { x: R.x, y: ry, w: R.w, h: rh }); // BLANK until architecture is given
+    s.addText("Overall Architecture", { x: R.x, y: ry + rh / 2 - 0.2, w: R.w, h: 0.4, align: "center", color: "9AA0A6", fontFace: FONT.body, fontSize: 12 });
+  }
+  return s;
+}
+
 /** Big-number stat callout. */
 function statCallout(s, { x, y, w, value, label, color = COLORS.navy }) {
   s.addText(String(value), { x, y, w, h: 0.7, margin: 0, fontFace: FONT.head, fontSize: 40, bold: true, color, align: "center", valign: "middle" });
@@ -192,4 +255,5 @@ module.exports = {
   get SECTIONS() { return SECTIONS; },
   set SECTIONS(v) { SECTIONS = v; },
   newDeck, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
+  itemColumn, pageColumns, pageOverview,
 };

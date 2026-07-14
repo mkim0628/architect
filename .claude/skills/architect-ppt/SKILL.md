@@ -25,8 +25,34 @@ Every content slide carries the same chrome ("the master"):
 
 Content uses green/navy **section-header bars**, **navy-label info tables**,
 **navy diamond bullets** (◆), and light **placeholder boxes** for diagrams/charts.
+Canvas is **16:9** (13.333″ × 7.5″).
 Full token list (colors, fonts, sizes, geometry) is in
 [reference/design-tokens.md](reference/design-tokens.md).
+
+## Per-page rules
+
+Each standard slide type has a fixed structure and a dedicated builder:
+
+| Page | Columns | Structure | Builder |
+|------|---------|-----------|---------|
+| **과제 개요** | 2 | **Left** = info table (과제명 · 과제목표 · 참여인력 · 일정 …). **Right** = overall architecture — **BLANK unless the user explicitly supplies it.** | `pageOverview` |
+| **과제 배경** | 3 | Each column holds **2 content items**; each item = short text + a **matching image** found from the web. | `pageColumns` |
+| **과제 필요성** | 2 | Same item format as 과제 배경 (2 items/column, each with its image). | `pageColumns` |
+| **과제 범위** | 3 | 2 content items per column. | `pageColumns` |
+
+### Image sourcing rule (배경 / 필요성 / 범위)
+
+For every content item that needs a visual (chart, 그림, 구조도, 설계도 등):
+
+1. Search the web for a fitting image (WebSearch / image search).
+2. Download it locally (e.g. `curl -L -o /tmp/item.png <url>`).
+3. Pass the local path as the item's `image`.
+4. **If the web is unavailable or no suitable image is found, leave it BLANK** —
+   `pageColumns`/`pageOverview` draw an empty bordered box. Do **not** invent a
+   caption or a fake chart. (User rule: "web 연결이 안되면 과감하게 빈칸으로 채워".)
+
+The **overall architecture** box on 과제 개요 stays blank until the user names
+exactly what to put there.
 
 ## Files
 
@@ -60,20 +86,34 @@ node examples/build_deck.js out.pptx   # custom output path
 
 ```js
 const A = require("<skill>/lib/architect_deck");
+const pptx = A.newDeck();                        // 16:9, Malgun Gothic
 
-const pptx = A.newDeck();                       // 4:3, Malgun Gothic
-
-// A content slide with the navy band + nav on step 0 (과제 개요) + page 2
-const s = A.slide(pptx, { title: "과제 배경", active: 0, band: "navy", page: 2 });
-
-// Three columns, each with a green section-header bar + bullets
-const cols = A.columns(3);
-cols.forEach((c, i) => {
-  const below = A.sectionHeader(s, { x: c.x, y: A.CONTENT_TOP, w: c.w, text: `헤더 ${i+1}`, color: "green" });
-  A.bulletList(s, { x: c.x + 0.05, y: below + 0.15, w: c.w - 0.1, h: 1.7,
-    items: ["핵심 메시지 1", { text: "강조 문장", bold: true, color: A.COLORS.navy }] });
-  A.placeholder(s, { x: c.x, y: below + 1.95, w: c.w, h: 2.85, label: "[ 그림 / 차트 ]" });
+// 과제 개요 · 2단 (좌: 표 / 우: overall architecture — 지시 없으면 공란)
+A.pageOverview(pptx, {
+  title: "과제 개요", page: 1, band: "green",
+  table: [
+    { label: "과제 명",  lines: [{ text: "…", bullet: false, bold: true }] },
+    { label: "과제 목표", lines: ["…"] },
+    { label: "참여 인력", lines: [{ text: "국내: N명", color: A.COLORS.navy, bold: true }] },
+    { label: "일정",      lines: ["YY.M ~ YY.M"] },
+  ],
+  // architecture: "/tmp/overall_arch.png",      // 사용자가 명시할 때만
 });
+
+// 과제 배경 · 3단, 각 단 2개 콘텐츠 + 매칭 이미지 (웹에서 찾아 로컬 경로로)
+A.pageColumns(pptx, {
+  title: "과제 배경", page: 2, band: "navy",
+  cols: [
+    { header: "배경 1", items: [
+      { text: "핵심 메시지 A", image: "/tmp/bg1a.png" },   // 웹 이미지 다운로드 경로
+      { text: "핵심 메시지 B" },                            // image 생략 → 공란
+    ]},
+    { header: "배경 2", items: [{ text: "…" }, { text: "…" }] },
+    { header: "배경 3", items: [{ text: "…" }, { text: "…" }] },
+  ],
+});
+
+// 과제 필요성 → 위와 동일하되 cols 2개. 과제 범위 → cols 3개.
 
 await pptx.writeFile({ fileName: "deck.pptx" });
 ```
@@ -82,8 +122,11 @@ await pptx.writeFile({ fileName: "deck.pptx" });
 
 | Helper | Purpose |
 |--------|---------|
-| `newDeck()` | New 4:3 presentation with default fonts |
-| `slide(pptx, {title, active, band, page, total})` | Add slide + paint chrome |
+| `newDeck()` | New 16:9 presentation with default fonts |
+| `pageOverview(pptx, {title, page, band, table, architecture})` | **과제 개요**: 2단, 좌 표 + 우 아키텍처(공란 가능) |
+| `pageColumns(pptx, {title, page, band, cols})` | **배경/필요성/범위**: N단, 각 단 items(텍스트+이미지) |
+| `slide(pptx, {title, active, band, page, total})` | Add slide + paint chrome (low-level) |
+| `itemColumn(s, {x, w, header, items})` | One column: header bar + stacked text/image items |
 | `sectionHeader(s, {x,y,w,text,color})` | Green/navy header bar; returns y below it |
 | `infoTable(s, {x,y,w,h,labelW,rows})` | Navy-label + white-content table |
 | `bulletList(s, {x,y,w,h,items})` | Navy diamond (◆) bullets; `level:1` → dash |
@@ -91,6 +134,9 @@ await pptx.writeFile({ fileName: "deck.pptx" });
 | `panel` / `placeholder(s, {x,y,w,h})` | Content box / diagram placeholder |
 | `statCallout(s, {x,y,w,value,label})` | Big-number stat |
 | `COLORS`, `FONT`, `SECTIONS`, `MARGIN`, `CONTENT_TOP`, `CONTENT_BOTTOM` | Tokens (mutable) |
+
+- **`cols[i].items`** = `[{ text, image? }]`. Omit `image` → blank box. `text`
+  can be a string or a `bulletList` run array.
 
 - **Change the nav labels** for a different chapter set: `A.SECTIONS = [...]` before building.
 - **`active`** is the 0-based index of the highlighted nav step; **`band`** is `"navy"` (content) or `"green"` (lead).
