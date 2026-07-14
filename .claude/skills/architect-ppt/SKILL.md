@@ -1,6 +1,6 @@
 ---
 name: architect-ppt
-description: "Generate PowerPoint slides in the in-house \"Architect 과제\" (Architect assignment) house style — the Korean corporate format with a full-width navy/green title band, a 5-step nav stepper (과제 개요 → 요구사항 → 설계 → 검증 → 결론) highlighted in yellow, green/navy section-header bars, navy label tables, navy diamond bullets, and an N/33 page footer. Use this whenever the user wants a deck, slides, or 발표자료 that matches this Architect-course template, mentions 아키텍트 과제 PPT / 개인과제 발표자료, or attaches screenshots of this template and asks to reproduce its format or master slide. Builds on the base `pptx` skill for reading/QA/packing."
+description: "Generate PowerPoint slides in the in-house \"Architect 과제\" (Architect assignment) house style — the Korean corporate format with a full-width navy/green title band, a 5-step nav stepper (과제 개요 → 요구사항 → 설계 → 검증 → 결론) highlighted in yellow, green/navy section-header bars, navy label tables, navy diamond bullets, and an N/33 page footer. Use this whenever the user wants a deck, slides, or 발표자료 that matches this Architect-course template, mentions 아키텍트 과제 PPT / 개인과제 발표자료, or attaches screenshots of this template and asks to reproduce its format or master slide. Self-contained: generates and packages valid .pptx files with pptxgenjs + python3."
 ---
 
 # Architect 과제 PPT Skill
@@ -9,9 +9,8 @@ Generates presentations that match the **Architect 양성과정 개인과제** h
 It encodes that template's design system (see [reference/design-tokens.md](reference/design-tokens.md))
 as a small pptxgenjs library plus ready-to-copy layout patterns.
 
-For anything about reading, editing, converting, or QA'ing a `.pptx`, this skill
-sits on top of the base **`pptx`** skill — use its scripts (`markitdown`,
-`thumbnail.py`, `office/unpack.py`, `office/pack.py`, image conversion) as documented there.
+**Self-contained.** It needs only Node + `pptxgenjs` (generation) and `python3`
+(canonical `.pptx` packaging + validation) — no other skills required.
 
 ## What this format looks like
 
@@ -67,8 +66,7 @@ architect-ppt/
 
 ## Quick start
 
-The library needs `pptxgenjs` importable. Install once (or reuse the base
-`pptx` skill's install):
+The library needs `pptxgenjs` importable. Install once:
 
 ```bash
 npm install -g pptxgenjs        # or: npm install pptxgenjs in a working dir
@@ -122,8 +120,8 @@ await A.writeDeck(pptx, "deck.pptx");   // NOT pptx.writeFile — see below
 > pptxgenjs's zip writer emits bare directory entries and misorders
 > `[Content_Types].xml`; real `.pptx` files have neither, and some PowerPoint/OS
 > setups then reject the file and open it as a plain `.zip`. `writeDeck`
-> repackages into a canonical OPC archive (requires `python3`, always present
-> via the base `pptx` skill).
+> repackages into a canonical OPC archive (no directory entries,
+> `[Content_Types].xml` first) using `python3`'s `zipfile`.
 
 ### Helper reference (`lib/architect_deck.js`)
 
@@ -164,28 +162,46 @@ When the user attaches screenshots of a template and asks to match it:
 
 ## QA (required)
 
-Use the base **`pptx`** skill's QA loop. Render slides to images and inspect
-critically (assume there are problems):
+**1. Validate the file is a real PowerPoint package** (catches the "opens as a
+zip" failure). `python-pptx` parses the OPC package strictly — if it loads, the
+file will open in PowerPoint:
 
 ```bash
-python <pptx-skill>/scripts/office/soffice.py --headless --convert-to pdf deck.pptx
-pdftoppm -jpeg -r 150 deck.pdf slide      # → slide-01.jpg ...
-```
-
-If LibreOffice or Poppler is unavailable, render the PDF with PyMuPDF instead:
-
-```bash
+pip install python-pptx   # once
 python - <<'PY'
-import fitz
-for i,p in enumerate(fitz.open("deck.pdf"), 1):
-    p.get_pixmap(dpi=150).save(f"slide-{i:02d}.png")
+from pptx import Presentation
+p = Presentation("deck.pptx")
+print("slides:", len(p.slides))          # must succeed and match your slide count
+for i, s in enumerate(p.slides, 1):
+    t = next((sh.text_frame.text.split("\n")[0] for sh in s.shapes
+              if sh.has_text_frame and sh.text_frame.text.strip()), "(no text)")
+    print(f"  {i}: {t}")
 PY
 ```
 
-Content QA:
+Also confirm the archive is canonical (no directory entries, `[Content_Types].xml`
+first — `writeDeck` guarantees this):
 
 ```bash
-python -m markitdown deck.pptx | grep -iE "xxxx|lorem|ipsum|placeholder|\[ .* \]"
+python - <<'PY'
+import zipfile
+z = zipfile.ZipFile("deck.pptx"); n = z.namelist()
+assert not any(e.endswith("/") for e in n), "has directory entries!"
+assert n[0] == "[Content_Types].xml", "Content_Types not first!"
+print("package OK")
+PY
+```
+
+**2. Visual QA** — render slides to images and inspect critically (assume there
+are problems). Requires LibreOffice + PyMuPDF, both optional:
+
+```bash
+soffice --headless --convert-to pdf deck.pptx   # → deck.pdf
+python - <<'PY'
+import fitz
+for i, p in enumerate(fitz.open("deck.pdf"), 1):
+    p.get_pixmap(dpi=150).save(f"slide-{i:02d}.png")
+PY
 ```
 
 Check every slide for: leftover `[ ... ]` placeholders, text overflow past box
