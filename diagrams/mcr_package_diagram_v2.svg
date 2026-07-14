@@ -1,0 +1,192 @@
+<svg viewBox="0 0 1400 1180" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrTel" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#6B7A90"/>
+    </marker>
+    <marker id="arrAmb" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="44" y="38" font-size="21" font-weight="700" fill="#1F2A44">MCR Overall Architecture — Package Diagram (확정안 v2)</text>
+  <text x="44" y="60" font-size="12" fill="#6B7A90">실선: 의존(«use») · 회색 점선: telemetry · 주황 점선 화살표: 인터페이스 구현(DI) · 주황 점선 박스: 신규 컴포넌트 · v2: Retrieval→Orchestration 이동, Autoscaler 2중 루프화</text>
+
+  <!-- ============ Inference Orchestration ============ -->
+  <rect x="40" y="84" width="310" height="26" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="102" font-size="13" font-weight="700" fill="#1F2A44">«package»  Inference Orchestration</text>
+  <rect x="40" y="110" width="1320" height="360" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+
+  <!-- Request Manager -->
+  <rect x="70" y="140" width="200" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="80" y="155" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Request Manager</text>
+  <rect x="70" y="162" width="400" height="292" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="94" y="178" width="352" height="56" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="110" y="200" font-size="13" font-weight="700" fill="#1F2A44">Request Lifecycle Manager</text>
+  <text x="110" y="218" font-size="10.5" fill="#6B7A90">(구: Request Manager) · admission</text>
+
+  <rect x="94" y="248" width="352" height="56" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="110" y="270" font-size="13" font-weight="700" fill="#1F2A44">Retrieval Engine (RAG)</text>
+  <text x="110" y="288" font-size="10.5" fill="#8A5A08">v2: Kernel &amp; Layer에서 이동 · 외부 vector DB 연동</text>
+
+  <rect x="94" y="318" width="352" height="56" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="110" y="340" font-size="13" font-weight="700" fill="#1F2A44">Multiturn Batcher</text>
+  <text x="110" y="358" font-size="10.5" fill="#6B7A90">세션/턴 단위 aggregation (iteration batching과 구분)</text>
+
+  <text x="94" y="402" font-size="10.5" fill="#6B7A90">파이프라인: admission → retrieval/context → 세션 배칭</text>
+  <text x="94" y="420" font-size="10.5" fill="#8A5A08">retrieval chunk 목록 → Router의 KV 재사용 판정 입력</text>
+
+  <!-- Scheduling -->
+  <rect x="500" y="140" width="170" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="510" y="155" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Scheduling</text>
+  <rect x="500" y="162" width="400" height="292" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="676" y="155" font-size="10" fill="#6B7A90">(구: Scheduling Strategy)</text>
+
+  <rect x="524" y="178" width="352" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="540" y="200" font-size="13" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="540" y="220" font-size="10.5" fill="#6B7A90">chunk별 KV Locator 조회 → 재사용 판정·P/D 배치</text>
+
+  <rect x="524" y="256" width="352" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="540" y="278" font-size="13" font-weight="700" fill="#1F2A44">SLO / QoS Monitor</text>
+  <text x="540" y="298" font-size="10.5" fill="#6B7A90">관측 컴포넌트 — Router·Autoscaler에 metric 공급</text>
+
+  <text x="524" y="402" font-size="10.5" fill="#8A5A08">※ 압축/재사용 quality-aware policy 위치는 DP-D에서 결정</text>
+
+  <!-- Resource Manager -->
+  <rect x="930" y="140" width="205" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="940" y="155" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Resource Manager</text>
+  <rect x="930" y="162" width="400" height="292" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="954" y="178" width="352" height="56" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="970" y="200" font-size="13" font-weight="700" fill="#1F2A44">Hardware Monitor</text>
+  <text x="970" y="218" font-size="10.5" fill="#6B7A90">Tier Topology Model의 실시간 상태와 연계</text>
+
+  <!-- Autoscaler two-loop -->
+  <rect x="954" y="248" width="352" height="150" fill="#FBFCFE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="970" y="270" font-size="13" font-weight="700" fill="#1F2A44">Autoscaler  (hierarchical two-loop)</text>
+
+  <rect x="970" y="284" width="152" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1"/>
+  <text x="980" y="304" font-size="11.5" font-weight="700" fill="#1F2A44">P/D Role Controller</text>
+  <text x="980" y="320" font-size="9.5" fill="#6B7A90">inner loop · 초~분</text>
+  <text x="980" y="334" font-size="9.5" fill="#6B7A90">role flip → KV drain</text>
+
+  <rect x="1140" y="284" width="152" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1"/>
+  <text x="1150" y="304" font-size="11.5" font-weight="700" fill="#1F2A44">Cluster Scaler</text>
+  <text x="1150" y="320" font-size="9.5" fill="#6B7A90">outer loop · 분~수십 분</text>
+  <text x="1150" y="334" font-size="9.5" fill="#6B7A90">desired state → K8s 위임</text>
+
+  <text x="970" y="376" font-size="9.5" fill="#8A5A08">결합 규칙: outer가 N 결정, inner는 N 내 분할만 + hysteresis</text>
+
+  <text x="954" y="420" font-size="10.5" fill="#6B7A90">집행(provisioning)은 infra 위임 — 결정/집행 분리</text>
+
+  <!-- ============ Inference Engine ============ -->
+  <rect x="40" y="530" width="250" height="26" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="548" font-size="13" font-weight="700" fill="#1F2A44">«package»  Inference Engine</text>
+  <rect x="40" y="556" width="630" height="530" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+
+  <!-- Execution -->
+  <rect x="66" y="580" width="150" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="76" y="595" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Execution</text>
+  <rect x="66" y="602" width="578" height="126" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="90" y="622" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="106" y="646" font-size="13" font-weight="700" fill="#1F2A44">Model Runner</text>
+
+  <rect x="365" y="622" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="381" y="644" font-size="13" font-weight="700" fill="#1F2A44">Step Execution Controller</text>
+  <text x="381" y="664" font-size="10.5" fill="#6B7A90">iteration-level continuous batching</text>
+
+  <!-- Kernel & Layer -->
+  <rect x="66" y="752" width="185" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="76" y="767" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Kernel &amp; Layer</text>
+  <rect x="66" y="774" width="578" height="288" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="90" y="794" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="106" y="818" font-size="13" font-weight="700" fill="#1F2A44">Attention Engine</text>
+
+  <rect x="365" y="794" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="381" y="818" font-size="13" font-weight="700" fill="#1F2A44">MoE Dispatcher</text>
+
+  <rect x="90" y="874" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="106" y="898" font-size="13" font-weight="700" fill="#1F2A44">Custom Kernel</text>
+
+  <text x="365" y="900" font-size="10.5" fill="#6B7A90">(v2: Retrieval Engine은 Orchestration으로 이동)</text>
+
+  <rect x="90" y="954" width="530" height="60" fill="#FDF6E9" stroke="#B45309" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="106" y="976" font-size="13" font-weight="700" fill="#8A5A08">CompressionOp Kernel  (신규)</text>
+  <text x="106" y="996" font-size="10.5" fill="#8A5A08">Memory Engine이 정의한 인터페이스를 구현 — 순환 의존 차단(DI)</text>
+
+  <!-- ============ Memory Engine ============ -->
+  <rect x="730" y="530" width="240" height="26" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="742" y="548" font-size="13" font-weight="700" fill="#1F2A44">«package»  Memory Engine</text>
+  <rect x="730" y="556" width="630" height="530" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+
+  <!-- Cache Manager -->
+  <rect x="756" y="580" width="180" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="766" y="595" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Cache Manager</text>
+  <rect x="756" y="602" width="578" height="224" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="780" y="622" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="796" y="646" font-size="13" font-weight="700" fill="#1F2A44">KV Cache Manager</text>
+
+  <rect x="1055" y="622" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1071" y="644" font-size="13" font-weight="700" fill="#1F2A44">Memory Compressor</text>
+  <text x="1071" y="664" font-size="10.5" fill="#6B7A90">mechanism 전담 · policy는 DP-D에서</text>
+
+  <rect x="780" y="700" width="530" height="60" fill="#FDF6E9" stroke="#B45309" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="796" y="722" font-size="13" font-weight="700" fill="#8A5A08">KV Index — prefix/infix lookup  (신규)</text>
+  <text x="796" y="742" font-size="10.5" fill="#8A5A08">non-contiguous reuse 핵심 자료구조 · KV Locator I/F로 Router에 노출</text>
+
+  <text x="780" y="792" font-size="10.5" fill="#6B7A90">published I/F: KV Locator (조회 전용) · CompressionOp (정의)</text>
+
+  <!-- Tier & Lifecycle -->
+  <rect x="756" y="846" width="185" height="22" fill="#E7EDF5" stroke="#7A8699" stroke-width="1"/>
+  <text x="766" y="861" font-size="11.5" font-weight="700" fill="#1F2A44">«package» Tier &amp; Lifecycle</text>
+  <rect x="756" y="868" width="578" height="194" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+
+  <rect x="780" y="888" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="796" y="910" font-size="13" font-weight="700" fill="#1F2A44">Tier Topology Model</text>
+  <text x="796" y="930" font-size="10.5" fill="#6B7A90">HBM/PNM/CXL spec의 source of truth</text>
+
+  <rect x="1055" y="888" width="255" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1071" y="910" font-size="13" font-weight="700" fill="#1F2A44">Migration</text>
+  <text x="1071" y="930" font-size="10.5" fill="#6B7A90">intra-node tiering 전용</text>
+
+  <rect x="780" y="964" width="530" height="60" fill="#FDF6E9" stroke="#B45309" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="796" y="986" font-size="13" font-weight="700" fill="#8A5A08">KV Transport / Connector  (신규)</text>
+  <text x="796" y="1006" font-size="10.5" fill="#8A5A08">P/D inter-instance 전송 (現 LMCache 역할) + role flip 시 KV drain 경로</text>
+
+  <!-- ============ Dependencies ============ -->
+  <line x1="330" y1="470" x2="330" y2="526" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="340" y="498" font-size="11" fill="#1F2A44">«use» execute / dispatch</text>
+
+  <line x1="1040" y1="470" x2="1040" y2="526" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="1050" y="492" font-size="11" fill="#1F2A44">«use» KV Locator 조회 · placement</text>
+  <text x="1050" y="508" font-size="11" fill="#1F2A44">· role flip 시 KV drain 지시</text>
+
+  <line x1="670" y1="652" x2="726" y2="652" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="640" y="638" font-size="11" fill="#1F2A44">«use» KV block alloc / fetch</text>
+
+  <path d="M 670 984 L 706 984 L 706 730 L 776 730" fill="none" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
+  <text x="682" y="858" font-size="10.5" fill="#8A5A08" transform="rotate(-90 682 858)">CompressionOp 구현 (DI)</text>
+
+  <line x1="600" y1="526" x2="600" y2="474" stroke="#6B7A90" stroke-width="1.3" stroke-dasharray="4,4" marker-end="url(#arrTel)"/>
+  <text x="608" y="500" font-size="10" fill="#6B7A90">telemetry → SLO/QoS</text>
+
+  <line x1="1230" y1="526" x2="1230" y2="474" stroke="#6B7A90" stroke-width="1.3" stroke-dasharray="4,4" marker-end="url(#arrTel)"/>
+  <text x="1238" y="500" font-size="10" fill="#6B7A90">telemetry → HW Monitor</text>
+
+  <!-- Legend -->
+  <line x1="44" y1="1126" x2="94" y2="1126" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="102" y="1130" font-size="11" fill="#1F2A44">의존 («use»)</text>
+  <line x1="210" y1="1126" x2="260" y2="1126" stroke="#6B7A90" stroke-width="1.3" stroke-dasharray="4,4" marker-end="url(#arrTel)"/>
+  <text x="268" y="1130" font-size="11" fill="#1F2A44">telemetry</text>
+  <line x1="360" y1="1126" x2="410" y2="1126" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
+  <text x="418" y="1130" font-size="11" fill="#1F2A44">인터페이스 구현 (의존 역전)</text>
+  <rect x="600" y="1116" width="26" height="16" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="634" y="1130" font-size="11" fill="#1F2A44">신규 컴포넌트</text>
+</svg>

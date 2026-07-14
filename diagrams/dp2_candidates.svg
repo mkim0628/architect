@@ -1,0 +1,152 @@
+<svg viewBox="0 0 1400 950" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr2" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B3402A"/>
+    </marker>
+    <marker id="arrGrn2" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP2. KV 배치·압축의 관리 주체 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">동일 패키지 구조 위에서 policy의 위치만 다름 — 화살표 굵기 = 인터페이스 폭 · 주황: 신설 컴포넌트</text>
+
+  <line x1="700" y1="72" x2="700" y2="900" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 central policy ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — Orchestration 중앙 정책 (central policy)</text>
+
+  <!-- Orchestration -->
+  <rect x="60" y="124" width="580" height="240" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+
+  <rect x="84" y="160" width="532" height="184" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="96" y="178" font-size="11" font-weight="700" fill="#1F2A44">«package» Scheduling</text>
+
+  <rect x="104" y="192" width="230" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="116" y="214" font-size="11.5" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="116" y="232" font-size="9.5" fill="#6B7A90">배치 결정 시 Policy와 협조</text>
+
+  <rect x="360" y="192" width="236" height="60" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="372" y="212" font-size="11.5" font-weight="700" fill="#8A5A08">KV Placement &amp;</text>
+  <text x="372" y="227" font-size="11.5" font-weight="700" fill="#8A5A08">Compression Policy (신설)</text>
+  <text x="372" y="243" font-size="9" fill="#8A5A08">SLO class·재사용확률·품질예산 기반</text>
+
+  <rect x="104" y="270" width="230" height="52" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="116" y="290" font-size="11.5" font-weight="700" fill="#1F2A44">SLO / QoS Monitor</text>
+  <text x="116" y="308" font-size="9.5" fill="#6B7A90">metric → Policy 입력</text>
+  <line x1="334" y1="296" x2="420" y2="256" stroke="#6B7A90" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#arr2)"/>
+
+  <!-- thick command down -->
+  <line x1="250" y1="364" x2="250" y2="428" stroke="#1F2A44" stroke-width="3.4" marker-end="url(#arr2)"/>
+  <text x="264" y="388" font-size="10.5" font-weight="700" fill="#1F2A44">지시(굵은 I/F): 목표 tier ·</text>
+  <text x="264" y="404" font-size="10.5" font-weight="700" fill="#1F2A44">압축 수준 · reuse/recompute</text>
+
+  <!-- thick state up -->
+  <line x1="480" y1="428" x2="480" y2="364" stroke="#B3402A" stroke-width="3.4" stroke-dasharray="8,5" marker-end="url(#arrRed)"/>
+  <text x="494" y="388" font-size="10.5" font-weight="700" fill="#B3402A">tier 상태 상시 상향 보고</text>
+  <text x="494" y="404" font-size="10.5" fill="#B3402A">— 인터페이스 비대·결합도↑</text>
+
+  <!-- Memory Engine -->
+  <rect x="60" y="432" width="580" height="280" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="454" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — passive executor (mechanism 전담)</text>
+
+  <rect x="84" y="472" width="255" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="98" y="494" font-size="11.5" font-weight="700" fill="#1F2A44">KV Cache Manager (집행)</text>
+  <text x="98" y="512" font-size="9.5" fill="#6B7A90">KV Index 갱신·조회 제공</text>
+
+  <rect x="365" y="472" width="255" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="379" y="494" font-size="11.5" font-weight="700" fill="#1F2A44">Memory Compressor (집행)</text>
+  <text x="379" y="512" font-size="9.5" fill="#6B7A90">지시된 수준으로만 압축</text>
+
+  <rect x="84" y="548" width="255" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="98" y="570" font-size="11.5" font-weight="700" fill="#1F2A44">Migration (집행)</text>
+  <text x="98" y="588" font-size="9.5" fill="#6B7A90">지시된 승격/강등만 수행</text>
+
+  <rect x="365" y="548" width="255" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="379" y="570" font-size="11.5" font-weight="700" fill="#1F2A44">KV Transport</text>
+  <text x="379" y="588" font-size="9.5" fill="#6B7A90">P↔D 전송·drain 집행</text>
+
+  <text x="84" y="640" font-size="10.5" fill="#6B7A90">자체 정책 없음 — 지시 대기. 로컬 지식(압박 스파이크)을 결정에 못 씀</text>
+  <text x="84" y="680" font-size="10.5" fill="#B3402A" font-weight="700">제약: 제어 루프 = 요청 단위 → μs 압박 스파이크 대응 지연 (TPOT p99 tail 악화)</text>
+
+  <text x="60" y="756" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 품질 예산의 요청별 중앙 집행 — quality-aware joint orchestration</text>
+  <text x="60" y="774" font-size="10.5" fill="#1B7A4B" font-weight="700">(reuse × compression)의 자연스러운 구현 위치 · 전역 최적 배치</text>
+  <text x="60" y="810" font-size="10" fill="#6B7A90">DP1 커플링: 독립 framework(DP1-후보2)에서만 온전히 실현 가능</text>
+
+  <!-- ================= RIGHT: 후보2 autonomous ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — Memory Engine 자율 (hint 기반, madvise 모델)</text>
+
+  <!-- Orchestration -->
+  <rect x="730" y="124" width="610" height="240" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+
+  <rect x="754" y="160" width="562" height="184" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="766" y="178" font-size="11" font-weight="700" fill="#1F2A44">«package» Scheduling</text>
+
+  <rect x="774" y="192" width="250" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="786" y="214" font-size="11.5" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="786" y="232" font-size="9.5" fill="#6B7A90">배치 결정 + hint 생성</text>
+
+  <rect x="1046" y="192" width="250" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1058" y="214" font-size="11.5" font-weight="700" fill="#1F2A44">SLO / QoS Monitor</text>
+  <text x="1058" y="232" font-size="9.5" fill="#6B7A90">metric → hint 갱신 입력</text>
+
+  <text x="774" y="300" font-size="10.5" fill="#6B7A90">Policy 컴포넌트 없음 — 결정권을 아래로 위임, 문맥은 hint로만 하향</text>
+
+  <!-- thin hint down -->
+  <line x1="900" y1="364" x2="900" y2="428" stroke="#1F2A44" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="914" y="388" font-size="10.5" font-weight="700" fill="#1F2A44">hint API (얇은 I/F):</text>
+  <text x="914" y="404" font-size="10.5" fill="#1F2A44">pin · priority · quality budget · reuse 후보 명단</text>
+
+  <!-- thin stats up -->
+  <line x1="1180" y1="428" x2="1180" y2="364" stroke="#6B7A90" stroke-width="1.2" stroke-dasharray="4,4" marker-end="url(#arr2)"/>
+  <text x="1194" y="396" font-size="10" fill="#6B7A90">집계 통계만 보고</text>
+
+  <!-- Memory Engine -->
+  <rect x="730" y="432" width="610" height="280" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="454" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — 자율 주체 (mechanism + local policy)</text>
+
+  <rect x="754" y="472" width="280" height="86" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="768" y="494" font-size="11.5" font-weight="700" fill="#8A5A08">Local Policy Engine (신설)</text>
+  <text x="768" y="512" font-size="9.5" fill="#8A5A08">· 접근 온도 기반 승격/강등</text>
+  <text x="768" y="528" font-size="9.5" fill="#8A5A08">· watermark 기반 압축 트리거</text>
+  <text x="768" y="544" font-size="9.5" fill="#8A5A08">· hint를 제약조건으로 반영</text>
+
+  <rect x="1060" y="472" width="256" height="86" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1074" y="494" font-size="11.5" font-weight="700" fill="#1F2A44">Cache Manager</text>
+  <text x="1074" y="512" font-size="9.5" fill="#6B7A90">KV Cache Manager ·</text>
+  <text x="1074" y="528" font-size="9.5" fill="#6B7A90">Memory Compressor · KV Index</text>
+
+  <!-- autonomous loop arc -->
+  <path d="M 820 570 C 780 600, 820 636, 880 626" fill="none" stroke="#1B7A4B" stroke-width="2.2" marker-end="url(#arrGrn2)"/>
+  <text x="770" y="618" font-size="10" font-weight="700" fill="#1B7A4B">μs 자율 제어 루프</text>
+
+  <rect x="900" y="586" width="416" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="914" y="608" font-size="11.5" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
+  <text x="914" y="626" font-size="9.5" fill="#6B7A90">Tier Topology Model · Migration · KV Transport — Local Policy가 직접 구동</text>
+
+  <text x="754" y="678" font-size="10.5" fill="#B3402A" font-weight="700">제약: 요청 문맥 부재 — 재사용 예정 KV 오강등, 품질 예산 로컬 집행 →</text>
+  <text x="754" y="696" font-size="10.5" fill="#B3402A" font-weight="700">요청 간 품질 편차 · joint orchestration 연구 기여 지점이 구조에서 소실</text>
+
+  <text x="730" y="756" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 압박 스파이크 즉시 대응(tail 방어) · 얇은 결합 · memory engine 독립</text>
+  <text x="730" y="774" font-size="10.5" fill="#1B7A4B" font-weight="700">이식성 (자사 메모리 SW 생태계 전략과 부합)</text>
+  <text x="730" y="810" font-size="10" fill="#6B7A90">DP1 커플링: vLLM 확장형(DP1-후보1)과 가장 정합 — connector 뒤 자율 모듈로 성립</text>
+
+  <!-- Legend -->
+  <line x1="44" y1="866" x2="94" y2="866" stroke="#1F2A44" stroke-width="3.4" marker-end="url(#arr2)"/>
+  <text x="102" y="870" font-size="10.5" fill="#1F2A44">굵은 지시 I/F</text>
+  <line x1="210" y1="866" x2="260" y2="866" stroke="#1F2A44" stroke-width="1.4" marker-end="url(#arr2)"/>
+  <text x="268" y="870" font-size="10.5" fill="#1F2A44">얇은 hint I/F</text>
+  <line x1="376" y1="866" x2="426" y2="866" stroke="#B3402A" stroke-width="3.4" stroke-dasharray="8,5" marker-end="url(#arrRed)"/>
+  <text x="434" y="870" font-size="10.5" fill="#1F2A44">비대해진 상태 보고 스트림</text>
+  <rect x="620" y="856" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="650" y="870" font-size="10.5" fill="#1F2A44">신설 컴포넌트 (policy 위치)</text>
+  <path d="M 850 872 C 830 886, 850 900, 880 894" fill="none" stroke="#1B7A4B" stroke-width="2" marker-end="url(#arrGrn2)"/>
+  <text x="892" y="884" font-size="10.5" fill="#1F2A44">자율 제어 루프</text>
+</svg>
