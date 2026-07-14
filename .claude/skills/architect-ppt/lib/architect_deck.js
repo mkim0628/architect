@@ -18,6 +18,7 @@
  */
 
 const PptxGenJS = require("pptxgenjs");
+const fs = require("fs");
 
 const PAGE = { w: 13.333, h: 7.5 }; // 16:9. Switch to { w: 10, h: 7.5 } for 4:3.
 
@@ -52,6 +53,38 @@ function newDeck() {
   pptx.layout = "ARCH_16x9";
   pptx.theme = { headFontFace: FONT.head, bodyFontFace: FONT.body };
   return pptx;
+}
+
+/**
+ * Write the deck AND repackage it into a canonical OPC zip.
+ *
+ * pptxgenjs's zip writer emits bare directory entries (ppt/, _rels/, …) and
+ * does not place [Content_Types].xml first. Real .pptx files have neither
+ * trait, and some PowerPoint/OS configurations then refuse the file and treat
+ * it as a plain .zip. This rewrites the archive with no directory entries and
+ * [Content_Types].xml first. ALWAYS use this instead of pptx.writeFile().
+ */
+async function writeDeck(pptx, fileName) {
+  await pptx.writeFile({ fileName });
+  repackClean(fileName);
+  return fileName;
+}
+
+// Rewrite the archive with Python's zipfile: writes exactly the given entries
+// (no auto-created directory entries) with [Content_Types].xml first.
+function repackClean(file) {
+  const { execFileSync } = require("child_process");
+  const py = [
+    "import sys, os, zipfile",
+    "src=sys.argv[1]; tmp=src+'.tmp'",
+    "zin=zipfile.ZipFile(src)",
+    "names=[n for n in zin.namelist() if not n.endswith('/')]",
+    "names.sort(key=lambda n: (0 if n=='[Content_Types].xml' else 1))",
+    "zout=zipfile.ZipFile(tmp,'w',zipfile.ZIP_DEFLATED)",
+    "[zout.writestr(n, zin.read(n)) for n in names]",
+    "zout.close(); zin.close(); os.replace(tmp, src)",
+  ].join("\n");
+  execFileSync("python3", ["-c", py, file], { stdio: "ignore" });
 }
 
 /** Add a slide and paint the chrome (title band + nav stepper + footer). Returns the slide. */
@@ -260,6 +293,6 @@ module.exports = {
   PAGE, COLORS, FONT, MARGIN, BAND_H, CONTENT_TOP, CONTENT_BOTTOM,
   get SECTIONS() { return SECTIONS; },
   set SECTIONS(v) { SECTIONS = v; },
-  newDeck, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
+  newDeck, writeDeck, repackClean, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
   itemColumn, pageColumns, pageOverview,
 };

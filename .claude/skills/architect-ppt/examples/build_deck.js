@@ -60,4 +60,4 @@ A.pageColumns(pptx, {
   ],
 });
 
-pptx.writeFile({ fileName: OUT }).then((f) => console.log("wrote", f));
+A.writeDeck(pptx, OUT).then((f) => console.log("wrote", f));

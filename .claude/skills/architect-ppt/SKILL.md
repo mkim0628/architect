@@ -115,14 +115,22 @@ A.pageColumns(pptx, {
 
 // 과제 필요성 → 위와 동일하되 cols 2개. 과제 범위 → cols 3개.
 
-await pptx.writeFile({ fileName: "deck.pptx" });
+await A.writeDeck(pptx, "deck.pptx");   // NOT pptx.writeFile — see below
 ```
+
+> **Always save with `A.writeDeck(pptx, file)`, never `pptx.writeFile()`.**
+> pptxgenjs's zip writer emits bare directory entries and misorders
+> `[Content_Types].xml`; real `.pptx` files have neither, and some PowerPoint/OS
+> setups then reject the file and open it as a plain `.zip`. `writeDeck`
+> repackages into a canonical OPC archive (requires `python3`, always present
+> via the base `pptx` skill).
 
 ### Helper reference (`lib/architect_deck.js`)
 
 | Helper | Purpose |
 |--------|---------|
 | `newDeck()` | New 16:9 presentation with default fonts |
+| `writeDeck(pptx, file)` | Save + repackage to a valid `.pptx` (use instead of `writeFile`) |
 | `pageOverview(pptx, {title, page, band, table, architecture})` | **과제 개요**: 2단, 좌 표 + 우 아키텍처(공란 가능) |
 | `pageColumns(pptx, {title, page, band, cols})` | **배경/필요성/범위**: N단, 각 단 items(텍스트+이미지) |
 | `slide(pptx, {title, active, band, page, total})` | Add slide + paint chrome (low-level) |
