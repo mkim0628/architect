@@ -187,7 +187,7 @@ function placeholder(s, { x, y, w, h, label = "[ 이미지 / 다이어그램 ]" 
  *   items: [{ text: string | [runs], image?: "/local/path.png" }]
  * If `image` is omitted the image area is left BLANK (empty bordered box).
  */
-function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTENT_TOP, bottom = CONTENT_BOTTOM, textFrac = 0.30, gap = 0.18 }) {
+function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTENT_TOP, bottom = CONTENT_BOTTOM, textFrac = 0.30, gap = 0.18, showImages = true }) {
   const below = sectionHeader(s, { x, y: top, w, text: header, color: headerColor });
   const areaTop = below + 0.15;
   const areaH = bottom - areaTop;
@@ -195,10 +195,15 @@ function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTE
   const slotH = (areaH - gap * (n - 1)) / n;
   items.forEach((it, i) => {
     const iy = areaTop + i * (slotH + gap);
+    const textItems = Array.isArray(it.text) ? it.text : [it.text];
+    if (!showImages) {
+      // Text-only column (e.g. 과제 범위 scope lists) — no image box.
+      bulletList(s, { x: x + 0.05, y: iy, w: w - 0.1, h: slotH, items: textItems, fontSize: 11 });
+      return;
+    }
     const textH = Math.max(0.45, slotH * textFrac);
     const imgY = iy + textH + 0.05;
     const imgH = slotH - textH - 0.05;
-    const textItems = Array.isArray(it.text) ? it.text : [it.text];
     bulletList(s, { x: x + 0.05, y: iy, w: w - 0.1, h: textH, items: textItems, fontSize: 11 });
     if (it.image) {
       s.addImage({ path: it.image, x, y: imgY, w, h: imgH, sizing: { type: "contain", w, h: imgH } });
@@ -220,6 +225,7 @@ function pageColumns(pptx, { title, page, active = 0, band = "navy", headerColor
   cols.forEach((c, i) => itemColumn(s, {
     x: boxes[i].x, w: boxes[i].w, header: c.header,
     headerColor: c.headerColor || headerColor, items: c.items,
+    showImages: c.images !== false,
   }));
   return s;
 }

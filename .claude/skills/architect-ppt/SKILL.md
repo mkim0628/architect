@@ -137,6 +137,8 @@ await pptx.writeFile({ fileName: "deck.pptx" });
 
 - **`cols[i].items`** = `[{ text, image? }]`. Omit `image` → blank box. `text`
   can be a string or a `bulletList` run array.
+- **`cols[i].images: false`** → text-only column (no image boxes), for list-style
+  slides like 과제 범위 (목적 / In Scope / Out of Scope).
 
 - **Change the nav labels** for a different chapter set: `A.SECTIONS = [...]` before building.
 - **`active`** is the 0-based index of the highlighted nav step; **`band`** is `"navy"` (content) or `"green"` (lead).
