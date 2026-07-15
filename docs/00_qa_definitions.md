@@ -1,8 +1,15 @@
-# MCR QA 정의 및 별점 평가 기준 (v0.2)
+# MCR QA 정의 및 별점 평가 기준 (v0.3)
 
 `02_design_points_dp1_dp2.md` §0의 잠정 QA 정의를 분리·승격한 문서.
 모든 DP/후보구조 평가는 본 문서의 정량 bin을 기준으로 별점을 매긴다.
 (잠정 — MCR 공식 QA 확정 시 본 문서를 개정하고 기존 평가표를 재평가한다.)
+
+**개정 이력**
+- v0.3: ① QA1 baseline 정의 명시(P/D 분리 포함) 및 bin 근거를 메모리 측 증분
+  문헌으로 교체 ② QA2 "유효 KV 용량" 용어를 원본 환산 기준으로 재정의
+  ③ QA3 경계값을 문헌 실측치(KVQuant·KIVI)로 재앵커링(B급) ④ QA4 코어/모듈
+  용어 정의 추가, 모델 축을 "KV 구조 영향 변화"로 재정의
+- v0.2: 02 §0에서 분리, 별점별 정량 bin 도입
 
 ## 별점 체계 공통 규칙
 
@@ -15,6 +22,16 @@
 - **상한/도달 리스크 분리**: 설계 상한과 도달 확률이 갈리면
   `★★★ (상한) / ★☆ (도달 리스크)`로 분리 표기.
 
+## 용어 정의 (코어 / 모듈)
+
+| 용어 | 정의 | MCR에서의 예 |
+|---|---|---|
+| **모듈** | 단일 책임을 갖고 통째로 교체·추가 가능한 부품. 수정해도 파급이 자신 안에 갇힘 | tier 어댑터, CompressionOp Kernel, Attention Engine, custom kernel |
+| **코어** | 모듈들이 꽂히는 골격 — 스케줄러, tier/block 관리, 실행 파이프라인, **공개 인터페이스**(KV Locator, CompressionOp) | Scheduling, Cache Manager 골격, Tier Topology Model 자체 |
+
+**판별 테스트**: 그 코드를 수정했을 때 **다른 모듈들을 재검증해야 하면 코어**,
+그 부품만 다시 검증하면 되면 모듈이다. (인터페이스 시그니처 변경은 항상 코어 수정.)
+
 ## SLO 앵커 (외부 레퍼런스)
 
 | 앵커 | 값 | 출처 |
@@ -23,7 +40,9 @@
 | MLPerf Inference **Interactive** | TTFT p99 ≤ 450 ms · TPOT p99 ≤ 40 ms | [NVIDIA MLPerf v5.0](https://developer.nvidia.com/blog/nvidia-blackwell-delivers-massive-performance-leaps-in-mlperf-inference-v5-0/) |
 | goodput 정의 · SLO attainment | SLO(TTFT·TPOT) 충족률 **≥ 90%** 유지 최대 처리율 | [DistServe (OSDI'24)](https://arxiv.org/pdf/2401.09670), [Hao AI Lab](https://haoailab.com/blogs/distserve/) |
 | TPOT 인지 상한 | 인간 독해 속도 ~250 words/min → TPOT ≈ 50 ms면 체감 충분 | DistServe 상동 |
-| KV 압축 품질·용량 레퍼런스 | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, near-lossless | [KIVI](https://arxiv.org/html/2402.02750v2) |
+| KV 압축 용량·처리율 | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, **처리율 2.35–3.47×** | [KIVI](https://arxiv.org/html/2402.02750v2) |
+| KV 압축 품질 (PPL) | 3-bit 양자화 **ΔPPL < 0.1 (절대)** — Wikitext-2·C4, LLaMA/Llama-2/-3/Mistral | [KVQuant (NeurIPS'24)](https://arxiv.org/html/2401.18079v4) |
+| KV 압축 품질 (accuracy) | 2-bit 양자화 LongBench accuracy 저하 **최대 2%p** (Llama/Mistral) | [KIVI](https://arxiv.org/html/2402.02750) |
 | upstream 추종 주기 | vLLM 정규 릴리스 **2주 간격** | [vLLM RELEASE.md](https://github.com/vllm-project/vllm/blob/main/RELEASE.md) |
 | 사내 확장성 기준 | 신규 장치 지원 시 기능 추가/변경 ≤ 전체의 40% | Architect 과제 원본 덱 QA-01 측정 기준 |
 
@@ -37,7 +56,10 @@ agent memory (과제 범위 3.2-3).
 ## QA1. 추론 성능 (goodput@SLO)
 
 - **정의**: 표준 SLO를 attainment ≥ 90%로 유지하면서 달성하는 최대 처리율.
-- **측정**: goodput(req/s @ SLO) — GPU HBM 단일 tier 동일 HW baseline 대비 배율.
+- **측정**: goodput(req/s @ SLO), baseline 대비 배율.
+  **Baseline 정의 (필수)**: 동일 HW에서 **P/D 분리를 동일하게 적용한
+  GPU HBM 단일 tier** 구성 (과제 범위 3.2-3). 즉 본 QA는 P/D 분리 효과가
+  아니라 **이종 tier + 압축 + 재사용 orchestration의 증분**을 측정한다.
   보조 지표: decode wait 비중 (자체 실측 70–85%(A)가 개선 대상).
 
 | 별점 | 기준 (baseline 대비 goodput@SLO) |
@@ -46,16 +68,23 @@ agent memory (과제 범위 3.2-3).
 | ★★☆ | 1.1× – 1.5× |
 | ★☆☆ | < 1.1× (측정 오차·운영 잡음 수준) 또는 SLO attainment < 90% |
 
-**bin 근거**: P/D disaggregation 계열은 구조 변경만으로 goodput 2×+
-(DistServe: 동일 SLO에서 최대 7.4× 요청 처리(B)), PD 통합/개선 연구들이
-29–77% 개선(B)을 보고 — **1.5×를 "구조적 개선"과 "튜닝 수준 개선"의 경계**로
-설정. 1.1× 미만은 A/B 테스트에서 통상 잡음과 구분 곤란.
+**bin 근거**: 메모리 측 개선 단독의 문헌 상단 — 압축으로 batch를 4×로 키워
+**처리율 2.35–3.47×**(KIVI(B), 단 cache-hit·워크로드 의존) — 에서 1.5×를
+워크로드 비의존적으로 요구 가능한 보수적 하한으로 설정. 1.1× 미만은 A/B
+테스트에서 통상 잡음과 구분 곤란(C). *주의: DistServe의 2×~7.4×는 P/D 미분리
+(colocated) baseline 대비 수치로, P/D가 양쪽에 모두 적용되는 본 QA의 bin
+근거가 아니다 — DistServe는 goodput·attainment ≥90% **정의**의 출처로만 인용.*
 
 ## QA2. 메모리 효율 (유효 KV 용량)
 
-- **정의**: 동일 물리 HBM에서 수용 가능한 유효 KV 용량 배율 (QA3 품질 bound를
-  지키는 조건에서만 인정).
-- **측정**: 유효 KV capacity / 물리 HBM capacity. 보조: tier 활용률, 압축률 분포.
+- **정의**: **원본(비압축) 환산**으로 시스템이 동시에 수용할 수 있는 KV 총량의,
+  물리 HBM 용량 대비 배율 (QA3 품질 bound를 지키는 조건에서만 인정).
+  압축 n×는 같은 물리 공간에 원본 환산 n×의 KV를 담으므로 이 값을 **키운다**
+  (저장된 압축 바이트가 아니라 "몇 토큰어치를 서빙할 수 있나"의 지표).
+  등가 표현: **동시 수용 가능한 컨텍스트 토큰 수의 배율**.
+- **측정**: 유효 KV 용량 ≈ Σ_tier(tier 용량 × 그 tier의 평균 압축률 × KV 가용
+  비율) / 물리 HBM 용량. 분모가 HBM인 이유: HBM이 희소 자원이며 "HBM 한 장당
+  서빙 가능한 컨텍스트"가 비용 구조를 결정. 보조: tier 활용률, 압축률 분포.
 
 | 별점 | 기준 (유효 KV 용량 배율) |
 |---|---|
@@ -63,44 +92,60 @@ agent memory (과제 범위 3.2-3).
 | ★★☆ | 1.5× – 3× |
 | ★☆☆ | < 1.5× |
 
-**bin 근거**: 압축 단독으로 2.6× 메모리 절감·batch 4×가 near-lossless로 입증
-(KIVI 2-bit(B)) — 압축(2–4×, 02 실측 전제(A))만 잘 써도 1.5×는 도달하므로
+**bin 근거**: 압축 단독으로 peak memory 2.6× 절감·batch 4×가 near-lossless로
+입증(KIVI 2-bit(B)) — 압축(02 실측 전제 2–4×(A))만 잘 써도 1.5×는 도달하므로
 **tier 오프로딩과 압축을 함께 쓰는 MCR은 3×를 상위 bin**으로 요구. 1.5× 미만은
-압축 단독 대비 열위 — 이종 tier 도입의 존재 이유 미달.
+압축 단독 대비 열위 — 이종 tier 도입의 존재 이유 미달(C).
 
 ## QA3. 응답 품질 (품질 저하 bound)
 
 - **정의**: 압축·재사용으로 인한 품질 저하의 상한 보장.
-- **측정**: 대표 벤치마크 accuracy 저하(%p), PPL 증가율. bound의 **집행 단위**
-  (요청별 vs 전역)를 함께 판정.
+- **측정**: 대표 벤치마크 accuracy 저하(%p) + PPL 증가(절대 ΔPPL, Wikitext-2
+  기준). bound의 **집행 단위**(요청별 vs 전역)를 함께 판정.
 
 | 별점 | 기준 |
 |---|---|
-| ★★★ | accuracy 저하 **≤ 0.5%p** 그리고 PPL 증가 ≤ 1%, **요청별** bound 집행 가능 |
-| ★★☆ | accuracy 저하 ≤ 1%p 그리고 PPL 증가 ≤ 3%, 전역 bound만 보장 |
-| ★☆☆ | accuracy 저하 > 1%p 또는 bound 자체를 보장 못 함 |
+| ★★★ | accuracy 저하 **≤ 1%p** 그리고 **ΔPPL ≤ 0.1 (절대)**, **요청별** bound 집행 가능 |
+| ★★☆ | accuracy 저하 **≤ 2%p**, **전역** bound만 보장 |
+| ★☆☆ | accuracy 저하 > 2%p 또는 bound 자체를 보장 못 함 |
 
-**bin 근거**: 2-bit KV 양자화가 다수 모델에서 near-lossless(≈0.5%p 이내)(B)
-— 이것이 달성 가능선이므로 상위 bin. 1%p는 02 문서의 기존 기준(A)이자 KV
-압축 문헌의 관례적 허용선(B). K>V sensitivity(B) 때문에 요청별 차등 집행
-가능 여부가 bound 보장성을 가름 → 집행 단위를 별점 조건에 포함.
+**bin 근거** (전 경계 B급 실측 인용):
+- **ΔPPL ≤ 0.1**: KVQuant가 3-bit에서 Wikitext-2·C4 기준 ΔPPL < 0.1을
+  LLaMA/Llama-2/-3/Mistral 전반에서 입증(B) — "달성 가능한 near-lossless 선".
+- **accuracy ≤ 1%p**: 02 문서의 기존 사내 기준(A)이자 KV 압축 문헌의
+  near-lossless 관례 허용선(B).
+- **accuracy ≤ 2%p**: KIVI 2-bit(최대 압축단)의 LongBench 실측 저하 상한
+  "up to 2%"(B) — 극한 압축을 쓰더라도 문헌이 보인 저하 한계 이내여야 함.
+- 집행 단위 조건: K>V sensitivity(B) — 압축 대상 선택이 품질을 좌우하므로
+  요청별 차등 집행 가능 여부가 bound 보장성을 가름(C).
 
 ## QA4. 확장성·진화성
 
-- **정의**: 신규 메모리 디바이스(HBM4/CMM-DC/HBF)·신규 모델 수용 비용.
-- **측정**: (a) tier 추가 시 변경 범위(수정 모듈 수, 기능 변경 비율),
-  (b) 신규 모델 지원 리드타임 (upstream 공개 시점 기준).
+- **정의**: 신규 메모리 디바이스(HBM4/CMM-DC/HBF)와 **KV 구조에 영향을 주는
+  모델 변화**의 수용 비용. (코어/모듈 정의는 문서 상단 용어 정의 참조.)
+- **측정**: (a) tier 추가 시 변경 범위 — 수정이 **모듈**에 갇히는가, **코어**
+  (골격·공개 인터페이스)까지 침범하는가, 기능 변경 비율(%).
+  (b) KV 구조 영향 모델 변화 — GQA/MQA(head 공유로 KV 크기 변화),
+  MLA(latent KV — KV 정의 자체가 바뀜), sliding-window/hybrid attention,
+  SSM 계열(KV 부재) — 의 수용 리드타임 (upstream 공개 시점 기준).
 
 | 별점 | 기준 (a·b 모두 충족) |
 |---|---|
-| ★★★ | tier 추가 = topology 파라미터 등록 + 어댑터 **≤ 1개 모듈**, 코어 수정 0 · 모델 지원 **≤ upstream + 2주** |
-| ★★☆ | 코어 수정이 전체 기능의 **≤ 40%** · 모델 지원 ≤ upstream + 1분기 |
-| ★☆☆ | 코어 재설계 수반(> 40%) 또는 모델 추종 > 1분기 (만성 지연) |
+| ★★★ | tier 추가 = topology 파라미터 등록 + **어댑터 모듈 ≤ 1개, 코어 수정 0** · KV 구조 변화 수용 **≤ upstream + 2주** |
+| ★★☆ | 코어 수정이 전체 기능의 **≤ 40%** · 수용 ≤ upstream + 1분기 |
+| ★☆☆ | 코어 재설계 수반(> 40%) 또는 수용 > 1분기 (만성 지연) |
 
-**bin 근거**: 40% 기준은 Architect 과제 원본 덱 QA-01의 사내 측정
-기준을 계승(A). "upstream + 2주"는 vLLM 정규 릴리스가 2주 간격(B)이므로
-**한 릴리스 주기 내 추종 = 실질 동시 지원**으로 정의. 1분기(6 릴리스 누락)를
-넘으면 생태계 대비 만성 열세로 판정.
+**bin 근거**: 40% 기준은 Architect 과제 원본 덱 QA-01의 사내 측정 기준
+계승(A). "upstream + 2주"는 vLLM 정규 릴리스가 2주 간격(B)이므로 **한 릴리스
+주기 내 추종 = 실질 동시 지원**으로 정의. 1분기(≈6 릴리스 누락)를 넘으면
+생태계 대비 만성 열세(C).
+
+> **각주 — 일반 모델 enablement**: 신규 모델의 서빙 지원 일반(가중치 로딩,
+> 커널, 토크나이저 등)은 DP1 후보1(vLLM 확장형)에서는 upstream의 책임이라
+> MCR 평가 항목이 아니다. 단 **DP1 후보2(독립 framework) 채택 시**에는 그
+> 전체가 MCR 책임이 되므로, 그 경우에만 (b)를 "일반 모델 지원 리드타임"으로
+> 확장 적용한다 — 독립 framework의 최대 리스크(02 §DP1 후보2 단점)를 평가에서
+> 놓치지 않기 위함.
 
 ## QA5. 개발·운영 비용
 
@@ -125,7 +170,8 @@ fork/독립 유지의 하한으로 설정.
 
 - [MLCommons — Llama 2 70B MLPerf Inference Benchmark](https://mlcommons.org/2024/03/mlperf-llama2-70b/) (Server TTFT 2s / TPOT 200ms)
 - [NVIDIA — MLPerf Inference v5.0](https://developer.nvidia.com/blog/nvidia-blackwell-delivers-massive-performance-leaps-in-mlperf-inference-v5-0/) (Interactive TTFT 450ms / TPOT 40ms)
-- [DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (OSDI'24)](https://arxiv.org/pdf/2401.09670) · [해설 블로그](https://haoailab.com/blogs/distserve/) (goodput/SLO attainment 90%/250wpm/7.4×)
-- [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/html/2402.02750v2) (2.6× 메모리, 4× batch, near-lossless)
+- [DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (OSDI'24)](https://arxiv.org/pdf/2401.09670) · [해설 블로그](https://haoailab.com/blogs/distserve/) (goodput/SLO attainment 90% 정의, 250wpm)
+- [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/html/2402.02750v2) (2.6× 메모리, batch 4×, 처리율 2.35–3.47×, LongBench 저하 ≤2%p)
+- [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization (NeurIPS'24)](https://arxiv.org/html/2401.18079v4) (3-bit ΔPPL < 0.1, Wikitext-2·C4)
 - [vLLM RELEASE.md](https://github.com/vllm-project/vllm/blob/main/RELEASE.md) (2주 릴리스 케이던스)
 - 사내: Architect 과제 원본 덱 QA-01 (40% 기준), MCR 자체 P/D 분리 벤치 실측 (decode wait 70–85%)
