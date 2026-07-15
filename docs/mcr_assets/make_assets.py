@@ -68,9 +68,9 @@ def bg_devices():
 # 4. Complementary axes
 def bg_axes():
     fig, ax = plt.subplots()
-    labs=["Near-compute\n(PIM/PNM)","Bandwidth\n(HBM/HBF)","Capacity\n(CXL/SSD)"]; vals=[0.9,0.75,0.95]; cols=[NAVY,NAVYL,GREEN]
+    labs=["Near-compute (PIM/PNM)","Bandwidth (HBM/HBF)","Capacity (CXL/SSD)"]; vals=[0.9,0.75,0.95]; cols=[NAVY,NAVYL,GREEN]
     ax.barh(range(3),vals,color=cols,height=0.55)
-    for i,l in enumerate(labs): ax.text(0.02,i,l,va="center",ha="left",color="white",fontsize=11,fontweight="bold")
+    for i,l in enumerate(labs): ax.text(0.02,i,l,va="center",ha="left",color="white",fontsize=10,fontweight="bold")
     ax.set_xlim(0,1); ax.set_ylim(-0.6,2.6); ax.axis("off")
     ax.text(0,2.75,"Different strengths → new design space when combined",fontsize=12,color=INK,fontweight="bold")
     save(fig,"bg_axes.png",6.6,2.2)
@@ -100,7 +100,7 @@ def bg_hierarchy():
 def nec_arch():
     fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.2); ax.axis("off")
     box(ax,0.5,3.1,9,0.8,"Application  /  LLM Serving",ICE,NAVY,tc=NAVY,fs=12.5)
-    box(ax,0.5,1.5,9,1.3,"MCR Runtime  ·  Policy | Mechanism  ·  Topology Model",NAVY,NAVY,fs=12)
+    box(ax,0.5,1.5,9,1.3,"MCR Runtime  ·  Policy | Mechanism  ·  Topology Model",NAVY,NAVY,fs=10.5)
     box(ax,0.5,0.2,9,0.8,"Devices (PIM·PNM·HBF·CXL) — parameterized plug-in",GREEN,GREEN,fs=12)
     arrow(ax,5,3.05,5,2.85,color=GRAY,lw=2); arrow(ax,5,1.45,5,1.05,color=GRAY,lw=2)
     ax.text(0.5,4.05,"Heterogeneous memory as a first-class runtime concept",fontsize=11.5,color=INK,fontweight="bold")
@@ -143,6 +143,65 @@ def nec_e2e():
     for s in ["top","right"]: ax.spines[s].set_visible(False)
     save(fig,"nec_e2e.png",7.4,2.5)
 
+# 11. Coupled decision problem created by the two solutions
+def bg_decision():
+    fig, ax = plt.subplots(); blank(ax)
+    box(ax,0.25,1.5,4.3,1.8,"Compute placement\nops → near-memory?\n(PIM/PNM)",NAVY,NAVY,fs=10.5)
+    box(ax,5.45,1.5,4.3,1.8,"Data placement\ntier? move? compress?\nrecompute?",GREEN,GREEN,fs=10.5)
+    arrow(ax,4.65,2.4,5.35,2.4,color=INK,lw=2.6,style="<|-|>",ms=18)
+    ax.text(5,3.75,"HW cannot answer these decisions — and they are coupled",ha="center",fontsize=12,color=INK,fontweight="bold")
+    ax.text(5,0.85,"tiers × devices × requests → combinatorial space  ·  wrong policy < baseline",
+            ha="center",fontsize=10.5,color=GRAY,fontweight="bold")
+    save(fig,"bg_decision.png",6.6,2.4)
+
+# 12. Spec vs realized E2E gap — the runtime decides it (illustrative)
+def bg_gap():
+    fig, ax = plt.subplots()
+    vals=[1.0,0.45,0.9]; cols=[NAVYL,GRAY,GREEN]
+    labs=["Device spec\n(peak)","Realized E2E\n(static policy)","Realized E2E\n(runtime-orchestrated)"]
+    ax.bar(range(3),vals,color=cols,width=0.55)
+    ax.axhline(1.0,ls="--",color=NAVY,lw=1.6)
+    ax.annotate("",xy=(1,0.98),xytext=(1,0.47),arrowprops=dict(arrowstyle="<->",color=INK,lw=1.8))
+    ax.text(1.12,0.72,"gap =\nruntime's job",fontsize=10,color=INK,fontweight="bold",va="center")
+    ax.set_xticks(range(3)); ax.set_xticklabels(labs,fontsize=9.5)
+    ax.set_ylim(0,1.25); ax.set_yticks([])
+    ax.set_title("Spec vs realized E2E performance — decided by the runtime (illustrative)",
+                 fontsize=11,color=INK,fontweight="bold",loc="left")
+    for s in ["top","right","left"]: ax.spines[s].set_visible(False)
+    save(fig,"bg_gap.png",6.6,2.5)
+
+# 13. Missing realization layer between app and devices
+def nec_missing():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.2); ax.axis("off")
+    box(ax,0.5,3.1,9,0.8,"Application  /  LLM Inference",ICE,NAVY,tc=NAVY,fs=12.5)
+    ax.add_patch(FancyBboxPatch((0.5,1.5),9,1.3,boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=2.0,edgecolor=GRAY,facecolor=WHITE,linestyle="--"))
+    ax.text(5,2.15,"Reference SW stack — MISSING",ha="center",va="center",color=GRAY,fontsize=13,fontweight="bold")
+    box(ax,0.5,0.2,9,0.8,"Memory device portfolio (PIM · CIM · CXL · Tiered)",GREEN,GREEN,fs=12)
+    ax.plot([5,5],[3.05,2.85],ls=":",color=GRAY,lw=2); ax.plot([5,5],[1.45,1.05],ls=":",color=GRAY,lw=2)
+    ax.text(0.5,4.05,"Device value cannot reach the application — realization layer absent",
+            fontsize=11.5,color=INK,fontweight="bold")
+    save(fig,"nec_missing.png",7.4,2.6)
+
+# 14. Per-device unit demos exist; integrated E2E stack does not
+def nec_demos():
+    fig, ax = plt.subplots(); blank(ax)
+    for i,n in enumerate(["PIM\ndemo","CXL\ndemo","Tiered\ndemo"]):
+        box(ax,0.3+i*1.45,1.6,1.25,1.35,n,NAVYL,NAVYL,fs=10)
+    ax.text(2.4,0.85,"unit demos — exist",ha="center",fontsize=10.5,color=NAVY,fontweight="bold")
+    arrow(ax,4.85,2.3,5.55,2.3,color=GRAY,lw=2.2,ms=16)
+    ax.add_patch(FancyBboxPatch((5.8,1.3),3.9,1.9,boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=2.0,edgecolor=GRAY,facecolor=WHITE,linestyle="--"))
+    ax.text(7.75,2.25,"Integrated E2E\nreference stack",ha="center",va="center",color=GRAY,fontsize=11.5,fontweight="bold")
+    ax.text(7.75,0.85,"system-level — absent",ha="center",fontsize=10.5,color=GRAY,fontweight="bold")
+    ax.text(5,3.75,"Unit demos ≠ system-level E2E proof",ha="center",fontsize=12,color=INK,fontweight="bold")
+    save(fig,"nec_demos.png",6.6,2.4)
+
 if __name__=="__main__":
-    for f in [bg_decode,bg_kv,bg_devices,bg_axes,bg_shift,bg_hierarchy,nec_arch,nec_orch,nec_stack,nec_e2e]:
-        f(); print("wrote", f.__name__)
+    import sys
+    ALL=[bg_decode,bg_kv,bg_devices,bg_axes,bg_shift,bg_hierarchy,nec_arch,nec_orch,nec_stack,nec_e2e,
+         bg_decision,bg_gap,nec_missing,nec_demos]
+    names=sys.argv[1:]
+    for f in ALL:
+        if not names or f.__name__ in names:
+            f(); print("wrote", f.__name__)
