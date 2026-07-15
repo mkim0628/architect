@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+"""Generate content-matched diagrams/charts for the MCR deck.
+English technical labels (authentic for this domain); deck palette.
+Web image hosts are blocked in this environment, so visuals are generated
+locally instead of fetched. Output: PNGs next to this script."""
+import os
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+
+NAVY="#1F3864"; NAVYL="#2E4C7E"; GREEN="#4E7C3A"; YELLOW="#FFC000"
+ICE="#CADCFC"; INK="#262626"; GRAY="#A6A6A6"; LGRAY="#E9E9E9"; WHITE="#FFFFFF"
+HERE=os.path.dirname(os.path.abspath(__file__))
+plt.rcParams.update({"font.family":"DejaVu Sans","font.size":13})
+
+def save(fig, name, w, h):
+    fig.set_size_inches(w, h); fig.savefig(os.path.join(HERE, name), dpi=200,
+        bbox_inches="tight", pad_inches=0.06, facecolor="white"); plt.close(fig)
+
+def box(ax, x, y, w, h, text, fc, ec, tc=WHITE, fs=13, bold=True, r=0.06):
+    ax.add_patch(FancyBboxPatch((x,y), w, h, boxstyle=f"round,pad=0.01,rounding_size={r}",
+        linewidth=1.6, edgecolor=ec, facecolor=fc))
+    ax.text(x+w/2, y+h/2, text, ha="center", va="center", color=tc,
+        fontsize=fs, fontweight="bold" if bold else "normal", wrap=True)
+
+def arrow(ax, x0,y0,x1,y1, color=NAVY, lw=2.4, style="-|>", ms=16):
+    ax.add_patch(FancyArrowPatch((x0,y0),(x1,y1), arrowstyle=style,
+        mutation_scale=ms, lw=lw, color=color))
+
+def blank(ax): ax.set_xlim(0,10); ax.set_ylim(0,4); ax.axis("off")
+
+# 1. Decode dominates latency — stacked horizontal bar
+def bg_decode():
+    fig, ax = plt.subplots()
+    ax.barh([0], [23], color=ICE, edgecolor="white");
+    ax.barh([0], [77], left=[23], color=NAVY, edgecolor="white")
+    ax.text(11.5,0,"Prefill\n~15–30%",ha="center",va="center",color=NAVY,fontsize=12,fontweight="bold")
+    ax.text(61,0,"Decode  70–85% of end-to-end latency",ha="center",va="center",color="white",fontsize=13,fontweight="bold")
+    ax.set_xlim(0,100); ax.set_ylim(-0.6,0.9); ax.axis("off")
+    ax.text(0,0.7,"Decode dominates inference latency  (memory-bandwidth-bound)",fontsize=12.5,color=INK,fontweight="bold")
+    save(fig,"bg_decode.png",6.6,2.2)
+
+# 2. KV cache growth vs HBM capacity
+def bg_kv():
+    fig, ax = plt.subplots()
+    x=[1,8,16,32,64,128]
+    for mult,c,lab in [(1,ICE,"1 session"),(4,NAVYL,"4 sessions"),(9,NAVY,"16 sessions")]:
+        ax.plot(x,[xi*mult*0.9 for xi in x],marker="o",color=c,lw=2.4,label=lab,markersize=4)
+    ax.axhline(90,ls="--",color=GREEN,lw=2); ax.text(74,95,"HBM capacity",color=GREEN,fontsize=11,fontweight="bold")
+    ax.set_xlabel("Context length (K tokens)",fontsize=11); ax.set_ylabel("KV cache size (GB)",fontsize=11)
+    ax.set_title("KV cache grows with context × concurrent sessions",fontsize=12.5,color=INK,fontweight="bold",loc="left")
+    ax.legend(fontsize=9,loc="upper left",frameon=False); ax.set_ylim(0,140)
+    for s in ["top","right"]: ax.spines[s].set_visible(False)
+    save(fig,"bg_kv.png",6.6,2.6)
+
+# 3. Device portfolio — 5 boxes
+def bg_devices():
+    fig, ax = plt.subplots(); blank(ax)
+    names=["PIM","PNM","Custom\nHBM","HBF","CXL\nMemory"]
+    cols=[NAVY,NAVYL,GREEN,"#6B7F3A","#3C5F2C"]
+    for i,(n,c) in enumerate(zip(names,cols)):
+        box(ax,0.25+i*1.95,1.2,1.6,1.6,n,c,c,fs=13)
+    ax.text(5,3.5,"Memory-centric device portfolio",ha="center",fontsize=13,color=INK,fontweight="bold")
+    ax.text(5,0.7,"near-compute · bandwidth · capacity — complementary axes",ha="center",fontsize=11,color=GRAY)
+    save(fig,"bg_devices.png",6.6,2.4)
+
+# 4. Complementary axes
+def bg_axes():
+    fig, ax = plt.subplots()
+    labs=["Near-compute\n(PIM/PNM)","Bandwidth\n(HBM/HBF)","Capacity\n(CXL/SSD)"]; vals=[0.9,0.75,0.95]; cols=[NAVY,NAVYL,GREEN]
+    ax.barh(range(3),vals,color=cols,height=0.55)
+    for i,l in enumerate(labs): ax.text(0.02,i,l,va="center",ha="left",color="white",fontsize=11,fontweight="bold")
+    ax.set_xlim(0,1); ax.set_ylim(-0.6,2.6); ax.axis("off")
+    ax.text(0,2.75,"Different strengths → new design space when combined",fontsize=12,color=INK,fontweight="bold")
+    save(fig,"bg_axes.png",6.6,2.2)
+
+# 5. Compute-centric -> memory-centric
+def bg_shift():
+    fig, ax = plt.subplots(); blank(ax)
+    box(ax,0.3,1.0,3.5,2.0,"Compute-centric\ndata → compute",WHITE,NAVY,tc=NAVY,fs=13)
+    arrow(ax,4.1,2.0,5.9,2.0,color=GREEN,lw=3,ms=22)
+    box(ax,6.2,1.0,3.5,2.0,"Memory-centric\ncompute → data",GREEN,GREEN,fs=13)
+    ax.text(5,3.55,"Von Neumann premise inverted (PIM/PNM)",ha="center",fontsize=12.5,color=INK,fontweight="bold")
+    save(fig,"bg_shift.png",6.6,2.2)
+
+# 6. Memory hierarchy 5 tiers
+def bg_hierarchy():
+    fig, ax = plt.subplots(); ax.set_xlim(0,10); ax.set_ylim(0,5.4); ax.axis("off")
+    tiers=[("HBM",NAVY),("HBF",NAVYL),("DRAM","#5B6EA6"),("CXL Memory",GREEN),("SSD","#6B7F3A")]
+    for i,(n,c) in enumerate(tiers):
+        w=3.2+i*1.1; x=(10-w)/2; y=4.4-i*0.9
+        box(ax,x,y,w,0.72,n,c,c,fs=12)
+    arrow(ax,0.5,4.9,0.5,0.7,color=INK,lw=2,ms=14); ax.text(0.75,4.7,"Bandwidth ↑",fontsize=10,color=INK,rotation=90,va="top")
+    arrow(ax,9.5,0.7,9.5,4.9,color=INK,lw=2,ms=14); ax.text(9.25,0.9,"Capacity ↑",fontsize=10,color=INK,rotation=90,va="bottom",ha="right")
+    ax.text(5,5.15,"Deepening memory hierarchy (5+ tiers)",ha="center",fontsize=12.5,color=INK,fontweight="bold")
+    save(fig,"bg_hierarchy.png",6.6,3.0)
+
+# 7. Runtime architecture — layers
+def nec_arch():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.2); ax.axis("off")
+    box(ax,0.5,3.1,9,0.8,"Application  /  LLM Serving",ICE,NAVY,tc=NAVY,fs=12.5)
+    box(ax,0.5,1.5,9,1.3,"MCR Runtime  ·  Policy | Mechanism  ·  Topology Model",NAVY,NAVY,fs=12)
+    box(ax,0.5,0.2,9,0.8,"Devices (PIM·PNM·HBF·CXL) — parameterized plug-in",GREEN,GREEN,fs=12)
+    arrow(ax,5,3.05,5,2.85,color=GRAY,lw=2); arrow(ax,5,1.45,5,1.05,color=GRAY,lw=2)
+    ax.text(0.5,4.05,"Heterogeneous memory as a first-class runtime concept",fontsize=11.5,color=INK,fontweight="bold")
+    save(fig,"nec_arch.png",7.4,2.6)
+
+# 8. Joint orchestration triangle
+def nec_orch():
+    fig, ax = plt.subplots(); ax.set_xlim(0,10); ax.set_ylim(0,4.8); ax.axis("off")
+    pts={"Placement":(2,1.2),"Compression":(8,1.2),"Reuse":(5,3.3)}
+    cols={"Placement":NAVY,"Compression":GREEN,"Reuse":NAVYL}
+    labpos={"Placement":(2,0.35,"top"),"Compression":(8,0.35,"top"),"Reuse":(5,3.95,"bottom")}
+    import itertools
+    for a,b in itertools.combinations(pts,2):
+        ax.plot([pts[a][0],pts[b][0]],[pts[a][1],pts[b][1]],color=GRAY,lw=1.6,zorder=1)
+    for n,(x,y) in pts.items():
+        ax.scatter([x],[y],s=2000,color=cols[n],zorder=2)
+        lx,ly,va=labpos[n]; ax.text(lx,ly,n,ha="center",va=va,color=INK,fontsize=12,fontweight="bold",zorder=3)
+    ax.text(5,2.0,"KV @ SLO",ha="center",va="center",color=INK,fontsize=11,fontweight="bold")
+    ax.text(5,4.55,"Joint orchestration (not passive tiering)",ha="center",fontsize=12,color=INK,fontweight="bold")
+    save(fig,"nec_orch.png",7.4,2.8)
+
+# 9. Reference stack positioning
+def nec_stack():
+    fig, ax = plt.subplots(); ax.set_xlim(0,10); ax.set_ylim(0,4.2); ax.axis("off")
+    box(ax,2.5,3.2,5,0.75,"Application (LLM serving)",ICE,NAVY,tc=NAVY,fs=12.5)
+    box(ax,2.0,1.6,6,0.95,"MCR  =  Reference SW stack",YELLOW,GREEN,tc=NAVY,fs=13.5)
+    box(ax,2.5,0.15,5,0.75,"Samsung memory devices",GREEN,GREEN,fs=12.5)
+    arrow(ax,5,3.15,5,2.6,color=GRAY,lw=2,style="<|-|>"); arrow(ax,5,1.55,5,0.95,color=GRAY,lw=2,style="<|-|>")
+    ax.text(0.2,4.05,"Connects application ↔ device",fontsize=12,color=INK,fontweight="bold")
+    save(fig,"nec_stack.png",7.4,2.6)
+
+# 10. E2E goodput vs baseline (target, illustrative)
+def nec_e2e():
+    fig, ax = plt.subplots()
+    ax.bar([0],[1.0],color=GRAY,width=0.5); ax.bar([1],[1.8],color=NAVY,width=0.5)
+    ax.text(0,1.03,"1.0",ha="center",fontsize=11,color=INK); ax.text(1,1.83,"target ▲",ha="center",fontsize=11,color=NAVY,fontweight="bold")
+    ax.set_xticks([0,1]); ax.set_xticklabels(["GPU HBM\nbaseline","MCR\n(hetero tiers)"],fontsize=11)
+    ax.set_ylabel("goodput@SLO (relative)",fontsize=11); ax.set_ylim(0,2.2)
+    ax.set_title("E2E performance proof — target vs baseline (illustrative)",fontsize=11.5,color=INK,fontweight="bold",loc="left")
+    for s in ["top","right"]: ax.spines[s].set_visible(False)
+    save(fig,"nec_e2e.png",7.4,2.5)
+
+if __name__=="__main__":
+    for f in [bg_decode,bg_kv,bg_devices,bg_axes,bg_shift,bg_hierarchy,nec_arch,nec_orch,nec_stack,nec_e2e]:
+        f(); print("wrote", f.__name__)
