@@ -50,5 +50,5 @@ Published interface: **KV Locator** (조회 전용, Router가 사용) · **Compr
 ## 미결 사항
 
 - MCR 공식 QA 정의 확정 (현재 잠정 QA1–QA5 사용, [`00_qa_definitions.md`](00_qa_definitions.md) 참조)
-- DP1(Framework 실행 구조)·DP2(KV 배치·압축 관리 주체) 채택안 결정 및 ADR 작성
-- DP 채택에 따른 Scheduling 내 Policy 컴포넌트 신설 여부 확정
+- DP1–DP5 채택안 결정 및 ADR 작성 — DP1·DP2: [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md), DP3(KV 재사용 범위·복원)·DP4(topology 추상화 수준)·DP5(P/D KV 이동 구조): [`03_design_points_dp3_dp5.md`](03_design_points_dp3_dp5.md)
+- DP 채택에 따른 Scheduling 내 Policy 컴포넌트 신설 여부 확정 (DP2), KV Index 키 스키마·KV Transport 구현 형태 확정 (DP3·DP5)
