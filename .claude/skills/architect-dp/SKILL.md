@@ -1,6 +1,6 @@
 ---
 name: architect-dp
-description: "Write and organize architecture Design Point (DP) documents in the MCR/Architect-과제 house methodology: 잠정 QA 정의 → per-DP 문제 정의(양방향 압력) → 설계 쟁점 → 순수형 후보구조 2개(구조/장점/단점) → QA 별점 평가표(정량 근거 필수) → 검토 노트(hybrid·진화 경로) → DP 간 의존성 표. Use whenever the user asks to 설계 포인트/Design Point/DP를 도출·정리·전개·평가하라고 하거나, 후보구조 비교, QA(★) 평가표, trade-off 분석, ADR 준비, docs/NN_design_points_*.md 작성을 요청할 때. Output feeds the architect-ppt skill's 설계 Point 선정 slide (dpCard)."
+description: "Write and organize architecture Design Point (DP) documents in the MCR/Architect-과제 house methodology: QA 정의 문서 참조 → per-DP 문제 정의(양방향 압력) → 설계 쟁점 → 순수형 후보구조 2개(구조/장점/단점) → QA 별점 평가표(architect-qa 스킬의 bin 기준) → 검토 노트(hybrid·진화 경로) → DP 간 의존성 표. Use whenever the user asks to 설계 포인트/Design Point/DP를 도출·정리·전개·평가하라고 하거나, 후보구조 비교, trade-off 분석, ADR 준비, docs/NN_design_points_*.md 작성을 요청할 때. QA 정의·별점 채점은 architect-qa 스킬에 위임; output feeds the architect-ppt skill's 설계 Point 선정 slide (dpCard)."
 ---
 
 # Architect DP Skill — 설계 포인트 문서화
@@ -25,8 +25,9 @@ description: "Write and organize architecture Design Point (DP) documents in the
 
 ## 문서 작성 순서 (워크플로)
 
-1. **입력 확인**: 기준 아키텍처(패키지 다이어그램 버전 명시)와 QA 정의.
-   QA 정의가 없으면 §0 잠정 QA부터 만든다 — QA 없이 평가표를 만들지 않는다.
+1. **입력 확인**: 기준 아키텍처(패키지 다이어그램 버전 명시)와 **QA 정의
+   문서**(예: `docs/00_qa_definitions.md`). QA 정의 문서가 없으면 먼저
+   **`architect-qa` 스킬**로 생성한다 — QA 없이 평가표를 만들지 않는다.
 2. **DP 후보 발굴 → 자격 기준 필터** → 사용자와 목록 합의(개수가 많으면).
 3. **DP별 전개**: 템플릿 순서 그대로 (문제 정의 → 쟁점 → 후보 → QA표 → 노트).
 4. **DP 간 의존성 표** 갱신 — 새 DP가 기존 DP의 실현 가능 집합을 제약하면 반드시 기록.
@@ -35,10 +36,11 @@ description: "Write and organize architecture Design Point (DP) documents in the
 
 ## 섹션별 규칙
 
-### §0 잠정 QA 정의
-- 표 3열: **QA | 정의 | 정량 지표(rating 판단 기준)**. QA는 5개 내외.
-- 정량 지표에는 실측치·목표치를 포함 (예: "decode wait 70–85%가 개선 대상",
-  "압축 2–4×"). 잠정이면 문서 머리에 "공식 확정 시 재평가 필요"를 명시.
+### §0 QA 참조 (정의는 DP 문서에 넣지 않는다)
+- QA의 정의·측정 방법·**별점별 정량 bin·bin 선정 근거**는 별도 QA 정의
+  문서(예: `docs/00_qa_definitions.md`)가 단일 출처다. DP 문서의 §0은 그
+  문서로의 **링크만** 둔다 — DP 문서 안에 QA 표를 복제하지 않는다(이중 관리 방지).
+- QA 문서의 작성·유지 규칙과 평가 방법은 **`architect-qa` 스킬**이 담당한다.
 
 ### 문제 정의
 - **양방향 압력**을 모두 서술한다 — 한쪽 방향만 쓰면 결론이 정해진 문서가 된다.
@@ -64,10 +66,10 @@ description: "Write and organize architecture Design Point (DP) documents in the
   근거인지 대응되게.
 
 ### QA 평가표
-- 3단계 별점: `★★★`(우수/리스크 낮음) · `★★☆`(조건부/부분 회수) ·
-  `★☆☆`(취약/고비용). 표 3열: **QA | 평점 | 정량 근거**.
-- **근거 없는 별점 금지** — 모든 셀에 "왜"를 정량으로 쓴다 (수치·범위·리드타임).
-- 상한과 도달 리스크가 갈리면 분리 표기: `★★★ (상한) / ★☆ (도달 리스크)`.
+- 표 3열: **QA | 평점 | 정량 근거**. 별점 판정 방법(3단계 정량 bin, 근거 등급
+  A/B/C, F/M 시점 표기, 상한/도달 리스크 분리)은 **`architect-qa` 스킬**과
+  QA 정의 문서의 bin 기준을 따른다.
+- **근거 없는 별점 금지** — 모든 셀에 "어느 bin에 왜 해당하는지"를 쓴다.
 
 ### 검토 노트
 - **실질 결정 변수**를 한 문장으로 명시 (예: "확장점 밖에 있는 것이 연구
@@ -84,11 +86,11 @@ description: "Write and organize architecture Design Point (DP) documents in the
 
 - [ ] 모든 DP가 자격 기준 4개를 만족하는가? (한 후보가 전 QA 우위인 DP는 없는가)
 - [ ] 두 후보의 QA 프로파일이 실제로 갈리는가? (같은 행이 같은 별점이면 그 QA는 결정 변수가 아님 — 근거에서 차이를 밝히거나 행 재검토)
-- [ ] 별점마다 정량 근거가 있는가?
+- [ ] 별점마다 QA 정의 문서의 bin에 대응하는 정량 근거가 있는가?
 - [ ] 장단점 서술과 QA표 감점/가점이 대응되는가?
 - [ ] hybrid가 후보 자리에 들어가 있지 않은가?
 - [ ] 타 DP 커플링이 쟁점과 의존성 표 양쪽에 반영됐는가?
-- [ ] 문서 머리에 작성 기준(아키텍처 버전)과 QA 잠정 여부가 있는가?
+- [ ] 문서 머리에 작성 기준(아키텍처 버전)과 QA 정의 문서 링크가 있는가?
 
 ## 후속 연계
 
@@ -97,4 +99,5 @@ description: "Write and organize architecture Design Point (DP) documents in the
 - **architect-ppt 연동**: 각 DP는 `설계 Point 선정` 슬라이드(P9)의 `dpCard`
   한 장으로 요약된다 — items = `(1안) 후보1 한줄`, `(2안) 후보2 한줄`,
   `QA: 관련 QA 나열`. DP 색상은 `COLORS.dp` 토큰(page-specs.md P9 참조).
-- QA 정의(§0)는 Utility Tree/ASR 슬라이드(P7)의 행과 정합해야 한다.
+- **architect-qa 연동**: QA 정의 문서의 생성·개정과 후보 채점은 `architect-qa`
+  스킬로 수행. QA 정의는 Utility Tree/ASR 슬라이드(P7)의 행과 정합해야 한다.

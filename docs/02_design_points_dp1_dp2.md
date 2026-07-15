@@ -1,18 +1,14 @@
 # MCR 설계포인트 전개 — DP1 · DP2 (v0.1)
 
-작성 기준: 확정안 v2 패키지 다이어그램. QA는 잠정 정의(§0)이며 공식 확정 시 재평가 필요.
+작성 기준: 확정안 v2 패키지 다이어그램. QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md)를 따른다 (잠정 — 공식 확정 시 재평가 필요).
 
 ---
 
-## 0. 잠정 QA 정의
+## 0. QA 정의 (분리됨)
 
-| QA | 정의 | 정량 지표 (rating 판단 기준) |
-|----|------|------------------------------|
-| QA1 추론 성능 | SLO(TTFT/TPOT p99)를 만족하는 goodput | goodput(tokens/s @ SLO), decode wait 비중(실측 70–85%가 개선 대상) |
-| QA2 메모리 효율 | 동일 HW에서 수용 가능한 유효 KV 용량 | 유효 KV capacity / 물리 capacity (압축 2–4×, tier 활용률) |
-| QA3 응답 품질 | 압축·재사용으로 인한 품질 저하 bound | 벤치마크 accuracy 저하 < 1%p, PPL 증가 bound |
-| QA4 확장성·진화성 | 신규 메모리 디바이스·신규 모델 수용 비용 | HBM4/CMM-DC/HBF 추가 시 변경 범위, 신규 모델 지원 리드타임 |
-| QA5 개발·운영 비용 | 초기 구축 + 지속 유지보수 비용 | 초기 인월, upstream 추종/rebase 비용, 검증 비용 |
+QA1–QA5의 정의, 측정 방법, **별점별 정량 bin과 그 선정 근거(레퍼런스 SLO)** 는
+[`00_qa_definitions.md`](00_qa_definitions.md)로 분리되었다. 본 문서의 모든
+QA 평가표 별점은 해당 문서의 bin 기준으로 해석한다.
 
 ---
 
