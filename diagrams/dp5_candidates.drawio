@@ -1,0 +1,64 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp5-candidates" name="DP5 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="840" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP5. P/D 분리 운용과 KV 이동 구조 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/축소 요소" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="900" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — Point-to-point 직접 전송 (transfer)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1p" value="&lt;b&gt;Prefill 인스턴스 (P)&lt;/b&gt;&lt;br&gt;&lt;br&gt;로컬 tier 스택 (독점)&lt;br&gt;· GPU HBM · PNM DRAM · CXL&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;장애가 인스턴스에 갇힘&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;drain 중 원본 점유 지속 (이중 점유)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="270" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1d" value="&lt;b&gt;Decode 인스턴스 (D)&lt;/b&gt;&lt;br&gt;&lt;br&gt;로컬 tier 스택 (독점)&lt;br&gt;· GPU HBM · PNM DRAM · CXL&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;인스턴스 간 KV 사일로&lt;br&gt;중복 저장 잔존 (전역 dedup 불가)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="370" y="124" width="270" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edge" value="KV 전송" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;strokeWidth=2;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c1p" target="c1d">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1kt" value="&lt;b&gt;KV Transport = P↔D RDMA/NVLink 전송 엔진&lt;/b&gt;&lt;br&gt;현 disagg proxy 자산의 정식화 — vLLM connector/전송 라이브러리 방향과 정합(B)&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;압축 상태 유지 전송의 (재)직렬화·포맷 변환 비용 — KV 포맷 계약 필요&lt;br&gt;&lt;b&gt;role flip = drain(전송) 완료 후 역할 전환 — 지연 하한 O(KV 크기 / 링크 BW)&lt;/b&gt;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="352" width="580" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;구조적 제약:&lt;/b&gt; 장문 세션 수십 개 = 수십 GB급 drain — Autoscaler inner loop(초~분) 민첩성 잠식" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="468" width="580" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; 검증 경로 (현 P/D proxy·LMCache 자산(A) 재사용) · 실패 도메인 인스턴스 로컬 (blast radius 최소) · 전제 조건 없음 — DP1 확장형·DP4 후보1과 완전 호환 · 초기 ≤6인월" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="504" width="580" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — 공유 tier 스테이징 (shared pooled staging)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2p" value="&lt;b&gt;Prefill 인스턴스 (P)&lt;/b&gt;&lt;br&gt;GPU HBM (로컬 hot tier)&lt;br&gt;계산 결과 KV를 공유 tier에 기록&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;단일 writer — P가 쓰고 동결&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2d" value="&lt;b&gt;Decode 인스턴스 (D)&lt;/b&gt;&lt;br&gt;GPU HBM (로컬 hot tier)&lt;br&gt;공유 tier의 KV를 매핑·승격&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;참조 전달 — copy 없음&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="124" width="280" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2shared" value="&lt;b&gt;공유 스테이징 tier — CXL pooled memory (CMM-DC) · HBF&lt;/b&gt;&lt;br&gt;&quot;데이터를 옮기지 말고 위치를 재정의하라&quot;(배경 1.3)의 P/D 판 — KV 이동 = 참조 전달&lt;br&gt;인스턴스 간 chunk 전역 재사용 개방 (DP3 후보2와 시너지) · CMM-DC E2E 증명의 최직접 시나리오&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;공유 tier BW fan-in — decode 승격 트래픽 집중 시 새 병목 (CXL BW는 HBM 대비 열위)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="286" width="610" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeW" value="write (KV 기록)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c2p" target="c2shared">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeR" value="매핑만 — O(메타데이터)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;fontSize=10;fontColor=#1B7A4B;" edge="1" parent="1" source="c2shared" target="c2d">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2kt" value="&lt;b&gt;KV Transport (축소) = 포인터/소유권 메타데이터 교환 + 승격 프리페치 엔진&lt;/b&gt;&lt;br&gt;role flip = drain-free (소유권 이전) — Autoscaler inner loop의 설계 의도(초~분) 완성" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="410" width="610" height="64" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; flip이 O(메타데이터) — 부하 급변 추종 민첩 · 이중 점유 제거 + 전역 dedup (QA2 ≥3× 경로)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="492" width="610" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; 공유 tier 장애의 blast radius 전 인스턴스 · 소유권/일관성 프로토콜 신규 (미검증, CXL 3.x pooling HW 성숙도) — 초기 &gt;24인월 · DP4 후보2의 SHARED capability 하드 전제" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="528" width="610" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;진화 경로 (검토 노트):&lt;/b&gt; 후보1로 시작(자산·성숙도) + KV Locator를 처음부터 위치 투명(참조 기반)으로 설계해 공유 스테이징 삽입점 예약 → CMM-DC 실기 확보·fan-in 실측 통과를 전환 트리거로 ADR화 — 전환 시 인터페이스 개정 없이 Transport 구현만 교체&lt;br&gt;실측 결정 변수: ① role flip 민첩성이 goodput의 1차 병목인가 ② 공유 tier BW가 승격 fan-in을 감당하는가" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="610" width="1280" height="76" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

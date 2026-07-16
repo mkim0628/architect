@@ -50,6 +50,10 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 3. 조직 리소스로 감당 가능한 유지보수 모델은 무엇인가 — plugin 추종, fork rebase, 독립 코어 유지, KV-계층 백엔드 추종 중.
 4. (DP2·DP6 커플링) 차별 가치 중 어디까지가 KV 데이터-이동 계층(LMCache)의 백엔드·정책 훅으로 표현 가능한가 — 근접 연산 오프로드(DP6)와 tier-aware decode 경로는 이 계층 밖이며, 이 경로 채택 시 중앙 정책(DP2 후보1)의 자리도 LMCache 골격에 제약된다.
 
+### 후보구조 설계도
+
+![DP1 후보구조 설계도 — vLLM 확장형 vs 독립 framework](../diagrams/dp1_candidates.svg)
+
 ### 후보구조 1 — vLLM 확장형 (plugin/connector 기반)
 
 **구조**: Inference Orchestration은 vLLM 프로세스 밖의 독립 계층(현 disagg proxy 구조의 정식화). Inference Engine 자리는 vLLM이 그대로 담당. Memory Engine은 KV connector API + custom attention backend + worker plugin으로 vLLM에 주입하되, 코어는 vLLM 프로세스 밖 독립 모듈로 유지한다.
@@ -176,6 +180,10 @@ Orchestration은 후보1과 동일하게 프로세스 밖 독립 계층.
 2. 메모리 압박 스파이크 대응은 μs 반응이 필요하다 — 어느 레벨까지 자율성을 줄 것인가?
 3. Memory Engine의 독립 재사용성(타 엔진 이식, 자사 메모리 생태계 전략)을 policy 결합이 훼손하지 않는가?
 4. (DP1 커플링) vLLM 확장형에서는 중앙 policy를 scheduler에 심을 수 없고, KV-계층(LMCache) 확장형에서는 정책 골격 자체를 LMCache가 소유해 제약이 더 강하다(중앙 정책 실현 가능성이 3 후보 중 최소) — DP1 채택안이 본 DP의 실현 가능 집합을 제약한다.
+
+### 후보구조 설계도
+
+![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../diagrams/dp2_candidates.svg)
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 

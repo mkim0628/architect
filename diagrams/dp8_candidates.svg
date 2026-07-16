@@ -1,0 +1,115 @@
+<svg viewBox="0 0 1400 880" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrAmb" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrGrn" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP8. SSD-PIM의 계약·소유 — 가속 벡터DB 서비스 vs 검색 가능한 메모리 tier (전제: ADR-001)</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">녹색: 구조적 이득 지점 · 적색: 구조적 제약 · 주황: 신설/개정 요소</text>
+
+  <line x1="700" y1="72" x2="700" y2="830" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — 가속 벡터DB 서비스 (Retrieval Engine 소유, 제어 평면)</text>
+
+  <!-- Request Manager -->
+  <rect x="60" y="124" width="580" height="96" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Request Manager (제어 평면)</text>
+  <rect x="80" y="160" width="540" height="46" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="92" y="180" font-size="11" font-weight="700" fill="#1F2A44">Retrieval Engine — 외부 벡터DB 자리에서 SSD-PIM API 호출</text>
+  <text x="92" y="196" font-size="9.5" fill="#1B7A4B">v2 구조 무변경 — 백엔드 교체로 완결 (검증된 경계 유지)</text>
+
+  <line x1="350" y1="220" x2="350" y2="258" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="362" y="244" font-size="10.5" fill="#1F2A44">query(embedding) → top-k(chunk id, score) — 벡터DB 표준 계약</text>
+
+  <!-- SSD-PIM device -->
+  <rect x="60" y="262" width="580" height="76" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.4"/>
+  <text x="74" y="284" font-size="12" font-weight="700" fill="#1F2A44">SSD-PIM 디바이스 — 가속 벡터DB (독립 제품)</text>
+  <text x="74" y="304" font-size="10" fill="#6B7A90">벡터 인덱스/스캔 (DP7 채택안) — 표준 계약 뒤에 은닉, 세대 교체도 API 뒤에서</text>
+  <text x="74" y="322" font-size="10" fill="#1B7A4B">장애 격리 — 검색 실패가 KV/tier 경로와 무관</text>
+
+  <!-- post path -->
+  <line x1="350" y1="338" x2="350" y2="376" stroke="#B3402A" stroke-width="1.8" marker-end="url(#arr)"/>
+  <rect x="60" y="380" width="580" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="402" font-size="11" font-weight="700" fill="#1F2A44">후속 경로: chunk id → 텍스트 로드 → prefill 재계산</text>
+  <text x="74" y="422" font-size="10" fill="#B3402A">retrieval hit 후에도 prefill 재계산 잔존 — TTFT의 지배 몫 미회수 (KV 조회는 별도 키로 후속)</text>
+
+  <!-- Memory Engine separate -->
+  <rect x="60" y="470" width="580" height="80" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="492" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — 이 디바이스를 모른다 (분리된 세계)</text>
+  <text x="74" y="512" font-size="10" fill="#6B7A90">KV Index·tier 스택은 검색과 무관하게 별도 운용</text>
+  <text x="74" y="530" font-size="10" fill="#B3402A">텍스트/벡터/KV 3중 저장 중복 잔존 (co-location dedup 없음)</text>
+
+  <text x="60" y="590" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: v2 구조 무변경 (리스크 최소, 초기 ≤6인월) · 디바이스 독립 제품화·타 스택 이식 용이 · 장애 격리</text>
+
+  <text x="60" y="632" font-size="10.5" fill="#B3402A" font-weight="700">제약: 검색과 KV가 분리된 세계 — "memory-centric 융합" 기여 지점이 구조에서 사라짐</text>
+  <text x="60" y="650" font-size="10.5" fill="#B3402A">(가속기 납품 이상이 안 됨)</text>
+
+  <!-- ================= RIGHT: 후보2 ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 검색 가능한 메모리 tier (Memory Engine 소유, KV 융합)</text>
+
+  <!-- Retrieval Engine thin -->
+  <rect x="730" y="124" width="610" height="60" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Request Manager — Retrieval Engine은 질의 발행자 역할만 유지</text>
+  <text x="744" y="166" font-size="10" fill="#B3402A">v2 검수 2번(Retrieval Engine 위치) 재개봉 — 01에 개정 사유 기록 필요</text>
+
+  <line x1="1030" y1="184" x2="1030" y2="222" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="1042" y="208" font-size="10.5" fill="#1F2A44">query(embedding)</text>
+
+  <!-- Memory Engine -->
+  <rect x="730" y="226" width="610" height="320" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="248" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — SSD-PIM을 tier로 소유 (데이터 평면)</text>
+
+  <rect x="754" y="264" width="275" height="92" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="768" y="286" font-size="11" font-weight="700" fill="#8A5A08">Tier Topology Model (개정)</text>
+  <text x="768" y="304" font-size="9.5" fill="#8A5A08">· SSD-PIM tier 등록</text>
+  <text x="768" y="320" font-size="9.5" fill="#8A5A08">· SEARCH capability 표현</text>
+  <text x="768" y="336" font-size="9.5" fill="#8A5A08">  (DP4 후보2 스키마 확장 — 하드 전제)</text>
+
+  <rect x="1055" y="264" width="275" height="92" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="1069" y="286" font-size="11" font-weight="700" fill="#8A5A08">키 공간 통합 (개정)</text>
+  <text x="1069" y="304" font-size="9.5" fill="#8A5A08">· 벡터 인덱스 키 = KV Index의</text>
+  <text x="1069" y="320" font-size="9.5" fill="#8A5A08">  content-hash 키 (DP3와 정렬)</text>
+  <text x="1069" y="336" font-size="9.5" fill="#8A5A08">· 검색 결과 = KV Locator 해석 가능 참조</text>
+
+  <!-- SSD-PIM tier -->
+  <rect x="754" y="372" width="576" height="80" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="768" y="394" font-size="12" font-weight="700" fill="#155F3B">SSD-PIM tier — 벡터 인덱스 + chunk KV co-location</text>
+  <text x="768" y="414" font-size="10" fill="#155F3B">검색되는 chunk와 그 KV가 같은 디바이스에 상주 — 텍스트/벡터/KV 3중 저장 → 통합 (전역 dedup)</text>
+  <text x="768" y="432" font-size="10" fill="#155F3B">"retrieve the text, then recompute" → "retrieve the KV"</text>
+
+  <!-- promotion path -->
+  <line x1="1042" y1="452" x2="1042" y2="490" stroke="#1B7A4B" stroke-width="2.2" marker-end="url(#arrGrn)"/>
+  <rect x="754" y="494" width="576" height="40" fill="#FFFFFF" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="768" y="519" font-size="10.5" fill="#155F3B"><tspan font-weight="700">hit 시:</tspan> KV 참조 반환 → KV 승격(프리페치) 파이프라인 → GPU — prefill 재계산 소멸</text>
+
+  <text x="730" y="574" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: retrieval hit ≡ KV hit — DP3 후보2와 융합 시 TTFT 이득 극대 (CacheBlend 2.2–3.3×(B)의</text>
+  <text x="730" y="592" font-size="10.5" fill="#1B7A4B">검색 융합판) · "검색-재사용 단일 near-data 경로" = MCR 고유 기여 · E2E 증명 vehicle (2.3)</text>
+
+  <text x="730" y="634" font-size="10.5" fill="#B3402A" font-weight="700">리스크: KV Locator·tier 모델(공개 인터페이스=코어) 개정 · 장애 도메인 결합 (검색 = KV tier),</text>
+  <text x="730" y="652" font-size="10.5" fill="#B3402A">키 통합·co-location 레이아웃·승격 파이프라인 신규 + 재개봉 설득 — 초기 &gt;24인월 (QA5 ★☆☆),</text>
+  <text x="730" y="670" font-size="10.5" fill="#B3402A">이득 크기가 DP3 후보2(비연속 재사용) 채택에 종속 — 사실상 동시 결정 묶음</text>
+
+  <!-- evolution note -->
+  <rect x="60" y="712" width="1280" height="56" fill="#F4F6FA" stroke="#6B7A90" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="76" y="734" font-size="10.5" font-weight="700" fill="#1F2A44">진화 경로 (검토 노트): 후보1(서비스 모델)로 시작하되 chunk id를 KV Index와 동일한 content-hash 체계로 발급 (키 공간 정렬만 선행 — 비용 미미)</text>
+  <text x="76" y="752" font-size="10.5" fill="#6B7A90">→ DP3 후보2 채택 + SSD→GPU 승격 대역폭 실측 통과를 트리거로 후보2 전환 — 키가 정렬돼 있으면 계약 개정이 "반환 타입 확장"으로 축소</text>
+
+  <!-- Legend -->
+  <rect x="44" y="806" width="22" height="14" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="74" y="817" font-size="10.5" fill="#1F2A44">구조적 이득 지점</text>
+  <rect x="196" y="806" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="226" y="817" font-size="10.5" fill="#1F2A44">신설/개정 요소</text>
+  <rect x="346" y="806" width="22" height="14" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.2"/>
+  <text x="376" y="817" font-size="10.5" fill="#1F2A44">독립 디바이스 (서비스 모델)</text>
+  <text x="540" y="817" font-size="10.5" fill="#B3402A">적색 텍스트 = 구조적 제약/리스크</text>
+</svg>
