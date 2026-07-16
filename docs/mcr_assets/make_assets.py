@@ -205,10 +205,25 @@ def nec_demos():
     ax.text(5,3.75,"Unit demos ≠ system-level E2E proof",ha="center",fontsize=12,color=INK,fontweight="bold")
     save(fig,"nec_demos.png",6.6,2.4)
 
+# 15. KV offload layers (LMCache) exist, but memory stays a passive backend
+def nec_kvlayer():
+    fig, ax = plt.subplots(); ax.set_xlim(0,10); ax.set_ylim(0,4.6); ax.axis("off")
+    box(ax,0.3,3.55,6.4,0.7,"Inference engine (vLLM / SGLang)",ICE,NAVY,tc=NAVY,fs=11)
+    box(ax,0.3,2.25,6.4,0.9,"KV cache layer (LMCache)\ndata movement only",NAVYL,NAVYL,fs=10)
+    for i,n in enumerate(["CPU RAM","SSD / NVMe","Redis · S3"]):
+        box(ax,0.3+i*2.2,0.75,2.0,1.1,n,GRAY,GRAY,fs=10)
+    ax.text(3.5,0.3,"passive put/get commodity backends",ha="center",fontsize=9.5,color=GRAY,fontweight="bold")
+    arrow(ax,3.5,3.5,3.5,3.2,color=GRAY,lw=2); arrow(ax,3.5,2.3,3.5,1.9,color=GRAY,lw=2)
+    ax.add_patch(FancyBboxPatch((7.3,0.75),2.4,3.5,boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=2.0,edgecolor=GRAY,facecolor=WHITE,linestyle="--"))
+    ax.text(8.5,2.5,"PIM · HBF · CXL\ndevice tiers\n— no place\n(no topology,\nno near-compute)",
+            ha="center",va="center",color=GRAY,fontsize=9.5,fontweight="bold")
+    save(fig,"nec_kvlayer.png",6.6,2.7)
+
 if __name__=="__main__":
     import sys
     ALL=[bg_decode,bg_kv,bg_devices,bg_axes,bg_shift,bg_hierarchy,nec_arch,nec_orch,nec_stack,nec_e2e,
-         bg_decision,bg_gap,nec_missing,nec_demos]
+         bg_decision,bg_gap,nec_missing,nec_demos,nec_kvlayer]
     names=sys.argv[1:]
     for f in ALL:
         if not names or f.__name__ in names:
