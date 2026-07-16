@@ -154,21 +154,29 @@ def bg_decision():
             ha="center",fontsize=10.5,color=GRAY,fontweight="bold")
     save(fig,"bg_decision.png",6.6,2.4)
 
-# 12. Spec vs realized E2E gap — the runtime decides it (illustrative)
+# 12. Same HW, runtime swap changes E2E performance — published results
+#     vLLM (SOSP'23, arXiv:2309.06180): KV waste 60-80% -> <4%, throughput 2-4x @ same latency, same GPU
+#     FlexGen (ICML'23, arXiv:2303.06865): same 16GB T4, offloading policy -> up to 100x max throughput
 def bg_gap():
-    fig, ax = plt.subplots()
-    vals=[1.0,0.45,0.9]; cols=[NAVYL,GRAY,GREEN]
-    labs=["Device spec\n(peak)","Realized E2E\n(static policy)","Realized E2E\n(runtime-orchestrated)"]
-    ax.bar(range(3),vals,color=cols,width=0.55)
-    ax.axhline(1.0,ls="--",color=NAVY,lw=1.6)
-    ax.annotate("",xy=(1,0.98),xytext=(1,0.47),arrowprops=dict(arrowstyle="<->",color=INK,lw=1.8))
-    ax.text(1.12,0.72,"gap =\nruntime's job",fontsize=10,color=INK,fontweight="bold",va="center")
-    ax.set_xticks(range(3)); ax.set_xticklabels(labs,fontsize=9.5)
-    ax.set_ylim(0,1.25); ax.set_yticks([])
-    ax.set_title("Spec vs realized E2E performance — decided by the runtime (illustrative)",
-                 fontsize=11,color=INK,fontweight="bold",loc="left")
-    for s in ["top","right","left"]: ax.spines[s].set_visible(False)
-    save(fig,"bg_gap.png",6.6,2.5)
+    fig,(a1,a2) = plt.subplots(1,2)
+    fig.suptitle("Same HW — runtime alone changes E2E performance (published)",
+                 fontsize=11.5,color=INK,fontweight="bold",x=0.02,ha="left")
+    a1.bar([0,1],[30,96],color=[GRAY,NAVY],width=0.5)
+    a1.text(0,33,"waste\n60–80%",ha="center",fontsize=8.5,color=INK,fontweight="bold")
+    a1.text(1,88,"waste <4%",ha="center",fontsize=8.5,color="white",fontweight="bold")
+    a1.set_xticks([0,1]); a1.set_xticklabels(["conventional\n(Orca et al.)","PagedAttention\nruntime"],fontsize=8)
+    a1.set_ylim(0,108); a1.set_yticks([]); a1.set_ylabel("KV memory utilization",fontsize=8.5)
+    a1.set_title("→ 2–4× throughput, same GPU\nvLLM, SOSP '23",fontsize=8.5,color=NAVY,loc="left")
+    a2.bar([0,1],[1,100],color=[GRAY,GREEN],width=0.5)
+    a2.set_yscale("log"); a2.set_ylim(0.5,300); a2.set_yticks([1,10,100]); a2.set_yticklabels(["1×","10×","100×"],fontsize=8)
+    a2.text(1,110,"100×",ha="center",fontsize=9,color=GREEN,fontweight="bold")
+    a2.set_xticks([0,1]); a2.set_xticklabels(["Accelerate /\nZeRO-Inf.","FlexGen\npolicy"],fontsize=8)
+    a2.set_ylabel("max throughput (OPT-175B)",fontsize=8.5)
+    a2.set_title("same single 16GB T4 GPU\nFlexGen, ICML '23",fontsize=8.5,color=GREEN,loc="left")
+    for a in (a1,a2):
+        for s in ["top","right"]: a.spines[s].set_visible(False)
+    fig.subplots_adjust(wspace=0.45,top=0.68)
+    save(fig,"bg_gap.png",6.6,2.6)
 
 # 13. Missing realization layer between app and devices
 def nec_missing():

@@ -24,7 +24,7 @@ A.pageColumns(pptx, {
     ]},
     { header: "③ 승부처의 이동: HW → 런타임", items: [
       { text: "해법이 만든 결정 문제: 연산 배치 × 데이터 배치가 결합 — tier·디바이스 늘수록 조합 폭증, 오결정 시 baseline보다 악화", image: img("bg_decision.png") },
-      { text: "스펙과 응용 E2E 성능의 gap은 런타임이 결정 — 기존 스택(vLLM)은 'KV=HBM' 가정, 이 계층 부재", image: img("bg_gap.png") },
+      { text: "실증: 동일 HW에서 런타임 교체만으로 KV 낭비 60–80%→<4%·처리량 2–4×(vLLM, SOSP'23), offloading 정책 따라 최대 100×(FlexGen, ICML'23)", image: img("bg_gap.png") },
     ]},
   ],
 });
