@@ -1,6 +1,6 @@
 ---
 name: architect-dp
-description: "Write and organize architecture Design Point (DP) documents in the MCR/Architect-과제 house methodology: QA 정의 문서 참조 → per-DP 문제 정의(양방향 압력) → 설계 쟁점 → 순수형 후보구조 2개(구조/장점/단점) → QA 별점 평가표(architect-qa 스킬의 bin 기준) → 검토 노트(hybrid·진화 경로) → DP 간 의존성 표. Use whenever the user asks to 설계 포인트/Design Point/DP를 도출·정리·전개·평가하라고 하거나, 후보구조 비교, trade-off 분석, ADR 준비, docs/NN_design_points_*.md 작성을 요청할 때. QA 정의·별점 채점은 architect-qa 스킬에 위임; output feeds the architect-ppt skill's 설계 Point 선정 slide (dpCard)."
+description: "Write and organize architecture Design Point (DP) documents in the MCR/Architect-과제 house methodology: QA 정의 문서 참조 → per-DP 문제 정의(양방향 압력) → 설계 쟁점 → 순수형 후보구조 2개(구조/설계도[이미지+draw.io]/장점/단점) → QA 별점 평가표(architect-qa 스킬의 bin 기준) → 검토 노트(hybrid·진화 경로) → DP 간 의존성 표. Use whenever the user asks to 설계 포인트/Design Point/DP를 도출·정리·전개·평가하라고 하거나, 후보구조 비교, trade-off 분석, ADR 준비, docs/NN_design_points_*.md 작성을 요청할 때. QA 정의·별점 채점은 architect-qa 스킬에 위임; output feeds the architect-ppt skill's 설계 Point 선정 slide (dpCard)."
 ---
 
 # Architect DP Skill — 설계 포인트 문서화
@@ -30,6 +30,8 @@ description: "Write and organize architecture Design Point (DP) documents in the
    **`architect-qa` 스킬**로 생성한다 — QA 없이 평가표를 만들지 않는다.
 2. **DP 후보 발굴 → 자격 기준 필터** → 사용자와 목록 합의(개수가 많으면).
 3. **DP별 전개**: 템플릿 순서 그대로 (문제 정의 → 쟁점 → 후보 → QA표 → 노트).
+   **각 후보구조마다 설계도를 반드시 그린다** — 이미지 + draw.io 코드 2종
+   세트 (아래 "후보구조 설계도" 규칙 참조).
 4. **DP 간 의존성 표** 갱신 — 새 DP가 기존 DP의 실현 가능 집합을 제약하면 반드시 기록.
 5. **체크리스트 검증** (아래) 후 `docs/NN_design_points_dpX_dpY.md`로 저장
    (기존 번호 이어서, v0.1부터).
@@ -65,6 +67,26 @@ description: "Write and organize architecture Design Point (DP) documents in the
 - 장단점은 QA표와 **일관**되어야 한다: 단점에 쓴 것이 QA표 어느 셀의 감점
   근거인지 대응되게.
 
+### 후보구조 설계도 (필수)
+
+- **모든 후보구조에 설계도를 그린다** — 텍스트 구조 서술만으로 끝내지 않는다.
+  어느 패키지에 무엇이 생기고 누가 누구를 호출하는지가 그림으로 보여야 한다.
+- 산출물은 후보당 **2종 세트**로 생성한다:
+  1. **이미지** (`.svg` 권장, `.png` 가능) — DP md 문서에 임베드해서 문서와
+     함께 읽는 용도.
+  2. **draw.io 코드** (`.drawio`, mxfile XML) — draw.io(diagrams.net)에서
+     열거나 붙여넣어 바로 수정할 수 있는 편집 소스. 이미지와 내용이
+     일치해야 한다 (소스 = draw.io 파일, 렌더 = 이미지).
+- **저장 위치·이름 규칙**: `docs/diagrams/dp{X}_c{N}_{슬러그}.drawio` +
+  같은 이름의 이미지 파일 (예: `docs/diagrams/dp1_c2_central_policy.svg`).
+- **DP md에 임베드**: 각 후보구조의 **구조** 문단 바로 아래에
+  `![DP{X} 후보{N} 설계도](diagrams/dp{X}_c{N}_{슬러그}.svg)` 로 이미지를
+  넣고, 그 아래에 draw.io 소스 링크 한 줄을 둔다 — md 문서만 읽어도
+  설계도가 같이 보이게 한다.
+- 한 DP의 두 후보 설계도는 **같은 기준 아키텍처 레이아웃·범례를 유지**하고
+  달라지는 부분만 강조(색/굵은 테두리)한다 — 후보 간 구조 차이가 시각적으로
+  비교되게.
+
 ### QA 평가표
 - 표 3열: **QA | 평점 | 정량 근거**. 별점 판정 방법(3단계 정량 bin, 근거 등급
   A/B/C, F/M 시점 표기, 상한/도달 리스크 분리)은 **`architect-qa` 스킬**과
@@ -88,6 +110,8 @@ description: "Write and organize architecture Design Point (DP) documents in the
 - [ ] 두 후보의 QA 프로파일이 실제로 갈리는가? (같은 행이 같은 별점이면 그 QA는 결정 변수가 아님 — 근거에서 차이를 밝히거나 행 재검토)
 - [ ] 별점마다 QA 정의 문서의 bin에 대응하는 정량 근거가 있는가?
 - [ ] 장단점 서술과 QA표 감점/가점이 대응되는가?
+- [ ] 모든 후보구조에 설계도가 있는가? (md에 이미지 임베드 + `.drawio` 소스
+      링크, 두 파일 내용 일치)
 - [ ] hybrid가 후보 자리에 들어가 있지 않은가?
 - [ ] 타 DP 커플링이 쟁점과 의존성 표 양쪽에 반영됐는가?
 - [ ] 문서 머리에 작성 기준(아키텍처 버전)과 QA 정의 문서 링크가 있는가?
