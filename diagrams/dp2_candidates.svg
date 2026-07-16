@@ -1,4 +1,4 @@
-<svg viewBox="0 0 1400 950" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+<svg viewBox="0 0 1400 1080" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
   <defs>
     <marker id="arr2" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
       <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
@@ -77,6 +77,7 @@
   <text x="60" y="756" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 품질 예산의 요청별 중앙 집행 — quality-aware joint orchestration</text>
   <text x="60" y="774" font-size="10.5" fill="#1B7A4B" font-weight="700">(reuse × compression)의 자연스러운 구현 위치 · 전역 최적 배치</text>
   <text x="60" y="810" font-size="10" fill="#6B7A90">DP1 커플링: 독립 framework(DP1-후보2)에서만 온전히 실현 가능</text>
+  <text x="60" y="826" font-size="10" fill="#B3402A">DP1-후보3(KV-계층/LMCache) 채택 시 실현 최소 — 정책 골격을 LMCache가 소유, 굵은 지시 I/F의 자리 없음</text>
 
   <!-- ================= RIGHT: 후보2 autonomous ================= -->
   <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
@@ -137,6 +138,7 @@
   <text x="730" y="756" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 압박 스파이크 즉시 대응(tail 방어) · 얇은 결합 · memory engine 독립</text>
   <text x="730" y="774" font-size="10.5" fill="#1B7A4B" font-weight="700">이식성 (자사 메모리 SW 생태계 전략과 부합)</text>
   <text x="730" y="810" font-size="10" fill="#6B7A90">DP1 커플링: vLLM 확장형(DP1-후보1)과 가장 정합 — connector 뒤 자율 모듈로 성립</text>
+  <text x="730" y="826" font-size="10" fill="#6B7A90">DP1-후보3(KV-계층/LMCache)에서도 성립 — hint를 pin/priority·Policy Hook 경유로 하향 (사실상 유일 후보)</text>
 
   <!-- Legend -->
   <line x1="44" y1="866" x2="94" y2="866" stroke="#1F2A44" stroke-width="3.4" marker-end="url(#arr2)"/>
@@ -149,4 +151,32 @@
   <text x="650" y="870" font-size="10.5" fill="#1F2A44">신설 컴포넌트 (policy 위치)</text>
   <path d="M 850 872 C 830 886, 850 900, 880 894" fill="none" stroke="#1B7A4B" stroke-width="2" marker-end="url(#arrGrn2)"/>
   <text x="892" y="884" font-size="10.5" fill="#1F2A44">자율 제어 루프</text>
+
+  <!-- DP1 × DP2 feasibility matrix -->
+  <text x="44" y="916" font-size="12.5" font-weight="700" fill="#1F2A44">DP1 채택안 → DP2 실현 가능 집합 (02_design_points §DP 간 의존성)</text>
+  <rect x="44" y="928" width="1316" height="128" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <rect x="44" y="928" width="1316" height="26" fill="#DCE3EE" stroke="#44546A" stroke-width="1"/>
+  <rect x="44" y="1022" width="1316" height="34" fill="#FDF6E9"/>
+  <line x1="344" y1="928" x2="344" y2="1056" stroke="#8B97A8" stroke-width="1"/>
+  <line x1="852" y1="928" x2="852" y2="1056" stroke="#8B97A8" stroke-width="1"/>
+  <line x1="44" y1="954" x2="1360" y2="954" stroke="#8B97A8" stroke-width="1"/>
+  <line x1="44" y1="988" x2="1360" y2="988" stroke="#C9D2DE" stroke-width="1"/>
+  <line x1="44" y1="1022" x2="1360" y2="1022" stroke="#C9D2DE" stroke-width="1"/>
+  <rect x="44" y="1022" width="1316" height="34" fill="none" stroke="#44546A" stroke-width="0"/>
+
+  <text x="56" y="945" font-size="10.5" font-weight="700" fill="#1F2A44">DP1 채택안</text>
+  <text x="356" y="945" font-size="10.5" font-weight="700" fill="#1F2A44">DP2-후보1: Orchestration 중앙 정책</text>
+  <text x="864" y="945" font-size="10.5" font-weight="700" fill="#1F2A44">DP2-후보2: Memory Engine 자율 (hint)</text>
+
+  <text x="56" y="975" font-size="10" font-weight="700" fill="#1F2A44">후보1 — vLLM 확장형</text>
+  <text x="356" y="975" font-size="10" fill="#B45309"><tspan font-weight="700">△</tspan> 부분 — 엔진 scheduler에 통합 불가, orchestration 레벨 정책만</text>
+  <text x="864" y="975" font-size="10" fill="#1B7A4B"><tspan font-weight="700">○</tspan> 가장 정합 — connector 뒤 자율 모듈</text>
+
+  <text x="56" y="1009" font-size="10" font-weight="700" fill="#1F2A44">후보2 — 독립 framework</text>
+  <text x="356" y="1009" font-size="10" fill="#1B7A4B"><tspan font-weight="700">○</tspan> 온전 실현 — 자체 scheduler에 정책 통합 가능</text>
+  <text x="864" y="1009" font-size="10" fill="#1B7A4B"><tspan font-weight="700">○</tspan> 실현 가능</text>
+
+  <text x="56" y="1043" font-size="10" font-weight="700" fill="#1F2A44">후보3 — KV-계층(LMCache) 확장형</text>
+  <text x="356" y="1043" font-size="10" fill="#B3402A"><tspan font-weight="700">✕</tspan> 최소 — 정책 골격을 LMCache가 소유, 지시 I/F 자리 없음 (훅 범위로 축소)</text>
+  <text x="864" y="1043" font-size="10" fill="#B45309"><tspan font-weight="700">△</tspan> 성립 — hint를 pin/priority·Policy Hook 경유로 하향</text>
 </svg>
