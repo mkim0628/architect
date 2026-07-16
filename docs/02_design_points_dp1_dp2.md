@@ -175,7 +175,7 @@ Orchestration은 후보1과 동일하게 프로세스 밖 독립 계층.
 1. 품질 예산(quality budget)을 요청별로 차등 집행하려면 결정 주체가 요청 문맥을 알아야 한다 — 어느 레벨까지 문맥을 내릴 것인가?
 2. 메모리 압박 스파이크 대응은 μs 반응이 필요하다 — 어느 레벨까지 자율성을 줄 것인가?
 3. Memory Engine의 독립 재사용성(타 엔진 이식, 자사 메모리 생태계 전략)을 policy 결합이 훼손하지 않는가?
-4. (DP1 커플링) vLLM 확장형에서는 중앙 policy를 scheduler에 심을 수 없다 — DP1 채택안이 본 DP의 실현 가능 집합을 제약한다.
+4. (DP1 커플링) vLLM 확장형에서는 중앙 policy를 scheduler에 심을 수 없고, KV-계층(LMCache) 확장형에서는 정책 골격 자체를 LMCache가 소유해 제약이 더 강하다(중앙 정책 실현 가능성이 3 후보 중 최소) — DP1 채택안이 본 DP의 실현 가능 집합을 제약한다.
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 
