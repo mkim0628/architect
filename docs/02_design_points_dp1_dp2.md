@@ -52,7 +52,9 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 
 ### 후보구조 설계도
 
-![DP1 후보구조 설계도 — vLLM 확장형 vs 독립 framework](../diagrams/dp1_candidates.svg)
+![DP1 후보구조 설계도 — vLLM 확장형 vs 독립 framework vs KV-계층(LMCache) 확장형](../diagrams/dp1_candidates.svg)
+
+*draw.io 소스: [`dp1_candidates.drawio`](../diagrams/dp1_candidates.drawio)*
 
 ### 후보구조 1 — vLLM 확장형 (plugin/connector 기반)
 
@@ -184,6 +186,8 @@ Orchestration은 후보1과 동일하게 프로세스 밖 독립 계층.
 ### 후보구조 설계도
 
 ![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../diagrams/dp2_candidates.svg)
+
+*draw.io 소스: [`dp2_candidates.drawio`](../diagrams/dp2_candidates.drawio)*
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 
