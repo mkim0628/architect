@@ -55,17 +55,6 @@
   <text class="actorlabel" x="955" y="322">메모리 tier 디바이스</text>
   <text class="ucnum" x="955" y="338">(HBM · CXL · HBF · SSD-PIM)</text>
 
-  <!-- 인프라 계층 -->
-  <g class="actor">
-    <circle cx="955" cy="560" r="13"/>
-    <line x1="955" y1="573" x2="955" y2="606"/>
-    <line x1="935" y1="584" x2="975" y2="584"/>
-    <line x1="955" y1="606" x2="939" y2="632"/>
-    <line x1="955" y1="606" x2="971" y2="632"/>
-  </g>
-  <text class="actorlabel" x="955" y="652">인프라 계층</text>
-  <text class="ucnum" x="955" y="668">(cluster orchestrator)</text>
-
   <!-- ===== use cases: column A (serving, cx=400) ===== -->
   <ellipse class="uc" cx="400" cy="120" rx="112" ry="27"/>
   <text class="ucnum" x="400" y="112">UC-01</text>
@@ -89,7 +78,7 @@
 
   <ellipse class="uc" cx="400" cy="650" rx="112" ry="27"/>
   <text class="ucnum" x="400" y="642">UC-11</text>
-  <text class="uctext" x="400" y="658">모니터링·desired state 산출</text>
+  <text class="uctext" x="400" y="658">모니터링·P/D 자동 조정</text>
 
   <!-- ===== use cases: column B (memory ops, cx=675) ===== -->
   <ellipse class="uc" cx="675" cy="120" rx="112" ry="27"/>
@@ -118,9 +107,9 @@
   <line class="assoc" x1="150" y1="200" x2="290" y2="272"/>
   <line class="assoc" x1="150" y1="520" x2="290" y2="444"/>
   <line class="assoc" x1="152" y1="535" x2="288" y2="558"/>
-  <line class="assoc" x1="512" y1="650" x2="925" y2="576"/>
+  <line class="assoc" x1="148" y1="548" x2="288" y2="643"/>
   <line class="assoc" x1="787" y1="228" x2="924" y2="248"/>
-  <line class="assoc" x1="785" y1="520" x2="928" y2="440"/>
+  <line class="assoc" x1="785" y1="518" x2="926" y2="300"/>
   <line class="assoc" x1="925" y1="270" x2="787" y2="310"/>
 
   <!-- ===== include / extend (dashed) ===== -->

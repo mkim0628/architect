@@ -16,10 +16,7 @@
           <mxGeometry x="50" y="528" width="220" height="72" as="geometry"/>
         </mxCell>
         <mxCell id="dev" value="메모리 tier 디바이스&#10;(HBM · CXL · HBF · SSD-PIM)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="850" y="110" width="220" height="72" as="geometry"/>
-        </mxCell>
-        <mxCell id="infra" value="인프라 계층&#10;(cluster orchestrator)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="850" y="528" width="220" height="72" as="geometry"/>
+          <mxGeometry x="850" y="304" width="220" height="72" as="geometry"/>
         </mxCell>
 
         <mxCell id="f1" value="추론 요청 (RAG·multiturn·agent)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="client" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
@@ -28,8 +25,6 @@
         <mxCell id="f4" value="telemetry · 벤치 리포트" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="ops"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="f5" value="KV 배치·이동 · 근접연산 오프로드" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="dev"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="f6" value="데이터 · 연산 결과 · 상태" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="dev" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="f7" value="desired state (스케일링 목표)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="infra"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="f8" value="집행 결과 · 클러스터 이벤트" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="infra" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

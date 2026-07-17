@@ -36,7 +36,7 @@ Published interface: **KV Locator** (조회 전용, Router가 사용) · **Compr
 2. **Retrieval Engine 이동**: RAG 검색은 device-resident 연산이 아니므로 Kernel & Layer → Request Manager로 이동. retrieval chunk 목록 → Router의 KV 재사용 판정 입력이라는 연결이 non-contiguous reuse 연구의 구조적 표현.
 3. **배칭 경계 계약**: Multiturn Batcher = 세션/턴 단위 aggregation, Step Execution Controller = iteration-level continuous batching.
 4. **신설 컴포넌트 3종**: KV Index (재사용 핵심 자료구조), KV Transport (P/D 전송 — intra-node Migration과 경로·실패모델 분리), CompressionOp Kernel (순환 의존 차단용 DI 구현체).
-5. **Autoscaler 2중 루프화**: inner(P/D role flip, 초~분, KV drain → KV Transport 의존) + outer(cluster scaler, 분~수십 분, desired state를 infra에 위임). 결합 규칙: outer가 N 결정, inner는 N 내 분할만 + hysteresis.
+5. **Autoscaler 2중 루프화**: inner(P/D role flip, 초~분, KV drain → KV Transport 의존) + outer(cluster scaler, 분~수십 분, desired state를 infra에 위임). 결합 규칙: outer가 N 결정, inner는 N 내 분할만 + hysteresis. *범위 주석(요구사항 분석 v0.3): 연구 범위는 고정 N 테스트베드 전제 — outer 루프·desired state 인터페이스는 상용화 단계 진화 경로로만 유지하며, 구현·평가 대상은 inner 루프다 ([00_requirements_analysis.md](00_requirements_analysis.md) §3.1).*
 6. **압축의 policy/mechanism 분리**: Memory Compressor는 mechanism 전담. quality-aware policy의 위치는 DP2의 결정 사항으로 이월.
 
 ## 의존 관계

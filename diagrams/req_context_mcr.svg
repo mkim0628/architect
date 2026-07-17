@@ -27,23 +27,17 @@
   <text class="exttitle" x="160" y="558">운영자 (SRE)</text>
   <text class="extsub" x="160" y="578">정책 설정 · 실험 구성 운용</text>
 
-  <rect class="ext" x="850" y="110" width="220" height="72"/>
-  <text class="exttitle" x="960" y="140">메모리 tier 디바이스</text>
-  <text class="extsub" x="960" y="160">HBM · CXL · HBF · SSD-PIM</text>
-
-  <rect class="ext" x="850" y="528" width="220" height="72"/>
-  <text class="exttitle" x="960" y="558">인프라 계층</text>
-  <text class="extsub" x="960" y="578">cluster orchestrator</text>
+  <rect class="ext" x="850" y="304" width="220" height="72"/>
+  <text class="exttitle" x="960" y="334">메모리 tier 디바이스</text>
+  <text class="extsub" x="960" y="354">HBM · CXL · HBF · SSD-PIM</text>
 
   <!-- ===== flows (lines) ===== -->
   <line class="flow" x1="270" y1="168" x2="418" y2="286" marker-end="url(#arrow)"/>
   <line class="flow" x1="420" y1="312" x2="272" y2="194" marker-end="url(#arrow)"/>
   <line class="flow" x1="270" y1="546" x2="418" y2="398" marker-end="url(#arrow)"/>
   <line class="flow" x1="420" y1="372" x2="272" y2="520" marker-end="url(#arrow)"/>
-  <line class="flow" x1="700" y1="286" x2="848" y2="168" marker-end="url(#arrow)"/>
-  <line class="flow" x1="850" y1="194" x2="702" y2="312" marker-end="url(#arrow)"/>
-  <line class="flow" x1="700" y1="398" x2="848" y2="546" marker-end="url(#arrow)"/>
-  <line class="flow" x1="850" y1="520" x2="702" y2="372" marker-end="url(#arrow)"/>
+  <line class="flow" x1="700" y1="322" x2="848" y2="322" marker-end="url(#arrow)"/>
+  <line class="flow" x1="848" y1="358" x2="702" y2="358" marker-end="url(#arrow)"/>
 
   <!-- ===== flow labels (on top, white backing) ===== -->
   <g>
@@ -55,13 +49,8 @@
     <text class="flowlabel" x="352" y="505">SLO 정책 · tier 등록 · 실험 구성</text>
     <rect x="258" y="407" width="144" height="15" fill="#FFFFFF" opacity="0.88"/>
     <text class="flowlabel" x="330" y="418">telemetry · 벤치 리포트</text>
-    <rect x="676" y="185" width="204" height="15" fill="#FFFFFF" opacity="0.88"/>
-    <text class="flowlabel" x="778" y="196">KV 배치·이동 · 근접연산 오프로드</text>
-    <rect x="712" y="281" width="158" height="15" fill="#FFFFFF" opacity="0.88"/>
-    <text class="flowlabel" x="791" y="292">데이터 · 연산 결과 · 상태</text>
-    <rect x="672" y="494" width="180" height="15" fill="#FFFFFF" opacity="0.88"/>
-    <text class="flowlabel" x="762" y="505">desired state (스케일링 목표)</text>
-    <rect x="706" y="407" width="168" height="15" fill="#FFFFFF" opacity="0.88"/>
-    <text class="flowlabel" x="790" y="418">집행 결과 · 클러스터 이벤트</text>
+    <text class="flowlabel" x="774" y="300">KV 배치·이동</text>
+    <text class="flowlabel" x="774" y="314">근접연산 오프로드</text>
+    <text class="flowlabel" x="774" y="376">데이터 · 연산 결과 · 상태</text>
   </g>
 </svg>
