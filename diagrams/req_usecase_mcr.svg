@@ -124,4 +124,7 @@
 
   <line class="dep" x1="620" y1="507" x2="474" y2="146" marker-end="url(#openArrow)"/>
   <text class="stereo" x="520" y="352">&#171;extend&#187;</text>
+
+  <path class="dep" d="M 592,512 C 520,430 520,430 592,332" fill="none" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="527" y="428">&#171;extend&#187;</text>
 </svg>
