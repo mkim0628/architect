@@ -374,6 +374,91 @@ function specTable(s, { x, y, w, colW, header, rows, highlightRows = [], fontSiz
 }
 
 /**
+ * DP 상세 ① — 문제 정의 + 설계 쟁점 (DP당 2페이지 중 첫 장, P10).
+ *   problem: { items: [bullet…], image?: "/path.png" }
+ *     - image = 문제 정의 내용에 맞는 그림 (필수 — 웹/생성 이미지 규칙은 SKILL.md).
+ *       생략 시 "그림 필요" placeholder가 표시된다 (최후 수단).
+ *   issues: [ "쟁점…" | {text, bold, color} ] — 자동으로 "1. 2. 3." 번호가 붙는다.
+ *   split = 좌(문제 정의) 폭 비율, imageFrac = 문제 정의 영역 중 그림 높이 비율.
+ */
+function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, issues, split = 0.56, imageFrac = 0.58 }) {
+  const s = slide(pptx, { title, active, band, page });
+  const x = MARGIN, W = PAGE.w - 2 * MARGIN, gap = 0.25;
+  const lw = W * split, rx = x + lw + gap, rw = W - lw - gap;
+  // 좌: 문제 정의 (텍스트 위 + 그림 아래)
+  const ly = sectionHeader(s, { x, y: CONTENT_TOP, w: lw, text: "문제 정의", color: "navy" });
+  const areaTop = ly + 0.12, areaH = CONTENT_BOTTOM - areaTop;
+  const textH = areaH * (1 - imageFrac);
+  bulletList(s, { x: x + 0.05, y: areaTop, w: lw - 0.1, h: textH, items: problem.items, fontSize: 11 });
+  const imgY = areaTop + textH + 0.08, imgH = areaH - textH - 0.08;
+  if (problem.image) {
+    s.addImage({ path: problem.image, x, y: imgY, w: lw, h: imgH, sizing: { type: "contain", w: lw, h: imgH } });
+  } else {
+    placeholder(s, { x, y: imgY, w: lw, h: imgH, label: "[ 문제 정의 그림 — 내용에 맞게 생성/삽입 필수 ]" });
+  }
+  // 우: 설계 쟁점 (번호 리스트)
+  const ry = sectionHeader(s, { x: rx, y: CONTENT_TOP, w: rw, text: "설계 쟁점", color: "green" });
+  const numbered = issues.map((it, i) => {
+    const o = typeof it === "string" ? { text: it } : { ...it };
+    return { ...o, text: `${i + 1}. ${o.text}`, bullet: false };
+  });
+  bulletList(s, { x: rx + 0.05, y: ry + 0.15, w: rw - 0.1, h: CONTENT_BOTTOM - ry - 0.15, items: numbered, fontSize: 11.5 });
+  return s;
+}
+
+/**
+ * DP 상세 ② — 후보구조 비교표 (DP당 2페이지 중 둘째 장, P11).
+ * 3열 그리드(구분 | 후보구조 1 | 후보구조 2), 행 = 설계도·특징·장점·단점·Trade-off.
+ *   candidates: 정확히 후보 2개 —
+ *     [{ name, diagram?, features: [..], pros: [..], cons: [..], tradeoff: [..] }, …]
+ *     diagram = 후보별 설계도 PNG 경로 (dpN_candidates.svg의 해당 패널 크롭 권장).
+ *   rowH = { diagram, features, pros, cons, tradeoff } 높이 오버라이드 (합 ≤ 5.5″).
+ */
+function pageDpCompare(pptx, { title, page, active = 2, band = "green", candidates, labelW = 1.05, rowH = {}, fontSize = 9.5 }) {
+  const s = slide(pptx, { title, active, band, page });
+  const x = MARGIN, W = PAGE.w - 2 * MARGIN;
+  const candW = (W - labelW) / candidates.length;
+  const H = { head: 0.34, diagram: 2.3, features: 0.7, pros: 0.85, cons: 0.85, tradeoff: 0.55, ...rowH };
+  const ROWS = [["diagram", "설계도"], ["features", "특징"], ["pros", "장점"], ["cons", "단점"], ["tradeoff", "Trade-off"]];
+  const cell = (cx, cy, cw, ch, fill) =>
+    s.addShape("rect", { x: cx, y: cy, w: cw, h: ch, fill: { color: fill }, line: { color: COLORS.grayBorder, width: 0.75 } });
+  let y = CONTENT_TOP;
+  // 헤더 행: 구분 | 후보 이름들
+  cell(x, y, labelW, H.head, COLORS.greenDark);
+  s.addText("구분", { x, y, w: labelW, h: H.head, align: "center", valign: "middle", bold: true, color: COLORS.white, fontSize: 11, fontFace: FONT.head, margin: 0 });
+  candidates.forEach((c, i) => {
+    const cx = x + labelW + i * candW;
+    cell(cx, y, candW, H.head, COLORS.greenDark);
+    s.addText(c.name, { x: cx, y, w: candW, h: H.head, align: "center", valign: "middle", bold: true, color: COLORS.white, fontSize: 11, fontFace: FONT.head, margin: 0 });
+  });
+  y += H.head;
+  ROWS.forEach(([key, label]) => {
+    const h = H[key];
+    cell(x, y, labelW, h, COLORS.navy);
+    s.addText(label, { x, y, w: labelW, h, align: "center", valign: "middle", bold: true, color: COLORS.white, fontSize: 10.5, fontFace: FONT.head, margin: 0 });
+    candidates.forEach((c, i) => {
+      const cx = x + labelW + i * candW;
+      cell(cx, y, candW, h, COLORS.white);
+      if (key === "diagram") {
+        if (c.diagram) {
+          s.addImage({ path: c.diagram, x: cx + 0.05, y: y + 0.05, w: candW - 0.1, h: h - 0.1, sizing: { type: "contain", w: candW - 0.1, h: h - 0.1 } });
+        } else {
+          s.addText("[ 후보 설계도 ]", { x: cx, y, w: candW, h, align: "center", valign: "middle", color: "9AA0A6", fontSize: 10, fontFace: FONT.body, margin: 0 });
+        }
+      } else {
+        const items = (c[key] || []).map((it) => {
+          const o = typeof it === "string" ? { text: it } : { ...it };
+          return { ...o, fontSize: o.fontSize || fontSize };
+        });
+        bulletList(s, { x: cx + 0.1, y: y + 0.05, w: candW - 0.2, h: h - 0.1, items, fontSize });
+      }
+    });
+    y += h;
+  });
+  return s;
+}
+
+/**
  * Link/jump label with yellow ▶ (밴드 우하단 "전체 수집된 요구사항 :" 등).
  * Default position: inside the title band, bottom-right. For a below-band
  * variant pass y ≈ BAND_H + 0.05 and textColor: COLORS.ink.
@@ -394,4 +479,5 @@ module.exports = {
   newDeck, writeDeck, repackClean, slide, chrome, sectionHeader, infoTable, bulletList, columns, panel, placeholder, statCallout,
   itemColumn, pageColumns, pageOverview,
   chevronHeader, tagBar, badge, dpCard, specTable, linkButton,
+  pageDpProblem, pageDpCompare,
 };

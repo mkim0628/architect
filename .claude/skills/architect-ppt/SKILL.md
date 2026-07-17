@@ -47,12 +47,20 @@ building any page.**
 | 7 | **Utility Tree 활용한 ASR 선정** | 요구사항 (1) | One full-width ASR table (번호/QA/Refinement/Scenario/중요도/난이도/우선순위/선정); Scenario cell = 문장 + `[측정: …]` line; selected rows cream-highlighted + "O". | `specTable` (+`highlightRows`) |
 | 8 | **Architecture Driver 도출** | 요구사항 (1) | FR(navy) / QA(green) / C(brown) `tagBar` groups converging into yellow "Architectural Drivers" ellipse → big down-arrow → 산출물 인용구. | `tagBar` + shapes |
 | 9 | **설계 Point 선정** | 설계 (2) | Left driver rail (`badge` F/Q/C + labels), center module diagram with badges & DP-color highlights, right **5 `dpCard`s** (DP-01~05, colors from `COLORS.dp`). | `badge` `dpCard` `linkButton` |
+| 10 | **DP 상세 ① — 문제 정의·설계 쟁점** | 설계 (2) | **DP마다 2페이지 세트의 첫 장.** 좌(56%) "문제 정의" 헤더 + 불릿 + **내용에 맞는 그림(필수)**, 우 "설계 쟁점" 번호 리스트. | `pageDpProblem` |
+| 11 | **DP 상세 ② — 후보구조 비교** | 설계 (2) | **세트의 둘째 장.** 3열 비교표 — 열 = 두 후보구조, 행 = **설계도(이미지)·특징·장점·단점·Trade-off**. | `pageDpCompare` |
+
+P10–P11은 **DP마다 반복**된다 (DP-01 ①②, DP-02 ①②, …). 제목 관례:
+`DP-0N. {DP 이름} — 문제 정의` / `DP-0N. {DP 이름} — 후보구조 비교`.
+내용 출처는 architect-dp 스킬의 DP 문서(`docs/NN_design_points_*.md`):
+문제 정의·설계 쟁점·구조(→특징)·장점·단점을 요약 발췌하고, Trade-off는 검토
+노트의 실질 결정 변수(무엇을 얻고 무엇을 포기하는가)를 후보별 1–2줄로 압축한다.
 
 Band color alternates navy/green page to page (no two adjacent pages the same).
 `active` follows the **chapter**, not the page; footer keeps the global `N / 33`
 numbering.
 
-### Image sourcing rule (배경 / 필요성)
+### Image sourcing rule (배경 / 필요성 / DP 상세)
 
 For every content item that needs a visual (chart, 그림, 구조도, 설계도 등):
 
@@ -69,6 +77,19 @@ For every content item that needs a visual (chart, 그림, 구조도, 설계도 
 
 The **overall architecture** box on 과제 개요 stays blank until the user names
 exactly what to put there.
+
+**DP 상세 페이지의 그림 소싱**:
+
+- **P10 문제 정의 그림**: 문제의 긴장(양방향 압력)이 보이는 그림을 내용에 맞게
+  **생성**한다 (matplotlib 또는 SVG→PNG). 예: 두 압력이 마주보는 force 다이어그램,
+  병목 지점을 강조한 미니 구조도. 웹 이미지보다 생성 다이어그램 우선 — DP 문제
+  정의는 과제 고유 내용이라 웹에 맞는 그림이 없다.
+- **P11 후보별 설계도**: `diagrams/dpN_candidates.svg`가 이미 있으면 **후보별
+  패널을 크롭**해 쓴다 — python으로 사본의 `viewBox`를 해당 패널 영역(예: 좌
+  `0 60 700 900`, 우 `700 60 700 900`)으로 좁힌 뒤 PNG로 변환:
+  `soffice --headless --convert-to png cand1.svg` (또는 cairosvg). 설계도가
+  없으면 후보 구조의 미니 다이어그램을 생성한다. pptxgenjs에는 **PNG로 변환해서**
+  넣는다 (SVG 직접 삽입은 렌더러 호환성 문제).
 
 ## Files
 
@@ -130,6 +151,48 @@ A.pageColumns(pptx, {
 
 // 과제 필요성 → 위와 동일하되 cols 2개. 과제 범위 → cols 3개.
 
+// DP 상세 ① — 문제 정의 + 설계 쟁점 (DP마다 2페이지 세트의 첫 장)
+A.pageDpProblem(pptx, {
+  title: "DP-01. 실행 스택 소싱 — 문제 정의", page: 10, band: "navy",
+  problem: {
+    items: [
+      { text: "핵심 긴장 한 줄 요약", bold: true },
+      "압력 ① — 외부 스택의 구조적 한계 …",
+      "압력 ② — 생태계 재구현·추종 비용 …",
+    ],
+    image: "/tmp/dp1_problem.png",   // 내용에 맞는 그림 — 생성 규칙 참조 (필수)
+  },
+  issues: [
+    "차별 가치가 확장점 안에서 표현 가능한가 — 잔여분은 무엇인가",
+    "확장점 밖 수정 지점이 핵심인가 주변부인가",
+    "감당 가능한 유지보수 모델은 무엇인가",
+    { text: "(DP2 커플링) 채택안이 DP2의 실현 가능 집합을 제약", color: A.COLORS.navy },
+  ],
+});
+
+// DP 상세 ② — 후보구조 비교표 (세트의 둘째 장)
+A.pageDpCompare(pptx, {
+  title: "DP-01. 실행 스택 소싱 — 후보구조 비교", page: 11, band: "green",
+  candidates: [
+    {
+      name: "후보 1 — 외부 스택 활용형",
+      diagram: "/tmp/dp1_cand1.png",              // dpN_candidates.svg 패널 크롭 PNG
+      features: ["Inference Engine = vLLM, KV 골격은 변형 A/B로 소싱"],
+      pros: ["생태계 무임승차 · 검증된 코어", "초기 ≤6인월 — 리드타임 최단"],
+      cons: ["scheduler tier 비인지 — co-scheduling 미회수", "upstream API 변경 리스크"],
+      tradeoff: [{ text: "비용·리드타임을 얻고 성능 상한·주도권을 포기", bold: true }],
+    },
+    {
+      name: "후보 2 — 자체 구현형",
+      diagram: "/tmp/dp1_cand2.png",
+      features: ["전 층 자체 구현 — tier topology 1급 인지 클린 설계"],
+      pros: ["co-design 자유 — 이론 상한 최고", "자사 HW 로드맵 무제약 수용"],
+      cons: ["재구현 수십 인월+ · baseline 도달 리스크", "신규 모델 영구 추종 부담"],
+      tradeoff: [{ text: "성능 상한·주도권을 얻고 비용·도달 확률을 포기", bold: true }],
+    },
+  ],
+});
+
 await A.writeDeck(pptx, "deck.pptx");   // NOT pptx.writeFile — see below
 ```
 
@@ -161,6 +224,8 @@ await A.writeDeck(pptx, "deck.pptx");   // NOT pptx.writeFile — see below
 | `badge(s, {x,y,text,color})` | Small circle badge F1/Q3/C2 for diagrams (P9) |
 | `dpCard(s, {x,y,w,id,title,items})` | Design-Point card: colored ID + dark title + bullets (P9) |
 | `specTable(s, {x,y,w,colW,header,rows,highlightRows})` | Dark-green-header spec table; cream row highlight (P5–P7) |
+| `pageDpProblem(pptx, {title,page,band,problem,issues})` | **DP 상세 ①**: 좌 문제 정의(불릿+그림) / 우 설계 쟁점 번호 리스트 (P10) |
+| `pageDpCompare(pptx, {title,page,band,candidates,rowH})` | **DP 상세 ②**: 구분\|후보1\|후보2 비교표 — 설계도·특징·장점·단점·Trade-off (P11) |
 | `linkButton(s, {label,…})` | "…: ▶" jump label, in-band (white) or below-band (ink) |
 | `COLORS` (incl. `cream`,`brown`,`gray70`,`dp{}`), `FONT`, `SECTIONS`, `MARGIN`, `CONTENT_TOP`, `CONTENT_BOTTOM` | Tokens (mutable) |
 
