@@ -1,0 +1,77 @@
+<mxfile host="app.diagrams.net" agent="architect-requirements" version="24.0.0">
+  <diagram id="req-usecase-mcr" name="MCR Use Case">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1080" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="sys" value="MCR (Memory-Centric Runtime)" style="rounded=0;fillColor=none;strokeColor=#444444;verticalAlign=top;fontSize=15;fontStyle=1;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="255" y="42" width="560" height="672" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actClient" value="LLM 응용 클라이언트&#10;(RAG · multiturn · agent)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="137" width="40" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="actOps" value="운영자 (SRE)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="487" width="40" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="actDev" value="메모리 tier 디바이스&#10;(HBM · CXL · HBF · SSD-PIM)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="935" y="217" width="40" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="actInfra" value="인프라 계층&#10;(cluster orchestrator)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;strokeColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="935" y="547" width="40" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc01" value="UC-01&#10;long-context RAG 요청 서빙" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="93" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc02" value="UC-02&#10;multiturn 세션 서빙" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="173" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc03" value="UC-03&#10;agent memory 영속·복원" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="253" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc08" value="UC-08&#10;요청별 SLO 정책 적용" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="403" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc10" value="UC-10&#10;신규 tier 등록 (plug-in)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="533" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc11" value="UC-11&#10;모니터링·desired state 산출" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="288" y="623" width="224" height="54" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc06" value="UC-06&#10;KV 재사용 판정·복원" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="563" y="93" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc04" value="UC-04&#10;KV tier 배치·승격·강등" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="563" y="193" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc05" value="UC-05&#10;KV 압축·복원" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="563" y="293" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc07" value="UC-07&#10;P/D 분리 스케줄링·KV 전송" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="563" y="403" width="224" height="54" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc09" value="UC-09&#10;근접연산 오프로드 실행" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+          <mxGeometry x="563" y="503" width="224" height="54" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="a1" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="actClient" target="uc01"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a2" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="actClient" target="uc02"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a3" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="actClient" target="uc03"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a4" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="actOps" target="uc08"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a5" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="actOps" target="uc10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a6" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="uc11" target="actInfra"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a7" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="uc04" target="actDev"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a8" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="uc09" target="actDev"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a9" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="uc07" target="actInfra"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="d1" value="&#171;include&#187;" style="endArrow=open;dashed=1;html=1;strokeColor=#7A5C2E;fontSize=10;fontStyle=2;fontColor=#7A5C2E;" edge="1" parent="1" source="uc01" target="uc06"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d2" value="&#171;include&#187;" style="endArrow=open;dashed=1;html=1;strokeColor=#7A5C2E;fontSize=10;fontStyle=2;fontColor=#7A5C2E;" edge="1" parent="1" source="uc02" target="uc06"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d3" value="&#171;extend&#187;" style="endArrow=open;dashed=1;html=1;strokeColor=#7A5C2E;fontSize=10;fontStyle=2;fontColor=#7A5C2E;" edge="1" parent="1" source="uc05" target="uc04"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d4" value="&#171;extend&#187;" style="endArrow=open;dashed=1;html=1;strokeColor=#7A5C2E;fontSize=10;fontStyle=2;fontColor=#7A5C2E;" edge="1" parent="1" source="uc09" target="uc01"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

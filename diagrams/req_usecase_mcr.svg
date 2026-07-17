@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 760" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <defs>
+    <style>
+      .sys { fill: none; stroke: #444444; stroke-width: 1.5; }
+      .uc { fill: #F5E6C8; stroke: #7A5C2E; stroke-width: 1.3; }
+      .uctext { font-size: 12.5px; fill: #1F2A44; text-anchor: middle; }
+      .ucnum { font-size: 10px; fill: #7A5C2E; text-anchor: middle; }
+      .actor { stroke: #1F2A44; stroke-width: 1.6; fill: none; }
+      .actorlabel { font-size: 12.5px; fill: #1F2A44; text-anchor: middle; font-weight: bold; }
+      .assoc { stroke: #555555; stroke-width: 1.1; }
+      .dep { stroke: #7A5C2E; stroke-width: 1.1; stroke-dasharray: 5 4; }
+      .stereo { font-size: 10.5px; fill: #7A5C2E; text-anchor: middle; font-style: italic; }
+      .title { font-size: 15px; font-weight: bold; fill: #1F2A44; text-anchor: middle; }
+    </style>
+    <marker id="openArrow" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M1,1 L10,5 L1,9" fill="none" stroke="#7A5C2E" stroke-width="1.2"/>
+    </marker>
+  </defs>
+
+  <!-- system boundary -->
+  <rect class="sys" x="255" y="42" width="560" height="672"/>
+  <text class="title" x="535" y="68">MCR (Memory-Centric Runtime)</text>
+
+  <!-- ===== actors (left, primary) ===== -->
+  <!-- LLM 응용 클라이언트 -->
+  <g class="actor">
+    <circle cx="120" cy="150" r="13"/>
+    <line x1="120" y1="163" x2="120" y2="196"/>
+    <line x1="100" y1="174" x2="140" y2="174"/>
+    <line x1="120" y1="196" x2="104" y2="222"/>
+    <line x1="120" y1="196" x2="136" y2="222"/>
+  </g>
+  <text class="actorlabel" x="120" y="242">LLM 응용 클라이언트</text>
+  <text class="ucnum" x="120" y="258">(RAG · multiturn · agent)</text>
+
+  <!-- 운영자 -->
+  <g class="actor">
+    <circle cx="120" cy="500" r="13"/>
+    <line x1="120" y1="513" x2="120" y2="546"/>
+    <line x1="100" y1="524" x2="140" y2="524"/>
+    <line x1="120" y1="546" x2="104" y2="572"/>
+    <line x1="120" y1="546" x2="136" y2="572"/>
+  </g>
+  <text class="actorlabel" x="120" y="592">운영자 (SRE)</text>
+
+  <!-- ===== actors (right, secondary) ===== -->
+  <!-- 메모리 tier 디바이스 -->
+  <g class="actor">
+    <circle cx="955" cy="230" r="13"/>
+    <line x1="955" y1="243" x2="955" y2="276"/>
+    <line x1="935" y1="254" x2="975" y2="254"/>
+    <line x1="955" y1="276" x2="939" y2="302"/>
+    <line x1="955" y1="276" x2="971" y2="302"/>
+  </g>
+  <text class="actorlabel" x="955" y="322">메모리 tier 디바이스</text>
+  <text class="ucnum" x="955" y="338">(HBM · CXL · HBF · SSD-PIM)</text>
+
+  <!-- 인프라 계층 -->
+  <g class="actor">
+    <circle cx="955" cy="560" r="13"/>
+    <line x1="955" y1="573" x2="955" y2="606"/>
+    <line x1="935" y1="584" x2="975" y2="584"/>
+    <line x1="955" y1="606" x2="939" y2="632"/>
+    <line x1="955" y1="606" x2="971" y2="632"/>
+  </g>
+  <text class="actorlabel" x="955" y="652">인프라 계층</text>
+  <text class="ucnum" x="955" y="668">(cluster orchestrator)</text>
+
+  <!-- ===== use cases: column A (serving, cx=400) ===== -->
+  <ellipse class="uc" cx="400" cy="120" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="112">UC-01</text>
+  <text class="uctext" x="400" y="128">long-context RAG 요청 서빙</text>
+
+  <ellipse class="uc" cx="400" cy="200" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="192">UC-02</text>
+  <text class="uctext" x="400" y="208">multiturn 세션 서빙</text>
+
+  <ellipse class="uc" cx="400" cy="280" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="272">UC-03</text>
+  <text class="uctext" x="400" y="288">agent memory 영속·복원</text>
+
+  <ellipse class="uc" cx="400" cy="430" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="422">UC-08</text>
+  <text class="uctext" x="400" y="436">요청별 SLO 정책 적용</text>
+
+  <ellipse class="uc" cx="400" cy="560" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="552">UC-10</text>
+  <text class="uctext" x="400" y="568">신규 tier 등록 (plug-in)</text>
+
+  <ellipse class="uc" cx="400" cy="650" rx="112" ry="27"/>
+  <text class="ucnum" x="400" y="642">UC-11</text>
+  <text class="uctext" x="400" y="658">모니터링·desired state 산출</text>
+
+  <!-- ===== use cases: column B (memory ops, cx=675) ===== -->
+  <ellipse class="uc" cx="675" cy="120" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="112">UC-06</text>
+  <text class="uctext" x="675" y="128">KV 재사용 판정·복원</text>
+
+  <ellipse class="uc" cx="675" cy="220" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="212">UC-04</text>
+  <text class="uctext" x="675" y="228">KV tier 배치·승격·강등</text>
+
+  <ellipse class="uc" cx="675" cy="320" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="312">UC-05</text>
+  <text class="uctext" x="675" y="328">KV 압축·복원</text>
+
+  <ellipse class="uc" cx="675" cy="430" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="422">UC-07</text>
+  <text class="uctext" x="675" y="436">P/D 분리 스케줄링·KV 전송</text>
+
+  <ellipse class="uc" cx="675" cy="530" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="522">UC-09</text>
+  <text class="uctext" x="675" y="538">근접연산 오프로드 실행</text>
+
+  <!-- ===== associations (solid) ===== -->
+  <line class="assoc" x1="150" y1="170" x2="288" y2="122"/>
+  <line class="assoc" x1="152" y1="185" x2="288" y2="198"/>
+  <line class="assoc" x1="150" y1="200" x2="290" y2="272"/>
+  <line class="assoc" x1="150" y1="520" x2="290" y2="444"/>
+  <line class="assoc" x1="152" y1="535" x2="288" y2="558"/>
+  <line class="assoc" x1="512" y1="650" x2="925" y2="576"/>
+  <line class="assoc" x1="787" y1="228" x2="924" y2="248"/>
+  <line class="assoc" x1="785" y1="520" x2="928" y2="440"/>
+  <line class="assoc" x1="925" y1="270" x2="787" y2="310"/>
+
+  <!-- ===== include / extend (dashed) ===== -->
+  <line class="dep" x1="512" y1="120" x2="561" y2="120" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="536" y="110">&#171;include&#187;</text>
+
+  <line class="dep" x1="505" y1="212" x2="575" y2="142" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="558" y="192">&#171;include&#187;</text>
+
+  <line class="dep" x1="675" y1="293" x2="675" y2="249" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="723" y="274">&#171;extend&#187;</text>
+
+  <line class="dep" x1="620" y1="507" x2="474" y2="146" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="520" y="352">&#171;extend&#187;</text>
+</svg>
