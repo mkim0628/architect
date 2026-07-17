@@ -190,20 +190,39 @@ function infoTable(s, { x, y, w, h, labelW = 1.35, rows }) {
 }
 
 /**
- * Bulleted list. items: [ "text" | {text, bold, color, level, fontSize} ]
+ * Bulleted list. items: [ "text" | {text, bold, color, level, fontSize} | [runs] ]
  * level 0 → navy diamond (◆); level 1 → en-dash (–).
+ * 항목이 **배열**이면 한 문단 안의 run 시퀀스로 취급 — 줄 일부만 bold/색 강조할 때
+ * 사용: [{ text, options: {bold, color, fontSize} }, …] (첫 run에만 불릿이 붙는다).
  */
 function bulletList(s, { x, y, w, h, items, fontSize = 12 }) {
-  const runs = items.map((it) => {
+  const runs = [];
+  items.forEach((it) => {
+    if (Array.isArray(it)) {
+      it.forEach((r, j) => {
+        const ro = typeof r === "string" ? { text: r, options: {} } : { options: {}, ...r };
+        const op = ro.options || {};
+        runs.push({
+          text: ro.text,
+          options: {
+            bullet: j === 0 ? (op.bullet === false ? false : { characterCode: "25C6", indent: 14 }) : false,
+            bold: !!op.bold, color: op.color || COLORS.ink,
+            fontFace: FONT.body, fontSize: op.fontSize || fontSize,
+            breakLine: j === it.length - 1, paraSpaceAfter: 6,
+          },
+        });
+      });
+      return;
+    }
     const o = typeof it === "string" ? { text: it } : it;
-    return {
+    runs.push({
       text: o.text,
       options: {
         bullet: o.bullet === false ? false : { characterCode: o.level ? "2013" : "25C6", indent: o.level ? 12 : 14 },
         indentLevel: o.level || 0, bold: !!o.bold, color: o.color || COLORS.ink,
         fontFace: FONT.body, fontSize: o.fontSize || fontSize, breakLine: true, paraSpaceAfter: 6,
       },
-    };
+    });
   });
   s.addText(runs, { x, y, w, h, valign: "top", align: "left", margin: 0 });
 }
@@ -375,34 +394,35 @@ function specTable(s, { x, y, w, colW, header, rows, highlightRows = [], fontSiz
 
 /**
  * DP 상세 ① — 문제 정의 + 설계 쟁점 (DP당 2페이지 중 첫 장, P10).
+ * **가로 2단**: 윗 행 = 문제 정의(좌 불릿 + 우 그림), 아랫 행 = 설계 쟁점.
  *   problem: { items: [bullet…], image?: "/path.png" }
  *     - image = 문제 정의 내용에 맞는 그림 (필수 — 웹/생성 이미지 규칙은 SKILL.md).
  *       생략 시 "그림 필요" placeholder가 표시된다 (최후 수단).
  *   issues: [ "쟁점…" | {text, bold, color} ] — 자동으로 "1. 2. 3." 번호가 붙는다.
- *   split = 좌(문제 정의) 폭 비율, imageFrac = 문제 정의 영역 중 그림 높이 비율.
+ *   topFrac = 윗 행(문제 정의) 높이 비율, problemSplit = 문제 정의 내 불릿 폭 비율.
  */
-function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, issues, split = 0.56, imageFrac = 0.58 }) {
+function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, issues, topFrac = 0.62, problemSplit = 0.54 }) {
   const s = slide(pptx, { title, active, band, page });
   const x = MARGIN, W = PAGE.w - 2 * MARGIN, gap = 0.25;
-  const lw = W * split, rx = x + lw + gap, rw = W - lw - gap;
-  // 좌: 문제 정의 (텍스트 위 + 그림 아래)
-  const ly = sectionHeader(s, { x, y: CONTENT_TOP, w: lw, text: "문제 정의", color: "navy" });
-  const areaTop = ly + 0.12, areaH = CONTENT_BOTTOM - areaTop;
-  const textH = areaH * (1 - imageFrac);
-  bulletList(s, { x: x + 0.05, y: areaTop, w: lw - 0.1, h: textH, items: problem.items, fontSize: 11 });
-  const imgY = areaTop + textH + 0.08, imgH = areaH - textH - 0.08;
+  const totalH = CONTENT_BOTTOM - CONTENT_TOP;
+  const topH = totalH * topFrac;
+  // 윗 행: 문제 정의 — 전폭 헤더, 아래 좌 불릿 + 우 그림
+  const py = sectionHeader(s, { x, y: CONTENT_TOP, w: W, text: "문제 정의", color: "navy" });
+  const areaTop = py + 0.12, areaH = CONTENT_TOP + topH - areaTop;
+  const tw = W * problemSplit, ix = x + tw + gap, iw = W - tw - gap;
+  bulletList(s, { x: x + 0.05, y: areaTop, w: tw - 0.1, h: areaH, items: problem.items, fontSize: 11.5 });
   if (problem.image) {
-    s.addImage({ path: problem.image, x, y: imgY, w: lw, h: imgH, sizing: { type: "contain", w: lw, h: imgH } });
+    s.addImage({ path: problem.image, x: ix, y: areaTop, w: iw, h: areaH, sizing: { type: "contain", w: iw, h: areaH } });
   } else {
-    placeholder(s, { x, y: imgY, w: lw, h: imgH, label: "[ 문제 정의 그림 — 내용에 맞게 생성/삽입 필수 ]" });
+    placeholder(s, { x: ix, y: areaTop, w: iw, h: areaH, label: "[ 문제 정의 그림 — 내용에 맞게 생성/삽입 필수 ]" });
   }
-  // 우: 설계 쟁점 (번호 리스트)
-  const ry = sectionHeader(s, { x: rx, y: CONTENT_TOP, w: rw, text: "설계 쟁점", color: "green" });
+  // 아랫 행: 설계 쟁점 — 전폭 헤더 + 번호 리스트
+  const by = sectionHeader(s, { x, y: CONTENT_TOP + topH + 0.12, w: W, text: "설계 쟁점", color: "green" });
   const numbered = issues.map((it, i) => {
     const o = typeof it === "string" ? { text: it } : { ...it };
     return { ...o, text: `${i + 1}. ${o.text}`, bullet: false };
   });
-  bulletList(s, { x: rx + 0.05, y: ry + 0.15, w: rw - 0.1, h: CONTENT_BOTTOM - ry - 0.15, items: numbered, fontSize: 11.5 });
+  bulletList(s, { x: x + 0.05, y: by + 0.12, w: W - 0.1, h: CONTENT_BOTTOM - by - 0.12, items: numbered, fontSize: 11.5 });
   return s;
 }
 
@@ -412,14 +432,16 @@ function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, 
  *   candidates: 정확히 후보 2개 —
  *     [{ name, diagram?, features: [..], pros: [..], cons: [..], tradeoff: [..] }, …]
  *     diagram = 후보별 설계도 PNG 경로 (dpN_candidates.svg의 해당 패널 크롭 권장).
+ *     tradeoff = **QA별 평가**: 후보의 QA 별점을 나열 ("QA1 ★★☆ · QA2 ★★★ …").
+ *       QA 평가가 후보마다 갈리는 지점이 곧 trade-off — 갈리는 QA는 bold/색 강조.
  *   rowH = { diagram, features, pros, cons, tradeoff } 높이 오버라이드 (합 ≤ 5.5″).
  */
 function pageDpCompare(pptx, { title, page, active = 2, band = "green", candidates, labelW = 1.05, rowH = {}, fontSize = 9.5 }) {
   const s = slide(pptx, { title, active, band, page });
   const x = MARGIN, W = PAGE.w - 2 * MARGIN;
   const candW = (W - labelW) / candidates.length;
-  const H = { head: 0.34, diagram: 2.3, features: 0.7, pros: 0.85, cons: 0.85, tradeoff: 0.55, ...rowH };
-  const ROWS = [["diagram", "설계도"], ["features", "특징"], ["pros", "장점"], ["cons", "단점"], ["tradeoff", "Trade-off"]];
+  const H = { head: 0.34, diagram: 2.2, features: 0.7, pros: 0.85, cons: 0.85, tradeoff: 0.7, ...rowH };
+  const ROWS = [["diagram", "설계도"], ["features", "특징"], ["pros", "장점"], ["cons", "단점"], ["tradeoff", "Trade-off\n(QA 평가)"]];
   const cell = (cx, cy, cw, ch, fill) =>
     s.addShape("rect", { x: cx, y: cy, w: cw, h: ch, fill: { color: fill }, line: { color: COLORS.grayBorder, width: 0.75 } });
   let y = CONTENT_TOP;
@@ -447,6 +469,7 @@ function pageDpCompare(pptx, { title, page, active = 2, band = "green", candidat
         }
       } else {
         const items = (c[key] || []).map((it) => {
+          if (Array.isArray(it)) return it; // run 시퀀스 (부분 강조) — 그대로 전달
           const o = typeof it === "string" ? { text: it } : { ...it };
           return { ...o, fontSize: o.fontSize || fontSize };
         });

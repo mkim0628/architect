@@ -47,14 +47,16 @@ building any page.**
 | 7 | **Utility Tree 활용한 ASR 선정** | 요구사항 (1) | One full-width ASR table (번호/QA/Refinement/Scenario/중요도/난이도/우선순위/선정); Scenario cell = 문장 + `[측정: …]` line; selected rows cream-highlighted + "O". | `specTable` (+`highlightRows`) |
 | 8 | **Architecture Driver 도출** | 요구사항 (1) | FR(navy) / QA(green) / C(brown) `tagBar` groups converging into yellow "Architectural Drivers" ellipse → big down-arrow → 산출물 인용구. | `tagBar` + shapes |
 | 9 | **설계 Point 선정** | 설계 (2) | Left driver rail (`badge` F/Q/C + labels), center module diagram with badges & DP-color highlights, right **5 `dpCard`s** (DP-01~05, colors from `COLORS.dp`). | `badge` `dpCard` `linkButton` |
-| 10 | **DP 상세 ① — 문제 정의·설계 쟁점** | 설계 (2) | **DP마다 2페이지 세트의 첫 장.** 좌(56%) "문제 정의" 헤더 + 불릿 + **내용에 맞는 그림(필수)**, 우 "설계 쟁점" 번호 리스트. | `pageDpProblem` |
-| 11 | **DP 상세 ② — 후보구조 비교** | 설계 (2) | **세트의 둘째 장.** 3열 비교표 — 열 = 두 후보구조, 행 = **설계도(이미지)·특징·장점·단점·Trade-off**. | `pageDpCompare` |
+| 10 | **DP 상세 ① — 문제 정의·설계 쟁점** | 설계 (2) | **DP마다 2페이지 세트의 첫 장. 가로 2단**: 윗 행(62%) "문제 정의" — 좌 불릿 + 우 **내용에 맞는 그림(필수)**; 아랫 행 "설계 쟁점" 번호 리스트. | `pageDpProblem` |
+| 11 | **DP 상세 ② — 후보구조 비교** | 설계 (2) | **세트의 둘째 장.** 3열 비교표 — 열 = 두 후보구조, 행 = **설계도(이미지)·특징·장점·단점·Trade-off(QA별 평가)**. Trade-off 행 = 후보별 QA 별점 나열, 갈리는 QA 강조. | `pageDpCompare` |
 
 P10–P11은 **DP마다 반복**된다 (DP-01 ①②, DP-02 ①②, …). 제목 관례:
 `DP-0N. {DP 이름} — 문제 정의` / `DP-0N. {DP 이름} — 후보구조 비교`.
 내용 출처는 architect-dp 스킬의 DP 문서(`docs/NN_design_points_*.md`):
-문제 정의·설계 쟁점·구조(→특징)·장점·단점을 요약 발췌하고, Trade-off는 검토
-노트의 실질 결정 변수(무엇을 얻고 무엇을 포기하는가)를 후보별 1–2줄로 압축한다.
+문제 정의·설계 쟁점·구조(→특징)·장점·단점을 요약 발췌하고, **Trade-off 행은
+QA별 평가**다 — 각 후보의 QA 평가표 별점을 발췌해 나열하고("QA1 ★★☆ · QA2
+★★★ · …"), 두 후보의 별점이 **갈리는 QA를 강조**해 어느 QA를 얻고 어느 QA를
+포기하는지가 보이게 한다.
 
 Band color alternates navy/green page to page (no two adjacent pages the same).
 `active` follows the **chapter**, not the page; footer keeps the global `N / 33`
@@ -180,7 +182,12 @@ A.pageDpCompare(pptx, {
       features: ["Inference Engine = vLLM, KV 골격은 변형 A/B로 소싱"],
       pros: ["생태계 무임승차 · 검증된 코어", "초기 ≤6인월 — 리드타임 최단"],
       cons: ["scheduler tier 비인지 — co-scheduling 미회수", "upstream API 변경 리스크"],
-      tradeoff: [{ text: "비용·리드타임을 얻고 성능 상한·주도권을 포기", bold: true }],
+      // Trade-off = QA별 평가 — 갈리는 QA(여기선 QA1·QA5)를 강조
+      tradeoff: [[
+        { text: "QA1 ★★☆", options: { bold: true, color: "B3402A" } },
+        { text: " · QA2 ★★☆ · QA3 ★★★ · QA4 ★★☆ · " },
+        { text: "QA5 ★★★", options: { bold: true, color: "1B7A4B" } },
+      ]],
     },
     {
       name: "후보 2 — 자체 구현형",
@@ -188,7 +195,11 @@ A.pageDpCompare(pptx, {
       features: ["전 층 자체 구현 — tier topology 1급 인지 클린 설계"],
       pros: ["co-design 자유 — 이론 상한 최고", "자사 HW 로드맵 무제약 수용"],
       cons: ["재구현 수십 인월+ · baseline 도달 리스크", "신규 모델 영구 추종 부담"],
-      tradeoff: [{ text: "성능 상한·주도권을 얻고 비용·도달 확률을 포기", bold: true }],
+      tradeoff: [[
+        { text: "QA1 ★★★", options: { bold: true, color: "1B7A4B" } },
+        { text: " · QA2 ★★★ · QA3 ★☆☆ · QA4 ★☆☆ · " },
+        { text: "QA5 ★☆☆", options: { bold: true, color: "B3402A" } },
+      ]],
     },
   ],
 });
