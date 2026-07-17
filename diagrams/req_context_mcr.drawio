@@ -1,0 +1,36 @@
+<mxfile host="app.diagrams.net" agent="architect-requirements" version="24.0.0">
+  <diagram id="req-context-mcr" name="MCR Context Diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1120" pageHeight="680" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="mcr" value="MCR&#10;Memory-Centric Runtime&#10;Orchestration · Inference Engine · Memory Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2A44;strokeColor=#0F1830;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="270" width="280" height="140" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="client" value="LLM 응용 클라이언트&#10;(대표 워크로드: RAG · multiturn · agent)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="110" width="220" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="ops" value="운영자 (SRE)&#10;(정책 설정 · 실험 구성 운용)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="528" width="220" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="dev" value="메모리 tier 디바이스&#10;(HBM · CXL · HBF · SSD-PIM)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="110" width="220" height="72" as="geometry"/>
+        </mxCell>
+        <mxCell id="infra" value="인프라 계층&#10;(cluster orchestrator)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="528" width="220" height="72" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="f1" value="추론 요청 (RAG·multiturn·agent)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="client" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f2" value="응답 (생성 토큰)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="client"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f3" value="SLO 정책 · tier 등록 · 실험 구성" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="ops" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f4" value="telemetry · 벤치 리포트" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="ops"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f5" value="KV 배치·이동 · 근접연산 오프로드" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="dev"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f6" value="데이터 · 연산 결과 · 상태" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="dev" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f7" value="desired state (스케일링 목표)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="infra"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f8" value="집행 결과 · 클러스터 이벤트" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="infra" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
