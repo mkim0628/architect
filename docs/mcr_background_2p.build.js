@@ -1,6 +1,6 @@
 // Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_background_2p.build.js
-// 배경 ①~⑥ 6단 논리 (docs/mcr_background_scope.md v3와 정합):
-//   1p: ① 병목 심화 → ② 업계의 메모리 중심 해법 → ③ 자사도 두 방향 제품군 보유
+// 배경 ①~⑥ 6단 논리 (docs/mcr_background_scope.md v4와 정합):
+//   1p: ① AI Agent의 특징 (장기 기억 요구 → 컨텍스트 폭증) → ② 메모리 병목 심화 (KV↑, naive offload 성능 저하) → ③ 업계 현황 (메모리 제품군 + 자사 포트폴리오)
 //   2p: ④ 성능은 런타임이 실현 (결정 계층 + 동일 HW 실측 격차) → ⑤ 현 런타임은 연산기 중심 → ⑥ MCR 개발 필요
 // Images are generated locally by docs/mcr_assets/make_assets.py (web is blocked).
 const path = require("path");
@@ -10,21 +10,21 @@ const pptx = A.newDeck();
 const OUT = process.argv[2] || path.join(__dirname, "mcr_background_2p.pptx");
 const img = (n) => path.join(__dirname, "mcr_assets", n);
 
-// ───────────── 1. 과제 배경 (1/2) — 병목 · 해법 · 자사의 재료 ─────────────
+// ───────────── 1. 과제 배경 (1/2) — Agent 워크로드 · 병목 심화 · 업계 현황 ─────────────
 A.pageColumns(pptx, {
   title: "과제 배경 (1/2)", page: 1, band: "navy",
   cols: [
-    { header: "① AI 메모리 병목 심화", items: [
-      { text: "대역폭 병목: decode가 추론 시간 지배 — 매 토큰 KV cache 전체 read, 컨텍스트 폭증으로 심화", image: img("bg_decode.png") },
-      { text: "용량 병목: KV cache ∝ 컨텍스트×동시 세션 → HBM 압박, agent 장기 기억이 구조적으로 심화", image: img("bg_kv.png") },
+    { header: "① AI Agent 워크로드의 특징", items: [
+      { text: "Agent 기본 패턴: multi-turn loop × 툴 호출 × sub-agent 분업 — 한 요청이 수십~수백 스텝의 루프로 실행되며 툴 결과가 계속 유입", image: img("ag_loop.png") },
+      { text: "매 스텝이 이전 대화·툴 결과·sub-agent 산출물 참조, 기억은 세션을 넘어 축적 → 장기 기억 요구 = 컨텍스트 길이 폭증", image: img("ag_context.png") },
     ]},
-    { header: "② 업계의 대응 — 메모리 중심 해법", items: [
-      { text: "대역폭 병목 → 근접 연산(PIM/PNM): 연산을 데이터가 있는 곳으로 보내 이동량 자체를 절감", image: img("bg_shift.png") },
-      { text: "용량 병목 → 계층화(tiered offloading): 하위 tier로 내리고 필요 시 회수, HBM 밖 용량 확장", image: img("bg_hierarchy.png") },
+    { header: "② 메모리 병목 심화", items: [
+      { text: "컨텍스트 증가 → KV cache 증가(∝ 컨텍스트×동시 세션) — decode는 매 토큰 KV 전체 read, 용량·대역폭 동시 압박", image: img("bg_kv.png") },
+      { text: "KV가 HBM 용량 초과 — 단순 DRAM→SSD offloading은 tier마다 ~10× 낮아지는 대역폭 계단을 그대로 노출 → 성능 급락", image: img("bg_offload.png") },
     ]},
-    { header: "③ 자사: 두 방향 모두 제품군 보유", items: [
-      { text: "근접 연산(PIM·CIM)부터 계층화(Custom HBM·HBF·CXL)까지 — ②의 두 방향 모두 제품 포트폴리오로 확보", image: img("bg_devices.png") },
-      { text: "근접연산·대역폭·용량의 상이한 축 — 조합 시 새 설계 공간, 병목을 풀 하드웨어 재료는 갖춰짐", image: img("bg_axes.png") },
+    { header: "③ 업계 현황 — 메모리 중심 제품군", items: [
+      { text: "메모리 업계의 대응: 대역폭 축 HBM 고도화·근접 연산(PIM/PNM), 용량 축 CXL 확장·신규 tier(HBF) — 계층은 5+ tier로 심화", image: img("bg_hierarchy.png") },
+      { text: "자사(삼성): 근접 연산(PIM·CIM)부터 계층화(Custom HBM·HBF·CXL)까지 — 근접연산·대역폭·용량 전 축의 포트폴리오 보유", image: img("bg_devices.png") },
     ]},
   ],
 });
