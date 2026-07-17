@@ -49,6 +49,6 @@ Published interface: **KV Locator** (조회 전용, Router가 사용) · **Compr
 
 ## 미결 사항
 
-- MCR 공식 QA 정의 확정 (현재 잠정 QA1–QA5 사용, [`00_qa_definitions.md`](00_qa_definitions.md) 참조)
+- MCR 공식 QA 정의 확정 (현재 잠정 QA1–QA6 사용, [`00_qa_definitions.md`](00_qa_definitions.md) 참조)
 - DP1–DP8 채택안 결정 및 ADR 작성 — DP1·DP2: [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md), DP3–DP5: [`03_design_points_dp3_dp5.md`](03_design_points_dp3_dp5.md), DP6(근접연산 오프로드): [`04_design_points_dp6.md`](04_design_points_dp6.md), DP7·DP8(SSD-PIM 검색 실행 구조·계약, 전제: [ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md)): [`05_design_points_dp7_dp8.md`](05_design_points_dp7_dp8.md)
 - DP 채택에 따른 Scheduling 내 Policy 컴포넌트 신설 여부 확정 (DP2), KV Index 키 스키마·KV Transport 구현 형태 확정 (DP3·DP5)
