@@ -12,14 +12,14 @@
   </defs>
 
   <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP1. 실행 스택 소싱 — Inference·Memory Engine의 외부 채택 vs 자체 구현 (후보구조 설계도)</text>
-  <text x="44" y="57" font-size="11.5" fill="#6B7A90">결정 변수 = 자체 구현의 경계선 (자체 범위: 후보2 &gt; 후보1 &gt; 후보3) · 녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/주입 · □ 포트: 공식 확장점 (vLLM / LMCache)</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">후보1 = 외부 스택 활용 (변형 A: KV 골격 자체 · 변형 B: LMCache 편승) · 후보2 = 자체 구현 · 녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/주입 · □ 포트: 공식 확장점 (vLLM / LMCache)</text>
 
   <line x1="700" y1="72" x2="700" y2="960" stroke="#C9D2DE" stroke-width="1"/>
   <line x1="1370" y1="72" x2="1370" y2="960" stroke="#C9D2DE" stroke-width="1"/>
 
   <!-- ================= LEFT: 후보1 ================= -->
   <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
-  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — vLLM 확장형 (plugin / connector)</text>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 · 변형 A (기준형) — vLLM 확장, KV 골격 자체 (plugin / connector)</text>
 
   <!-- Orchestration -->
   <rect x="60" y="124" width="580" height="104" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
@@ -97,13 +97,13 @@
 
   <text x="60" y="936" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 생태계 무임승차 · 검증된 코어 · 현 자산(proxy·LMCache) 재사용 — 초기 수 인월</text>
 
-  <!-- ================= RIGHT: 후보2 ================= -->
+  <!-- ================= MIDDLE: 후보1 변형 B ================= -->
   <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
-  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 독립 framework (clean-slate, 확정안 v2의 무제약 구현)</text>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 · 변형 B — KV 계층까지 LMCache 편승 (backend / policy-hook)</text>
 
   <!-- Orchestration -->
   <rect x="730" y="124" width="610" height="104" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration — 독립 프로세스 (변형 A와 동일)</text>
   <rect x="750" y="160" width="180" height="46" fill="#FFFFFF" stroke="#44546A"/>
   <text x="762" y="180" font-size="11" font-weight="700" fill="#1F2A44">Request Manager</text>
   <text x="762" y="196" font-size="9.5" fill="#6B7A90">admission·RAG·batcher</text>
@@ -115,64 +115,76 @@
   <text x="1154" y="196" font-size="9.5" fill="#6B7A90">HW Mon.·2-loop Autoscaler</text>
 
   <line x1="880" y1="228" x2="880" y2="264" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
-  <text x="890" y="250" font-size="10.5" fill="#1F2A44">«use» dispatch</text>
+  <text x="890" y="250" font-size="10.5" fill="#1F2A44">«use» dispatch (API/RPC)</text>
 
-  <!-- Inference Engine (자체) -->
-  <rect x="730" y="268" width="610" height="256" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="744" y="290" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine — 자체 구현</text>
+  <!-- vLLM process (untouched, connector only) -->
+  <rect x="730" y="268" width="610" height="140" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.4"/>
+  <text x="744" y="290" font-size="12" font-weight="700" fill="#1F2A44">«3rd-party» vLLM Engine Process — 무수정 (KV connector만 사용)</text>
+  <rect x="754" y="306" width="270" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="768" y="328" font-size="12" font-weight="700" fill="#1F2A44">vLLM Scheduler</text>
+  <text x="768" y="346" font-size="9.5" fill="#B3402A">tier 비인지 그대로 — 개선 통로 없음</text>
+  <rect x="1050" y="306" width="270" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1064" y="328" font-size="12" font-weight="700" fill="#1F2A44">Model Executor / Worker</text>
+  <text x="1064" y="346" font-size="9.5" fill="#6B7A90">배칭·모델 지원 upstream 무임승차</text>
 
-  <rect x="754" y="306" width="270" height="70" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
-  <text x="768" y="328" font-size="12" font-weight="700" fill="#155F3B">Tier-aware Scheduler</text>
-  <text x="768" y="346" font-size="9.5" fill="#155F3B">tier 잔량·KV 위치·압축 상태가</text>
-  <text x="768" y="360" font-size="9.5" fill="#155F3B">admission·배칭 결정에 직접 반영</text>
+  <!-- KV connector port on vLLM bottom -->
+  <rect x="873" y="401" width="14" height="14" fill="#FFFFFF" stroke="#8A5A08" stroke-width="1.6"/>
+  <text x="837" y="394" font-size="10" font-weight="700" fill="#8A5A08">KV Connector API</text>
+  <line x1="880" y1="415" x2="880" y2="452" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
+  <text x="892" y="440" font-size="10" fill="#8A5A08">KV 추출/재주입</text>
 
-  <rect x="1050" y="306" width="270" height="70" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1064" y="328" font-size="12" font-weight="700" fill="#1F2A44">Step Execution Controller</text>
-  <text x="1064" y="346" font-size="9.5" fill="#6B7A90">continuous batching·chunked prefill</text>
-  <text x="1064" y="360" font-size="9.5" fill="#B3402A">전부 자체 재구현 대상</text>
+  <!-- LMCache layer (3rd-party, owns the skeleton) -->
+  <rect x="730" y="456" width="610" height="216" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.4"/>
+  <text x="744" y="478" font-size="12" font-weight="700" fill="#1F2A44">«3rd-party» LMCache — KV 데이터-이동 계층 (골격 소유자)</text>
 
-  <rect x="754" y="396" width="566" height="64" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="768" y="418" font-size="12" font-weight="700" fill="#1F2A44">Kernel &amp; Layer</text>
-  <text x="768" y="438" font-size="10" fill="#6B7A90">FlashInfer/자체 Attention · MoE Dispatcher · Custom Kernel · CompressionOp(DI 구현)</text>
+  <rect x="754" y="494" width="270" height="78" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="768" y="516" font-size="12" font-weight="700" fill="#1F2A44">Cache / Storage Manager</text>
+  <text x="768" y="534" font-size="9.5" fill="#B3402A">정책 골격 LMCache 소유 —</text>
+  <text x="768" y="548" font-size="9.5" fill="#B3402A">요청별 SLO 정책이 들어갈 자리 제한</text>
 
-  <text x="754" y="496" font-size="10" fill="#6B7A90">모델 zoo·신규 기법 포팅을 자체 유지 (upstream 부재)</text>
+  <rect x="1050" y="494" width="270" height="78" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1064" y="516" font-size="12" font-weight="700" fill="#1F2A44">CacheGen · CacheBlend</text>
+  <text x="1064" y="534" font-size="9.5" fill="#6B7A90">압축·비접두 재사용 —</text>
+  <text x="1064" y="548" font-size="9.5" fill="#1B7A4B">재구현 없이 상속</text>
 
-  <!-- co-design double arrow -->
-  <line x1="870" y1="524" x2="870" y2="576" stroke="#1B7A4B" stroke-width="2.6" marker-end="url(#arrGrn)"/>
-  <line x1="890" y1="576" x2="890" y2="524" stroke="#1B7A4B" stroke-width="2.6" marker-end="url(#arrGrn)"/>
-  <text x="906" y="546" font-size="11" font-weight="700" fill="#1B7A4B">placement × scheduling co-design</text>
-  <text x="906" y="562" font-size="10" fill="#1B7A4B">— 본 후보의 핵심 이득 (QA1·QA2 상한)</text>
+  <rect x="754" y="586" width="270" height="52" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="768" y="606" font-size="11.5" font-weight="700" fill="#8A5A08">MCR Policy Hook</text>
+  <text x="768" y="624" font-size="9.5" fill="#8A5A08">배치·압축·재사용 정책 주입 (훅 범위 내)</text>
 
-  <!-- Memory Engine -->
-  <rect x="730" y="580" width="610" height="264" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="744" y="602" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — 설계 중심 (1급 패키지)</text>
+  <!-- storage backend port -->
+  <rect x="873" y="665" width="14" height="14" fill="#FFFFFF" stroke="#8A5A08" stroke-width="1.6"/>
+  <text x="826" y="658" font-size="10" font-weight="700" fill="#8A5A08">Storage Backend API</text>
+  <line x1="880" y1="679" x2="880" y2="712" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
+  <text x="892" y="702" font-size="10" fill="#8A5A08">put / get / pin</text>
 
-  <rect x="754" y="618" width="270" height="80" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
-  <text x="768" y="640" font-size="12" font-weight="700" fill="#155F3B">Tier-agnostic KV/Block Manager</text>
-  <text x="768" y="658" font-size="9.5" fill="#155F3B">HBM/PNM/CXL 동일 추상화 —</text>
-  <text x="768" y="672" font-size="9.5" fill="#155F3B">압축·비연속 KV를 block table 1급으로</text>
+  <!-- Memory Engine behind backend interface -->
+  <rect x="730" y="716" width="610" height="152" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="738" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — LMCache 백엔드 인터페이스 뒤</text>
 
-  <rect x="1050" y="618" width="270" height="80" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1064" y="640" font-size="12" font-weight="700" fill="#1F2A44">Cache Manager</text>
-  <text x="1064" y="658" font-size="9.5" fill="#6B7A90">KV Index (prefix/infix) ·</text>
-  <text x="1064" y="672" font-size="9.5" fill="#6B7A90">Memory Compressor</text>
+  <rect x="754" y="754" width="270" height="96" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="768" y="776" font-size="12" font-weight="700" fill="#155F3B">자사 Tier Backend Connector</text>
+  <text x="768" y="794" font-size="9.5" fill="#155F3B">CXL · PNM DRAM · HBF adapter —</text>
+  <text x="768" y="808" font-size="9.5" fill="#155F3B">tier 추가 = 백엔드 모듈 1개 (코어 무수정)</text>
+  <text x="768" y="826" font-size="9.5" fill="#155F3B">표준 KV 계층의 공식 백엔드 등재</text>
 
-  <rect x="754" y="718" width="566" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="768" y="740" font-size="12" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
-  <text x="768" y="758" font-size="10" fill="#6B7A90">Tier Topology Model (자사 HW 로드맵 직접 수용) · Migration · KV Transport</text>
+  <rect x="1050" y="754" width="270" height="96" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1064" y="776" font-size="12" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
+  <text x="1064" y="794" font-size="9.5" fill="#6B7A90">Tier Topology Model · Migration</text>
+  <text x="1064" y="812" font-size="9.5" fill="#B3402A">topology 정보가 put/get API 위로</text>
+  <text x="1064" y="826" font-size="9.5" fill="#B3402A">전달되지 않음 — 인지 배치 제한</text>
 
-  <text x="754" y="812" font-size="10" fill="#1B7A4B">자사 디바이스(HBM4·CMM-DC·HBF) 확장점 제약 없음 — QA4(자사 HW) 최고</text>
+  <text x="730" y="892" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 근접 연산(DP6)·tier-aware decode 경로는 이 계층 밖 — 별도 통로 필요 ·</text>
+  <text x="730" y="910" font-size="10.5" fill="#B3402A" font-weight="700">이중 upstream(vLLM+LMCache) 동시 추종 · "LMCache 백엔드 하나"로 인식될 희석 리스크</text>
 
-  <text x="730" y="880" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 배칭·모델 지원·수치 검증을 전부 자체 구축 + 영구 추종 (수십 인월+,</text>
-  <text x="730" y="898" font-size="10.5" fill="#B3402A" font-weight="700">vLLM 동등 baseline 도달 자체가 선행 과제 — QA1 상한과 도달 확률의 분리)</text>
+  <text x="730" y="936" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: KV 계층 전체(압축·재사용·영속화·멀티엔진) 상속 — 초기 비용 전 변형 중 최소, E2E 완주 최속</text>
 
-  <!-- ================= RIGHT-2: 후보3 ================= -->
+  <!-- ================= RIGHT: 후보2 (자체 구현형) ================= -->
   <rect x="1380" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1392" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 3 — KV-계층(LMCache) 확장형 (backend / policy-hook)</text>
+  <text x="1392" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 자체 구현형 (독립 framework, 확정안 v2의 무제약 구현)</text>
 
   <!-- Orchestration -->
   <rect x="1400" y="124" width="610" height="104" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1414" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration — 독립 프로세스 (후보1과 동일)</text>
+  <text x="1414" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
   <rect x="1420" y="160" width="180" height="46" fill="#FFFFFF" stroke="#44546A"/>
   <text x="1432" y="180" font-size="11" font-weight="700" fill="#1F2A44">Request Manager</text>
   <text x="1432" y="196" font-size="9.5" fill="#6B7A90">admission·RAG·batcher</text>
@@ -184,68 +196,56 @@
   <text x="1824" y="196" font-size="9.5" fill="#6B7A90">HW Mon.·2-loop Autoscaler</text>
 
   <line x1="1550" y1="228" x2="1550" y2="264" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
-  <text x="1560" y="250" font-size="10.5" fill="#1F2A44">«use» dispatch (API/RPC)</text>
+  <text x="1560" y="250" font-size="10.5" fill="#1F2A44">«use» dispatch</text>
 
-  <!-- vLLM process (untouched, connector only) -->
-  <rect x="1400" y="268" width="610" height="140" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.4"/>
-  <text x="1414" y="290" font-size="12" font-weight="700" fill="#1F2A44">«3rd-party» vLLM Engine Process — 무수정 (KV connector만 사용)</text>
-  <rect x="1424" y="306" width="270" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1438" y="328" font-size="12" font-weight="700" fill="#1F2A44">vLLM Scheduler</text>
-  <text x="1438" y="346" font-size="9.5" fill="#B3402A">tier 비인지 그대로 — 개선 통로 없음</text>
-  <rect x="1720" y="306" width="270" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1734" y="328" font-size="12" font-weight="700" fill="#1F2A44">Model Executor / Worker</text>
-  <text x="1734" y="346" font-size="9.5" fill="#6B7A90">배칭·모델 지원 upstream 무임승차</text>
+  <!-- Inference Engine (자체) -->
+  <rect x="1400" y="268" width="610" height="256" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1414" y="290" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine — 자체 구현</text>
 
-  <!-- KV connector port on vLLM bottom -->
-  <rect x="1543" y="401" width="14" height="14" fill="#FFFFFF" stroke="#8A5A08" stroke-width="1.6"/>
-  <text x="1507" y="394" font-size="10" font-weight="700" fill="#8A5A08">KV Connector API</text>
-  <line x1="1550" y1="415" x2="1550" y2="452" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
-  <text x="1562" y="440" font-size="10" fill="#8A5A08">KV 추출/재주입</text>
+  <rect x="1424" y="306" width="270" height="70" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="1438" y="328" font-size="12" font-weight="700" fill="#155F3B">Tier-aware Scheduler</text>
+  <text x="1438" y="346" font-size="9.5" fill="#155F3B">tier 잔량·KV 위치·압축 상태가</text>
+  <text x="1438" y="360" font-size="9.5" fill="#155F3B">admission·배칭 결정에 직접 반영</text>
 
-  <!-- LMCache layer (3rd-party, owns the skeleton) -->
-  <rect x="1400" y="456" width="610" height="216" fill="#F1EFEA" stroke="#6B7A90" stroke-width="1.4"/>
-  <text x="1414" y="478" font-size="12" font-weight="700" fill="#1F2A44">«3rd-party» LMCache — KV 데이터-이동 계층 (골격 소유자)</text>
+  <rect x="1720" y="306" width="270" height="70" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1734" y="328" font-size="12" font-weight="700" fill="#1F2A44">Step Execution Controller</text>
+  <text x="1734" y="346" font-size="9.5" fill="#6B7A90">continuous batching·chunked prefill</text>
+  <text x="1734" y="360" font-size="9.5" fill="#B3402A">전부 자체 재구현 대상</text>
 
-  <rect x="1424" y="494" width="270" height="78" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1438" y="516" font-size="12" font-weight="700" fill="#1F2A44">Cache / Storage Manager</text>
-  <text x="1438" y="534" font-size="9.5" fill="#B3402A">정책 골격 LMCache 소유 —</text>
-  <text x="1438" y="548" font-size="9.5" fill="#B3402A">요청별 SLO 정책이 들어갈 자리 제한</text>
+  <rect x="1424" y="396" width="566" height="64" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1438" y="418" font-size="12" font-weight="700" fill="#1F2A44">Kernel &amp; Layer</text>
+  <text x="1438" y="438" font-size="10" fill="#6B7A90">FlashInfer/자체 Attention · MoE Dispatcher · Custom Kernel · CompressionOp(DI 구현)</text>
 
-  <rect x="1720" y="494" width="270" height="78" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1734" y="516" font-size="12" font-weight="700" fill="#1F2A44">CacheGen · CacheBlend</text>
-  <text x="1734" y="534" font-size="9.5" fill="#6B7A90">압축·비접두 재사용 —</text>
-  <text x="1734" y="548" font-size="9.5" fill="#1B7A4B">재구현 없이 상속</text>
+  <text x="1424" y="496" font-size="10" fill="#6B7A90">모델 zoo·신규 기법 포팅을 자체 유지 (upstream 부재)</text>
 
-  <rect x="1424" y="586" width="270" height="52" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
-  <text x="1438" y="606" font-size="11.5" font-weight="700" fill="#8A5A08">MCR Policy Hook</text>
-  <text x="1438" y="624" font-size="9.5" fill="#8A5A08">배치·압축·재사용 정책 주입 (훅 범위 내)</text>
+  <!-- co-design double arrow -->
+  <line x1="1540" y1="524" x2="1540" y2="576" stroke="#1B7A4B" stroke-width="2.6" marker-end="url(#arrGrn)"/>
+  <line x1="1560" y1="576" x2="1560" y2="524" stroke="#1B7A4B" stroke-width="2.6" marker-end="url(#arrGrn)"/>
+  <text x="1576" y="546" font-size="11" font-weight="700" fill="#1B7A4B">placement × scheduling co-design</text>
+  <text x="1576" y="562" font-size="10" fill="#1B7A4B">— 본 후보의 핵심 이득 (QA1·QA2 상한)</text>
 
-  <!-- storage backend port -->
-  <rect x="1543" y="665" width="14" height="14" fill="#FFFFFF" stroke="#8A5A08" stroke-width="1.6"/>
-  <text x="1496" y="658" font-size="10" font-weight="700" fill="#8A5A08">Storage Backend API</text>
-  <line x1="1550" y1="679" x2="1550" y2="712" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb)"/>
-  <text x="1562" y="702" font-size="10" fill="#8A5A08">put / get / pin</text>
+  <!-- Memory Engine -->
+  <rect x="1400" y="580" width="610" height="264" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1414" y="602" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — 설계 중심 (1급 패키지)</text>
 
-  <!-- Memory Engine behind backend interface -->
-  <rect x="1400" y="716" width="610" height="152" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1414" y="738" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — LMCache 백엔드 인터페이스 뒤</text>
+  <rect x="1424" y="618" width="270" height="80" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="1438" y="640" font-size="12" font-weight="700" fill="#155F3B">Tier-agnostic KV/Block Manager</text>
+  <text x="1438" y="658" font-size="9.5" fill="#155F3B">HBM/PNM/CXL 동일 추상화 —</text>
+  <text x="1438" y="672" font-size="9.5" fill="#155F3B">압축·비연속 KV를 block table 1급으로</text>
 
-  <rect x="1424" y="754" width="270" height="96" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
-  <text x="1438" y="776" font-size="12" font-weight="700" fill="#155F3B">자사 Tier Backend Connector</text>
-  <text x="1438" y="794" font-size="9.5" fill="#155F3B">CXL · PNM DRAM · HBF adapter —</text>
-  <text x="1438" y="808" font-size="9.5" fill="#155F3B">tier 추가 = 백엔드 모듈 1개 (코어 무수정)</text>
-  <text x="1438" y="826" font-size="9.5" fill="#155F3B">표준 KV 계층의 공식 백엔드 등재</text>
+  <rect x="1720" y="618" width="270" height="80" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1734" y="640" font-size="12" font-weight="700" fill="#1F2A44">Cache Manager</text>
+  <text x="1734" y="658" font-size="9.5" fill="#6B7A90">KV Index (prefix/infix) ·</text>
+  <text x="1734" y="672" font-size="9.5" fill="#6B7A90">Memory Compressor</text>
 
-  <rect x="1720" y="754" width="270" height="96" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
-  <text x="1734" y="776" font-size="12" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
-  <text x="1734" y="794" font-size="9.5" fill="#6B7A90">Tier Topology Model · Migration</text>
-  <text x="1734" y="812" font-size="9.5" fill="#B3402A">topology 정보가 put/get API 위로</text>
-  <text x="1734" y="826" font-size="9.5" fill="#B3402A">전달되지 않음 — 인지 배치 제한</text>
+  <rect x="1424" y="718" width="566" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1438" y="740" font-size="12" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
+  <text x="1438" y="758" font-size="10" fill="#6B7A90">Tier Topology Model (자사 HW 로드맵 직접 수용) · Migration · KV Transport</text>
 
-  <text x="1400" y="892" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 근접 연산(DP6)·tier-aware decode 경로는 이 계층 밖 — 별도 통로 필요 ·</text>
-  <text x="1400" y="910" font-size="10.5" fill="#B3402A" font-weight="700">이중 upstream(vLLM+LMCache) 동시 추종 · "LMCache 백엔드 하나"로 인식될 희석 리스크</text>
+  <text x="1424" y="812" font-size="10" fill="#1B7A4B">자사 디바이스(HBM4·CMM-DC·HBF) 확장점 제약 없음 — QA4(자사 HW) 최고</text>
 
-  <text x="1400" y="936" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: KV 계층 전체(압축·재사용·영속화·멀티엔진) 상속 — 초기 비용 3후보 중 최소, E2E 완주 최속</text>
+  <text x="1400" y="880" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 배칭·모델 지원·수치 검증을 전부 자체 구축 + 영구 추종 (수십 인월+,</text>
+  <text x="1400" y="898" font-size="10.5" fill="#B3402A" font-weight="700">vLLM 동등 baseline 도달 자체가 선행 과제 — QA1 상한과 도달 확률의 분리)</text>
 
   <!-- Legend -->
   <rect x="44" y="966" width="22" height="14" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.3"/>
