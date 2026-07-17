@@ -106,14 +106,14 @@ function slide(pptx, opts) {
 }
 
 function chrome(s, opts) {
-  const { title, active = 0, band = "navy", page, total = 33 } = opts;
+  const { title, active = 0, band = "navy", page, total = 33, titleSize = 30 } = opts;
   const bandColor = band === "green" ? COLORS.green : COLORS.navy;
 
   s.addShape("rect", { x: 0, y: 0, w: PAGE.w, h: BAND_H, fill: { color: bandColor }, line: { type: "none" } });
   s.addText(title, {
-    x: MARGIN, y: 0.12, w: 5.0, h: BAND_H - 0.24, margin: 0,
-    fontFace: FONT.head, fontSize: 30, bold: true, color: COLORS.white,
-    align: "left", valign: "middle",
+    x: MARGIN, y: 0.12, w: 7.3, h: BAND_H - 0.24, margin: 0,
+    fontFace: FONT.head, fontSize: titleSize, bold: true, color: COLORS.white,
+    align: "left", valign: "middle", fit: "shrink",
   });
 
   const boxW = 0.86, boxH = 0.30, arrowW = 0.17, gap = 0.03, unit = boxW + arrowW + gap;
@@ -401,8 +401,8 @@ function specTable(s, { x, y, w, colW, header, rows, highlightRows = [], fontSiz
  *   issues: [ "쟁점…" | {text, bold, color} ] — 자동으로 "1. 2. 3." 번호가 붙는다.
  *   topFrac = 윗 행(문제 정의) 높이 비율, problemSplit = 문제 정의 내 불릿 폭 비율.
  */
-function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, issues, topFrac = 0.62, problemSplit = 0.54 }) {
-  const s = slide(pptx, { title, active, band, page });
+function pageDpProblem(pptx, { title, page, total, titleSize, active = 2, band = "navy", problem, issues, topFrac = 0.62, problemSplit = 0.54 }) {
+  const s = slide(pptx, { title, active, band, page, total, titleSize });
   const x = MARGIN, W = PAGE.w - 2 * MARGIN, gap = 0.25;
   const totalH = CONTENT_BOTTOM - CONTENT_TOP;
   const topH = totalH * topFrac;
@@ -436,8 +436,8 @@ function pageDpProblem(pptx, { title, page, active = 2, band = "navy", problem, 
  *       QA 평가가 후보마다 갈리는 지점이 곧 trade-off — 갈리는 QA는 bold/색 강조.
  *   rowH = { diagram, features, pros, cons, tradeoff } 높이 오버라이드 (합 ≤ 5.5″).
  */
-function pageDpCompare(pptx, { title, page, active = 2, band = "green", candidates, labelW = 1.05, rowH = {}, fontSize = 9.5 }) {
-  const s = slide(pptx, { title, active, band, page });
+function pageDpCompare(pptx, { title, page, total, titleSize, active = 2, band = "green", candidates, labelW = 1.05, rowH = {}, fontSize = 9.5 }) {
+  const s = slide(pptx, { title, active, band, page, total, titleSize });
   const x = MARGIN, W = PAGE.w - 2 * MARGIN;
   const candW = (W - labelW) / candidates.length;
   const H = { head: 0.34, diagram: 2.2, features: 0.7, pros: 0.85, cons: 0.85, tradeoff: 0.7, ...rowH };
