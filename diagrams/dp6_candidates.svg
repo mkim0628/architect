@@ -1,0 +1,115 @@
+<svg viewBox="0 0 1400 840" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrAmb" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrGrn" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP6. 근접연산(PIM/PNM) 오프로드의 대상·실행 구조 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">녹색: 구조적 이득 지점 · 적색: 구조적 제약 · 주황: 오프로드/신설 요소 · 점선 경계: 오프로드 경계(수치 경로 안/밖)</text>
+
+  <line x1="700" y1="72" x2="700" y2="790" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — 데이터 관리 연산 오프로드 (수치 경로 밖)</text>
+
+  <!-- Inference Engine / GPU -->
+  <rect x="60" y="124" width="580" height="128" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine — GPU</text>
+  <rect x="80" y="162" width="255" height="70" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="92" y="184" font-size="11" font-weight="700" fill="#1F2A44">Attention Engine · FFN</text>
+  <text x="92" y="202" font-size="9.5" fill="#1B7A4B">모델 수치 경로는 GPU 그대로</text>
+  <text x="92" y="218" font-size="9.5" fill="#1B7A4B">— 품질 영향 구조적 0</text>
+  <rect x="365" y="162" width="255" height="70" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="377" y="184" font-size="11" font-weight="700" fill="#1F2A44">Kernel &amp; Layer</text>
+  <text x="377" y="202" font-size="9.5" fill="#B3402A">decode attention 병목 자체는 그대로</text>
+  <text x="377" y="218" font-size="9.5" fill="#B3402A">(decode wait 70–85%의 지배분)</text>
+
+  <!-- offload boundary -->
+  <line x1="60" y1="276" x2="640" y2="276" stroke="#B45309" stroke-width="1.4" stroke-dasharray="8,5"/>
+  <text x="74" y="270" font-size="10" font-weight="700" fill="#8A5A08">오프로드 경계 — 수치 경로 밖(데이터 관리 연산)만 아래로</text>
+
+  <!-- Memory Engine + PIM device -->
+  <rect x="60" y="292" width="580" height="216" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="314" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine — 내부 연산을 PIM/PNM에서 자율 실행</text>
+
+  <rect x="84" y="330" width="255" height="76" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="98" y="352" font-size="11" font-weight="700" fill="#8A5A08">CompressionOp Kernel</text>
+  <text x="98" y="370" font-size="9.5" fill="#8A5A08">디바이스 in-place 압축/해제 —</text>
+  <text x="98" y="386" font-size="9.5" fill="#8A5A08">의존 역전(01)이 실행 위치 교체 지점</text>
+
+  <rect x="365" y="330" width="255" height="76" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="379" y="352" font-size="11" font-weight="700" fill="#8A5A08">PNM 데이터 관리 연산</text>
+  <text x="379" y="370" font-size="9.5" fill="#8A5A08">· KV scatter-gather·재배치 (DMA+연산)</text>
+  <text x="379" y="386" font-size="9.5" fill="#8A5A08">· eviction scoring (접근 온도 근접 집계)</text>
+
+  <rect x="84" y="422" width="536" height="40" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="98" y="447" font-size="10.5" fill="#1F2A44"><tspan font-weight="700">PIM/PNM 디바이스</tspan> — 결정론적 codec 변환만 수행 (모델 독립, attention 변형과 무풍)</text>
+
+  <text x="84" y="490" font-size="10" fill="#6B7A90">스케줄 주체: Memory Engine 자율 (Inference Engine 커널 그래프에 미편입)</text>
+
+  <text x="60" y="548" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 압축/해제·이동 부속 연산의 GPU 사이클 회수 (DP4 후보1 감점 비용의 직접 회수),</text>
+  <text x="60" y="566" font-size="10.5" fill="#1B7A4B">더 공격적 압축 운용 가능 (QA2 ≥3× 경로) · PIM 세대 교체도 Memory Engine 모듈에 갇힘</text>
+
+  <text x="60" y="608" font-size="10.5" fill="#B3402A" font-weight="700">제약: 이득 상한이 부속 연산 비용에 갇힘 (QA1 ★★☆) — decode attention 병목 미공략,</text>
+  <text x="60" y="626" font-size="10.5" fill="#B3402A">PIM 툴체인·검증 인프라 고정 비용은 동일 지불 (6–24인월)</text>
+
+  <!-- ================= RIGHT: 후보2 ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 모델 연산 오프로드 (decode attention을 PIM으로, AttAcc형)</text>
+
+  <!-- Inference Engine -->
+  <rect x="730" y="124" width="610" height="230" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine — 이종 실행 (attention=PIM, projection/FFN=GPU)</text>
+
+  <rect x="754" y="162" width="275" height="96" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="768" y="184" font-size="11" font-weight="700" fill="#8A5A08">Attention Engine + PIM backend</text>
+  <text x="768" y="202" font-size="9.5" fill="#8A5A08">decode attention을 bank-level PIM에서:</text>
+  <text x="768" y="218" font-size="9.5" fill="#8A5A08">score GEMV · softmax · weighted-sum</text>
+  <text x="768" y="234" font-size="9.5" fill="#B3402A">수치 경로 침범 — 누적 순서·정밀도 상이</text>
+
+  <rect x="1055" y="162" width="275" height="96" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1069" y="184" font-size="11" font-weight="700" fill="#1F2A44">GPU — projection · FFN · prefill</text>
+  <text x="1069" y="202" font-size="9.5" fill="#6B7A90">산술 강도 높은 GEMM 계열은 GPU 잔류</text>
+  <text x="1069" y="218" font-size="9.5" fill="#6B7A90">(AttAcc형 분담)</text>
+
+  <rect x="754" y="274" width="576" height="64" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="768" y="296" font-size="11" font-weight="700" fill="#1F2A44">Kernel &amp; Layer — 커널 그래프에 PIM 실행 단계 편입</text>
+  <text x="768" y="316" font-size="9.5" fill="#B3402A">attention 변형(GQA/MLA/hybrid/SSM)마다 PIM 커널 재작성 — 모델 추종 만성 부담</text>
+
+  <!-- arrow to PIM tier -->
+  <line x1="890" y1="354" x2="890" y2="394" stroke="#1B7A4B" stroke-width="2.4" marker-end="url(#arrGrn)"/>
+  <text x="902" y="380" font-size="10.5" font-weight="700" fill="#1B7A4B">KV가 상주하는 tier에서 "읽지 않고 계산"</text>
+
+  <!-- PIM tier -->
+  <rect x="730" y="398" width="610" height="88" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="744" y="420" font-size="12" font-weight="700" fill="#155F3B">bank-level HBM-PIM tier — KV 상주 + bank 내부 병렬 대역폭으로 GEMV</text>
+  <text x="744" y="440" font-size="10" fill="#155F3B">KV를 GPU로 읽어올 필요 자체가 감소 — tier 승격 트래픽 절감 (DP5 fan-in 병목 완화 시너지)</text>
+  <text x="744" y="458" font-size="10" fill="#155F3B">"연산을 데이터로"(배경 1.3)의 E2E 증명 그 자체 — 필요성 2.3의 가장 강한 시나리오</text>
+
+  <text x="730" y="528" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: decode wait 70–85%(A)의 지배분 정면 공략 — 최대 2.81× (B: AttAcc) · 13%~3× (B: NeuPIMs)</text>
+
+  <text x="730" y="570" font-size="10.5" fill="#B3402A" font-weight="700">리스크: softmax/accumulation 수치 검증 부담 (QA3 — 품질 bound 관리 필요),</text>
+  <text x="730" y="588" font-size="10.5" fill="#B3402A">모델 수용 리드타임 &gt;1분기 만성 (QA4 ★☆☆) · PIM 커널+수치 검증+실기 확보 &gt;24인월 (QA5 ★☆☆),</text>
+  <text x="730" y="606" font-size="10.5" fill="#B3402A">DP1 확장형에선 custom attention backend가 유일한 통로 (파이프라인 효율 제약)</text>
+
+  <!-- evolution note -->
+  <rect x="60" y="656" width="1280" height="72" fill="#F4F6FA" stroke="#6B7A90" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="76" y="678" font-size="10.5" font-weight="700" fill="#1F2A44">진화 경로 (검토 노트): 후보1로 시작 — CompressionOp 의존 역전이 이미 교체 지점을 마련해 구조 변경 없이 착수, PIM 툴체인·검증 인프라(공통 고정 비용) 구축</text>
+  <text x="76" y="696" font-size="10.5" fill="#6B7A90">→ DP4 후보2 채택 + attention 오프로드 이득 실측 통과를 트리거로 후보2 확장 — 후보1이 후보2의 기반 공사가 되는 구조 (전환 비용 낮음)</text>
+  <text x="76" y="714" font-size="10.5" fill="#6B7A90">공통 하드 전제: DP4 후보2의 NEAR_COMPUTE{ops} 표현 — DP4 후보1 채택 시 DP6 자체가 성립 불가</text>
+
+  <!-- Legend -->
+  <rect x="44" y="766" width="22" height="14" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="74" y="777" font-size="10.5" fill="#1F2A44">구조적 이득 지점</text>
+  <rect x="196" y="766" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="226" y="777" font-size="10.5" fill="#1F2A44">오프로드/신설 요소</text>
+  <text x="380" y="777" font-size="10.5" fill="#B3402A">적색 텍스트 = 구조적 제약/리스크</text>
+</svg>

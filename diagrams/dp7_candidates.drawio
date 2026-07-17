@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp7-candidates" name="DP7 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP7. SSD-PIM 검색의 실행 구조 — 전수 스캔 vs 인덱스 유도 스캔 (전제: ADR-001)&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설 요소 · 회색 채움: 스캔되는 범위" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1000" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — 전수 스캔형 (exact, scan-native)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1host" value="«Host» Retrieval Engine" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1bc" value="&lt;b&gt;질의 임베딩 브로드캐스트&lt;/b&gt;&lt;br&gt;전 파티션 동시 발행" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="255" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1merge" value="&lt;b&gt;전역 top-k 병합&lt;/b&gt;&lt;br&gt;파티션별 로컬 top-k 수집" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="160" width="255" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1ssd" value="«SSD-PIM» 파티션들 — 코퍼스 샤딩 (인덱스 없음)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="270" width="580" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1p1" value="&lt;b&gt;파티션 1&lt;/b&gt;&lt;br&gt;GEMV 스트리밍 스캔&lt;br&gt;벡터 전량 (NAND→DRAM)&lt;br&gt;→ 로컬 top-k&lt;br&gt;내부 BW &amp;gt; 외부 PCIe" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8EBF0;strokeColor=#44546A;fontColor=#1F2A44;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="308" width="170" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1p2" value="&lt;b&gt;파티션 2&lt;/b&gt;&lt;br&gt;GEMV 스트리밍 스캔&lt;br&gt;벡터 전량&lt;br&gt;→ 로컬 top-k" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8EBF0;strokeColor=#44546A;fontColor=#1F2A44;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="270" y="308" width="170" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1pn" value="&lt;b&gt;파티션 N&lt;/b&gt;&lt;br&gt;GEMV 스트리밍 스캔&lt;br&gt;벡터 전량&lt;br&gt;→ 로컬 top-k" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8EBF0;strokeColor=#44546A;fontColor=#1F2A44;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="456" y="308" width="170" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeQ" value="query 브로드캐스트" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=9;fontColor=#1F2A44;" edge="1" parent="1" source="c1bc" target="c1ssd">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeK" value="로컬 top-k" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;fontSize=9;fontColor=#1B7A4B;" edge="1" parent="1" source="c1ssd" target="c1merge">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1append" value="신규 문서 → 파티션 append-only (인덱싱 파이프라인 불필요)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="84" y="458" width="536" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; recall 100% (exact) — 검색발 품질 저하 구조적 0 · 인덱스 유지비 0 (agent memory 상시 추가에 최강) · 지연 결정론적 (코퍼스/대역폭) — SLO 예측 가능 · 초기 ≤6인월" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="496" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;제약:&lt;/b&gt; 지연 ≈ 코퍼스 바이트 / 내부 유효 BW — 코퍼스에 선형, TTFT 예산(450ms) 내 코퍼스 상한이 구조에 박힘 · 매 질의 전량 접근 (에너지·대역폭) · 상한 도달 시 대응 = 파티션 증설뿐 (비용 선형)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="548" width="580" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — 인덱스 유도형 (IVF/graph-guided partial scan, SmartANNS형)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2host" value="«Host» Retrieval Engine + 상위 인덱스" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2idx" value="&lt;b&gt;상위 인덱스 (host DRAM 상주)&lt;/b&gt;&lt;br&gt;IVF centroid / 그래프 상위층&lt;br&gt;→ 후보 클러스터 선별 (sublinear)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="750" y="160" width="280" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2merge" value="&lt;b&gt;top-k 병합·반환&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;host↔SSD 조정 왕복 오버헤드&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="160" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2ssd" value="«SSD-PIM» — 선택된 클러스터 내부만 GEMV 스캔" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="290" width="610" height="168" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cl1" value="&lt;b&gt;클러스터 3&lt;/b&gt;&lt;br&gt;부분 스캔 ✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8EBF0;strokeColor=#44546A;fontColor=#1F2A44;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="328" width="130" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cl2" value="클러스터 7&lt;br&gt;스킵" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D2DE;fontColor=#9AA6B5;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="328" width="130" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cl3" value="&lt;b&gt;클러스터 12&lt;/b&gt;&lt;br&gt;부분 스캔 ✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8EBF0;strokeColor=#44546A;fontColor=#1F2A44;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1046" y="328" width="130" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cl4" value="클러스터 …&lt;br&gt;스킵" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C9D2DE;fontColor=#9AA6B5;fontSize=9;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1192" y="328" width="130" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2nand" value="불규칙(클러스터 점프) NAND 접근 — PIM 스트리밍 모델과 상성 저하" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="754" y="426" width="576" height="22" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edge" value="선택된 클러스터 id만 전달" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c2host" target="c2ssd">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2pipe" value="&lt;b&gt;증분 인덱싱 파이프라인 (신설) — 문서 추가 시 인덱스 빌드·갱신 경유&lt;/b&gt;&lt;br&gt;증분 갱신이 독립 연구 주제일 만큼 비용 실재 (SPFresh 계열, B)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="470" width="610" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; sublinear 지연 — billion-scale에서도 TTFT 예산 내 (SmartANNS QPS 최대 10.7×, B), 질의당 스캔 바이트·에너지 절감 · 코퍼스 상한이 인덱스 품질의 함수 (증설 없이 확장)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="542" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; recall &lt; 100% — ANN 근사 손실이 응답 품질로 전이 (nprobe/ef 튜닝 상시 부담), 인덱스 빌드·증분 갱신 파이프라인 비용 (초기 6–24인월·유지 ≤2 FTE)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="594" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;진화 경로 (검토 노트):&lt;/b&gt; 후보1로 시작(exact 품질 베이스라인 + 갱신 파이프라인 없이 E2E 완주) → 코퍼스가 임계(≈내부 유효 BW × TTFT 예산) 초과 시 상위 IVF 층만 추가해 계층형(상위 인덱스 + 클러스터 내 전수 스캔 = 두 후보의 수렴점)으로 전환 — 트리거를 ADR에 명시" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="660" width="1280" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

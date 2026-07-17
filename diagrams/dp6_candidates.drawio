@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp6-candidates" name="DP6 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="840" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP6. 근접연산(PIM/PNM) 오프로드의 대상·실행 구조 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 오프로드/신설 요소 · 점선 경계: 오프로드 경계(수치 경로 안/밖)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1000" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — 데이터 관리 연산 오프로드 (수치 경로 밖)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1ie" value="«MCR» Inference Engine — GPU" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="128" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1attn" value="&lt;b&gt;Attention Engine · FFN&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;모델 수치 경로는 GPU 그대로 — 품질 영향 구조적 0&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="80" y="162" width="255" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1kl" value="&lt;b&gt;Kernel &amp;amp; Layer&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;decode attention 병목 자체는 그대로 (decode wait 70–85%의 지배분)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="162" width="255" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1boundary" value="오프로드 경계 — 수치 경로 밖(데이터 관리 연산)만 아래로" style="text;html=1;strokeColor=#B45309;dashed=1;fillColor=none;align=left;verticalAlign=middle;fontColor=#8A5A08;fontSize=10;fontStyle=1;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="262" width="580" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1me" value="«MCR» Memory Engine — 내부 연산을 PIM/PNM에서 자율 실행 (커널 그래프 미편입)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="298" width="580" height="212" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1comp" value="&lt;b&gt;CompressionOp Kernel&lt;/b&gt;&lt;br&gt;디바이스 in-place 압축/해제 —&lt;br&gt;의존 역전(01)이 실행 위치 교체 지점" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="336" width="255" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1pnm" value="&lt;b&gt;PNM 데이터 관리 연산&lt;/b&gt;&lt;br&gt;· KV scatter-gather·재배치 (DMA+연산)&lt;br&gt;· eviction scoring (접근 온도 근접 집계)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="336" width="255" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1dev" value="&lt;b&gt;PIM/PNM 디바이스&lt;/b&gt; — 결정론적 codec 변환만 수행 (모델 독립, attention 변형과 무풍)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="84" y="428" width="536" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; 압축/해제·이동 부속 연산의 GPU 사이클 회수 (DP4 후보1 감점 비용의 직접 회수), 더 공격적 압축 운용 가능 (QA2 ≥3× 경로) · PIM 세대 교체도 Memory Engine 모듈에 갇힘" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="524" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;제약:&lt;/b&gt; 이득 상한이 부속 연산 비용에 갇힘 (QA1 ★★☆) — decode attention 병목 미공략, PIM 툴체인·검증 인프라 고정 비용은 동일 지불 (6–24인월)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="576" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — 모델 연산 오프로드 (decode attention을 PIM으로, AttAcc형)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2ie" value="«MCR» Inference Engine — 이종 실행 (attention=PIM, projection/FFN=GPU)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="226" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2attn" value="&lt;b&gt;Attention Engine + PIM backend&lt;/b&gt;&lt;br&gt;decode attention을 bank-level PIM에서:&lt;br&gt;score GEMV · softmax · weighted-sum&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;수치 경로 침범 — 누적 순서·정밀도 상이&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="162" width="275" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gpu" value="&lt;b&gt;GPU — projection · FFN · prefill&lt;/b&gt;&lt;br&gt;산술 강도 높은 GEMM 계열은 GPU 잔류 (AttAcc형 분담)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1055" y="162" width="275" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2kl" value="&lt;b&gt;Kernel &amp;amp; Layer — 커널 그래프에 PIM 실행 단계 편입&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;attention 변형(GQA/MLA/hybrid/SSM)마다 PIM 커널 재작성 — 모델 추종 만성 부담&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="274" width="576" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2pim" value="&lt;b&gt;bank-level HBM-PIM tier — KV 상주 + bank 내부 병렬 대역폭으로 GEMV&lt;/b&gt;&lt;br&gt;KV를 GPU로 읽어올 필요 자체가 감소 — tier 승격 트래픽 절감 (DP5 fan-in 병목 완화 시너지)&lt;br&gt;&quot;연산을 데이터로&quot;(배경 1.3)의 E2E 증명 그 자체 — 필요성 2.3의 가장 강한 시나리오" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="396" width="610" height="88" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edge" value="KV가 상주하는 tier에서 &quot;읽지 않고 계산&quot;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;strokeWidth=2;fontSize=10;fontColor=#1B7A4B;" edge="1" parent="1" source="c2ie" target="c2pim">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; decode wait 70–85%(A)의 지배분 정면 공략 — 최대 2.81× (B: AttAcc) · 13%~3× (B: NeuPIMs)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="500" width="610" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; softmax/accumulation 수치 검증 부담 (QA3 — 품질 bound 관리 필요), 모델 수용 리드타임 &gt;1분기 만성 (QA4 ★☆☆) · PIM 커널+수치 검증+실기 확보 &gt;24인월 (QA5 ★☆☆), DP1 확장형에선 custom attention backend가 유일한 통로 (파이프라인 효율 제약)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="536" width="610" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;진화 경로 (검토 노트):&lt;/b&gt; 후보1로 시작 — CompressionOp 의존 역전이 이미 교체 지점을 마련해 구조 변경 없이 착수, PIM 툴체인·검증 인프라(공통 고정 비용) 구축 → DP4 후보2 채택 + attention 오프로드 이득 실측 통과를 트리거로 후보2 확장 — 후보1이 후보2의 기반 공사 (전환 비용 낮음)&lt;br&gt;공통 하드 전제: DP4 후보2의 NEAR_COMPUTE{ops} 표현 — DP4 후보1 채택 시 DP6 자체가 성립 불가" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="640" width="1280" height="76" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
