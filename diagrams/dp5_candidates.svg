@@ -1,0 +1,118 @@
+<svg viewBox="0 0 1400 840" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrAmb" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+    <marker id="arrGrn" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP5. P/D 분리 운용과 KV 이동 구조 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">녹색: 구조적 이득 지점 · 적색: 구조적 제약 · 주황: 신설/축소 요소</text>
+
+  <line x1="700" y1="72" x2="700" y2="790" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — Point-to-point 직접 전송 (transfer)</text>
+
+  <!-- P instance -->
+  <rect x="60" y="124" width="270" height="240" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">Prefill 인스턴스 (P)</text>
+  <rect x="80" y="162" width="230" height="120" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="92" y="184" font-size="11" font-weight="700" fill="#1F2A44">로컬 tier 스택 (독점)</text>
+  <text x="92" y="204" font-size="10" fill="#6B7A90">· GPU HBM</text>
+  <text x="92" y="221" font-size="10" fill="#6B7A90">· PNM DRAM</text>
+  <text x="92" y="238" font-size="10" fill="#6B7A90">· CXL</text>
+  <text x="92" y="258" font-size="9.5" fill="#1B7A4B">장애가 인스턴스에 갇힘</text>
+  <text x="80" y="308" font-size="10" fill="#B3402A">drain 중 원본 점유 지속</text>
+  <text x="80" y="326" font-size="10" fill="#B3402A">(이중 점유)</text>
+
+  <!-- D instance -->
+  <rect x="370" y="124" width="270" height="240" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="384" y="146" font-size="12" font-weight="700" fill="#1F2A44">Decode 인스턴스 (D)</text>
+  <rect x="390" y="162" width="230" height="120" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="402" y="184" font-size="11" font-weight="700" fill="#1F2A44">로컬 tier 스택 (독점)</text>
+  <text x="402" y="204" font-size="10" fill="#6B7A90">· GPU HBM</text>
+  <text x="402" y="221" font-size="10" fill="#6B7A90">· PNM DRAM</text>
+  <text x="402" y="238" font-size="10" fill="#6B7A90">· CXL</text>
+  <text x="402" y="258" font-size="9.5" fill="#B3402A">인스턴스 간 KV 사일로</text>
+  <text x="390" y="308" font-size="10" fill="#B3402A">중복 저장 잔존</text>
+  <text x="390" y="326" font-size="10" fill="#B3402A">(전역 dedup 불가)</text>
+
+  <!-- transfer arrow -->
+  <line x1="330" y1="210" x2="366" y2="210" stroke="#1F2A44" stroke-width="2.4" marker-end="url(#arr)"/>
+  <text x="348" y="200" font-size="9.5" font-weight="700" fill="#1F2A44" text-anchor="middle">전송</text>
+
+  <!-- KV Transport box -->
+  <rect x="60" y="392" width="580" height="88" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="414" font-size="12" font-weight="700" fill="#1F2A44">KV Transport = P↔D RDMA/NVLink 전송 엔진</text>
+  <text x="74" y="434" font-size="10" fill="#6B7A90">현 disagg proxy 자산의 정식화 — vLLM connector/전송 라이브러리 방향과 정합(B)</text>
+  <text x="74" y="452" font-size="10" fill="#B3402A">압축 상태 유지 전송의 (재)직렬화·포맷 변환 비용 — KV 포맷 계약 필요</text>
+  <text x="74" y="470" font-size="10" fill="#B3402A" font-weight="700">role flip = drain(전송) 완료 후 역할 전환 — 지연 하한 O(KV 크기 / 링크 BW)</text>
+
+  <text x="60" y="524" font-size="10.5" fill="#B3402A" font-weight="700">구조적 제약: 장문 세션 수십 개 = 수십 GB급 drain — Autoscaler inner loop(초~분) 민첩성 잠식</text>
+
+  <text x="60" y="566" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 검증 경로 (현 P/D proxy·LMCache 자산(A) 재사용) · 실패 도메인 인스턴스 로컬 (blast radius 최소)</text>
+  <text x="60" y="584" font-size="10.5" fill="#1B7A4B">전제 조건 없음 — DP1 확장형·DP4 후보1과 완전 호환 · 초기 ≤6인월</text>
+
+  <!-- ================= RIGHT: 후보2 ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 공유 tier 스테이징 (shared pooled staging)</text>
+
+  <!-- P instance -->
+  <rect x="730" y="124" width="280" height="130" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">Prefill 인스턴스 (P)</text>
+  <rect x="750" y="162" width="240" height="46" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="762" y="182" font-size="10.5" font-weight="700" fill="#1F2A44">GPU HBM (로컬 hot tier)</text>
+  <text x="762" y="198" font-size="9.5" fill="#6B7A90">계산 결과 KV를 공유 tier에 기록</text>
+  <text x="750" y="232" font-size="9.5" fill="#1B7A4B">단일 writer — P가 쓰고 동결</text>
+
+  <!-- D instance -->
+  <rect x="1060" y="124" width="280" height="130" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1074" y="146" font-size="12" font-weight="700" fill="#1F2A44">Decode 인스턴스 (D)</text>
+  <rect x="1080" y="162" width="240" height="46" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="1092" y="182" font-size="10.5" font-weight="700" fill="#1F2A44">GPU HBM (로컬 hot tier)</text>
+  <text x="1092" y="198" font-size="9.5" fill="#6B7A90">공유 tier의 KV를 매핑·승격</text>
+  <text x="1080" y="232" font-size="9.5" fill="#1B7A4B">참조 전달 — copy 없음</text>
+
+  <!-- arrows to shared tier -->
+  <line x1="870" y1="254" x2="870" y2="316" stroke="#1F2A44" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="790" y="290" font-size="10" fill="#1F2A44">write (KV 기록)</text>
+  <line x1="1200" y1="316" x2="1200" y2="254" stroke="#1B7A4B" stroke-width="2" marker-end="url(#arrGrn)"/>
+  <text x="1212" y="290" font-size="10" fill="#1B7A4B">매핑만 — O(메타데이터)</text>
+
+  <!-- shared tier -->
+  <rect x="730" y="320" width="610" height="96" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="744" y="342" font-size="12" font-weight="700" fill="#155F3B">공유 스테이징 tier — CXL pooled memory (CMM-DC) · HBF</text>
+  <text x="744" y="362" font-size="10" fill="#155F3B">"데이터를 옮기지 말고 위치를 재정의하라"(배경 1.3)의 P/D 판 — KV 이동 = 참조 전달</text>
+  <text x="744" y="379" font-size="10" fill="#155F3B">인스턴스 간 chunk 전역 재사용 개방 (DP3 후보2와 시너지) · CMM-DC E2E 증명의 최직접 시나리오</text>
+  <text x="744" y="399" font-size="10" fill="#B3402A">공유 tier BW fan-in — decode 승격 트래픽 집중 시 새 병목 (CXL BW는 HBM 대비 열위)</text>
+
+  <!-- KV Transport reduced -->
+  <rect x="730" y="440" width="610" height="66" fill="#FDF6E9" stroke="#B45309" stroke-width="1.3" stroke-dasharray="6,4"/>
+  <text x="744" y="462" font-size="12" font-weight="700" fill="#8A5A08">KV Transport (축소) = 포인터/소유권 메타데이터 교환 + 승격 프리페치 엔진</text>
+  <text x="744" y="482" font-size="10" fill="#8A5A08">role flip = drain-free (소유권 이전) — Autoscaler inner loop의 설계 의도(초~분) 완성</text>
+
+  <text x="730" y="546" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: flip이 O(메타데이터) — 부하 급변 추종 민첩 · 이중 점유 제거 + 전역 dedup (QA2 ≥3× 경로)</text>
+
+  <text x="730" y="588" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 공유 tier 장애의 blast radius 전 인스턴스 · 소유권/일관성 프로토콜 신규 (미검증,</text>
+  <text x="730" y="606" font-size="10.5" fill="#B3402A">CXL 3.x pooling HW 성숙도) — 초기 &gt;24인월 · DP4 후보2의 SHARED capability 하드 전제</text>
+
+  <!-- evolution note -->
+  <rect x="60" y="646" width="1280" height="72" fill="#F4F6FA" stroke="#6B7A90" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="76" y="668" font-size="10.5" font-weight="700" fill="#1F2A44">진화 경로 (검토 노트): 후보1로 시작(자산·성숙도) + KV Locator를 처음부터 위치 투명(참조 기반)으로 설계해 공유 스테이징 삽입점 예약</text>
+  <text x="76" y="686" font-size="10.5" fill="#6B7A90">→ CMM-DC 실기 확보·fan-in 실측 통과를 전환 트리거로 ADR화 — 전환 시 인터페이스 개정 없이 Transport 구현만 교체</text>
+  <text x="76" y="704" font-size="10.5" fill="#6B7A90">실측 결정 변수: ① role flip 민첩성이 goodput의 1차 병목인가 ② 공유 tier BW가 승격 fan-in을 감당하는가</text>
+
+  <!-- Legend -->
+  <rect x="44" y="756" width="22" height="14" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="74" y="767" font-size="10.5" fill="#1F2A44">구조적 이득 지점</text>
+  <rect x="196" y="756" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="226" y="767" font-size="10.5" fill="#1F2A44">신설/축소 요소</text>
+  <text x="360" y="767" font-size="10.5" fill="#B3402A">적색 텍스트 = 구조적 제약/리스크</text>
+</svg>

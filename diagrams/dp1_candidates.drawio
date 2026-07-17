@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp1-candidates" name="DP1 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP1. 실행 스택 소싱 — Inference·Memory Engine의 외부 채택 vs 자체 구현 (후보구조 설계도)&lt;/b&gt;&lt;br&gt;후보1은 단일 구조 — KV 데이터-이동 계층 골격의 소유자만 변형 A(MCR)/B(LMCache)로 갈림 · 녹색: 이득 · 적색: 제약 · 주황: 신설/주입 · 베이지: 3rd-party" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="14" width="1100" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="h1" value="후보구조 1 — 외부 스택 활용형 (vLLM 생태계 기반)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1orch" value="«MCR» Inference Orchestration — 독립 프로세스 (現 P/D proxy의 정식화)&lt;br&gt;&lt;font style=&quot;font-weight:normal&quot;&gt;Request Manager · Scheduling (KV-aware Router·SLO Mon.) · Resource Manager&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=11;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1vllm" value="«3rd-party» vLLM Engine Process — 무수정 (Inference Engine 자리를 담당)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F1EFEA;strokeColor=#6B7A90;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="238" width="580" height="176" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeDisp" value="«use» dispatch (API/RPC)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c1orch" target="c1vllm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1sched" value="&lt;b&gt;vLLM Scheduler&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;tier 비인지 — GPU block 잔량만 (변형 무관)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="276" width="255" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1exec" value="&lt;b&gt;Model Executor / Worker&lt;/b&gt;&lt;br&gt;배칭·커널·모델 지원 upstream 무임승차" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="276" width="255" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1cab" value="&lt;b&gt;Custom Attention Backend · Worker Plugin — MCR 주입&lt;/b&gt;&lt;br&gt;변형 A의 cross-tier KV fetch 경로 (변형 B에선 선택적)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="350" width="536" height="48" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1slot" value="KV 데이터-이동 계층 (골격) — 이 슬롯의 소유자만 변형에 따라 갈림" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;dashed=1;dashPattern=9 5;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="452" width="580" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeConn" value="□ KV Connector API (공식 확장점) — KV 추출/재주입" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B45309;dashed=1;fontSize=10;fontColor=#8A5A08;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c1vllm" target="c1slot">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1varA" value="&lt;b&gt;변형 A (기준형) — «MCR» Memory Engine&lt;/b&gt;&lt;br&gt;· KV Index · Cache Manager · Tier &amp;amp; Lifecycle를 MCR이 직접 소유&lt;br&gt;· 배치·압축 정책의 자리 = MCR (DP2 전 후보 열림)&lt;br&gt;· 골격 지배력 최대 — 연구 기여(tier-aware·비연속 KV)의 자리 보존" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="76" y="488" width="270" height="166" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1varB" value="&lt;b&gt;변형 B — «3rd-party» LMCache&lt;/b&gt;&lt;br&gt;· chunking·영속화·CacheGen·CacheBlend &lt;font color=&quot;#1B7A4B&quot;&gt;재구현 없이 상속 (초기 비용 최소)&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;· 정책 골격 LMCache 소유 — 요청별 SLO 정책 자리 제한&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F1EFEA;strokeColor=#6B7A90;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="356" y="488" width="270" height="166" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1hook" value="&lt;b&gt;MCR Policy Hook&lt;/b&gt; — 배치·압축·재사용 정책 주입 (훅 범위 내)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=9;align=left;verticalAlign=middle;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="366" y="586" width="250" height="36" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1tier" value="&lt;b&gt;«MCR» 자사 tier 자산 — CXL · PNM DRAM · HBF (변형 공통)&lt;/b&gt;&lt;br&gt;변형 A: Memory Engine 내 tier 어댑터 모듈 · 변형 B: LMCache storage backend connector 모듈&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;tier 추가 = 모듈 1개 (코어 무수정) — 두 변형 동일&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="716" width="580" height="84" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeBk" value="변형 B: □ Storage Backend API (put/get/pin) 경유" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B45309;dashed=1;fontSize=10;fontColor=#8A5A08;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c1slot" target="c1tier">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득(공통):&lt;/b&gt; 생태계 무임승차 · 검증된 코어 · 현 자산(P/D proxy·LMCache 연동) 재사용 — 초기 ≤6인월" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="816" width="580" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;제약(공통):&lt;/b&gt; 엔진 scheduler의 tier 비인지 — co-scheduling 이득 미회수, 비연속·압축 KV는 block table 밖&lt;br&gt;변형 B 추가 제약: tier-aware decode 경로·근접연산(DP6) 통로 없음 · vLLM+LMCache 이중 upstream 추종" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="852" width="580" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="h2" value="후보구조 2 — 자체 구현형 (독립 framework, 확정안 v2의 무제약 구현)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2orch" value="«MCR» Inference Orchestration&lt;br&gt;&lt;font style=&quot;font-weight:normal&quot;&gt;Request Manager · Scheduling (KV-aware Router·SLO Mon.) · Resource Manager&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=11;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2ie" value="«MCR» Inference Engine — 자체 구현" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="238" width="610" height="250" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeDisp" value="«use» dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2orch" target="c2ie">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2tas" value="&lt;b&gt;Tier-aware Scheduler&lt;/b&gt;&lt;br&gt;tier 잔량·KV 위치·압축 상태가&lt;br&gt;admission·배칭 결정에 직접 반영" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="276" width="270" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2sec" value="&lt;b&gt;Step Execution Controller&lt;/b&gt;&lt;br&gt;continuous batching·chunked prefill&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;전부 자체 재구현 대상&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="276" width="270" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2kl" value="&lt;b&gt;Kernel &amp;amp; Layer&lt;/b&gt;&lt;br&gt;FlashInfer/자체 Attention · MoE Dispatcher · Custom Kernel · CompressionOp(DI 구현)&lt;br&gt;&lt;font color=&quot;#6B7A90&quot;&gt;모델 zoo·신규 기법 포팅을 자체 유지 (upstream 부재)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="362" width="566" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2me" value="«MCR» Memory Engine — 설계 중심 (1급 패키지)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="546" width="610" height="256" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeCo" value="placement × scheduling co-design — 본 후보의 핵심 이득 (QA1·QA2 상한)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;startArrow=block;strokeColor=#1B7A4B;strokeWidth=2.5;fontSize=10;fontColor=#1B7A4B;fontStyle=1;exitX=0.22;exitY=1;exitDx=0;exitDy=0;entryX=0.22;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2ie" target="c2me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2kbm" value="&lt;b&gt;Tier-agnostic KV/Block Manager&lt;/b&gt;&lt;br&gt;HBM/PNM/CXL 동일 추상화 —&lt;br&gt;압축·비연속 KV를 block table 1급으로" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="584" width="270" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cm" value="&lt;b&gt;Cache Manager&lt;/b&gt;&lt;br&gt;KV Index (prefix/infix) ·&lt;br&gt;Memory Compressor" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="584" width="270" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2tl" value="&lt;b&gt;Tier &amp;amp; Lifecycle&lt;/b&gt;&lt;br&gt;Tier Topology Model (자사 HW 로드맵 직접 수용) · Migration · KV Transport&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;자사 디바이스(HBM4·CMM-DC·HBF) 확장점 제약 없음 — QA4(자사 HW) 최고&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="680" width="566" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; 배칭·모델 지원·수치 검증을 전부 자체 구축 + 영구 추종 (수십 인월+, vLLM 동등 baseline 도달 자체가 선행 과제 — QA1 상한과 도달 확률의 분리)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="816" width="610" height="46" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="legend" value="범례:  녹색 = 구조적 이득 지점 · 주황 점선 = MCR 신설/주입 · 베이지 = 3rd-party (vLLM·LMCache) · 굵은 점선 테두리 = 변형 선택 슬롯 · 적색 텍스트 = 구조적 제약/리스크" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="44" y="920" width="1200" height="26" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

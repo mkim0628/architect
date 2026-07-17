@@ -1,0 +1,76 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp8-candidates" name="DP8 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="880" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP8. SSD-PIM의 계약·소유 — 가속 벡터DB 서비스 vs 검색 가능한 메모리 tier (전제: ADR-001)&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/개정 요소" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="1000" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — 가속 벡터DB 서비스 (Retrieval Engine 소유, 제어 평면)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1rm" value="&lt;b&gt;«MCR» Request Manager (제어 평면)&lt;/b&gt;&lt;br&gt;&lt;br&gt;Retrieval Engine — 외부 벡터DB 자리에서 SSD-PIM API 호출&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;v2 구조 무변경 — 백엔드 교체로 완결 (검증된 경계 유지)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="96" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1dev" value="&lt;b&gt;SSD-PIM 디바이스 — 가속 벡터DB (독립 제품)&lt;/b&gt;&lt;br&gt;벡터 인덱스/스캔 (DP7 채택안) — 표준 계약 뒤에 은닉, 세대 교체도 API 뒤에서&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;장애 격리 — 검색 실패가 KV/tier 경로와 무관&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F1EFEA;strokeColor=#6B7A90;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="268" width="580" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeQ" value="query(embedding) → top-k(chunk id, score) — 벡터DB 표준 계약" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c1rm" target="c1dev">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1post" value="&lt;b&gt;후속 경로: chunk id → 텍스트 로드 → prefill 재계산&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;retrieval hit 후에도 prefill 재계산 잔존 — TTFT의 지배 몫 미회수 (KV 조회는 별도 키로 후속)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="396" width="580" height="66" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B3402A;fontSize=10;" edge="1" parent="1" source="c1dev" target="c1post">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1me" value="&lt;b&gt;«MCR» Memory Engine — 이 디바이스를 모른다 (분리된 세계)&lt;/b&gt;&lt;br&gt;KV Index·tier 스택은 검색과 무관하게 별도 운용&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;텍스트/벡터/KV 3중 저장 중복 잔존 (co-location dedup 없음)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="490" width="580" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; v2 구조 무변경 (리스크 최소, 초기 ≤6인월) · 디바이스 독립 제품화·타 스택 이식 용이 · 장애 격리" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="592" width="580" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;제약:&lt;/b&gt; 검색과 KV가 분리된 세계 — &quot;memory-centric 융합&quot; 기여 지점이 구조에서 사라짐 (가속기 납품 이상이 안 됨)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="628" width="580" height="44" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — 검색 가능한 메모리 tier (Memory Engine 소유, KV 융합)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2rm" value="&lt;b&gt;«MCR» Request Manager — Retrieval Engine은 질의 발행자 역할만 유지&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;v2 검수 2번(Retrieval Engine 위치) 재개봉 — 01에 개정 사유 기록 필요&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2me" value="«MCR» Memory Engine — SSD-PIM을 tier로 소유 (데이터 평면)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="226" width="610" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeQ" value="query(embedding)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c2rm" target="c2me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2ttm" value="&lt;b&gt;Tier Topology Model (개정)&lt;/b&gt;&lt;br&gt;· SSD-PIM tier 등록&lt;br&gt;· SEARCH capability 표현&lt;br&gt;  (DP4 후보2 스키마 확장 — 하드 전제)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="264" width="275" height="92" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2key" value="&lt;b&gt;키 공간 통합 (개정)&lt;/b&gt;&lt;br&gt;· 벡터 인덱스 키 = KV Index의&lt;br&gt;  content-hash 키 (DP3와 정렬)&lt;br&gt;· 검색 결과 = KV Locator 해석 가능 참조" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1055" y="264" width="275" height="92" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2tier" value="&lt;b&gt;SSD-PIM tier — 벡터 인덱스 + chunk KV co-location&lt;/b&gt;&lt;br&gt;검색되는 chunk와 그 KV가 같은 디바이스에 상주 — 텍스트/벡터/KV 3중 저장 → 통합 (전역 dedup)&lt;br&gt;&quot;retrieve the text, then recompute&quot; → &quot;retrieve the KV&quot;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="754" y="372" width="576" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2hit" value="&lt;b&gt;hit 시:&lt;/b&gt; KV 참조 반환 → KV 승격(프리페치) 파이프라인 → GPU — prefill 재계산 소멸" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=middle;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="754" y="482" width="576" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeH" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="c2tier" target="c2hit">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; retrieval hit ≡ KV hit — DP3 후보2와 융합 시 TTFT 이득 극대 (CacheBlend 2.2–3.3×(B)의 검색 융합판) · &quot;검색-재사용 단일 near-data 경로&quot; = MCR 고유 기여 · E2E 증명 vehicle (2.3)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="560" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; KV Locator·tier 모델(공개 인터페이스=코어) 개정 · 장애 도메인 결합 (검색 = KV tier), 키 통합·co-location 레이아웃·승격 파이프라인 신규 + 재개봉 설득 — 초기 &gt;24인월 (QA5 ★☆☆), 이득 크기가 DP3 후보2(비연속 재사용) 채택에 종속 — 사실상 동시 결정 묶음" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="612" width="610" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;진화 경로 (검토 노트):&lt;/b&gt; 후보1(서비스 모델)로 시작하되 chunk id를 KV Index와 동일한 content-hash 체계로 발급 (키 공간 정렬만 선행 — 비용 미미) → DP3 후보2 채택 + SSD→GPU 승격 대역폭 실측 통과를 트리거로 후보2 전환 — 키가 정렬돼 있으면 계약 개정이 &quot;반환 타입 확장&quot;으로 축소" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="710" width="1280" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

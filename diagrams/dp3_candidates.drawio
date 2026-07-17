@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp3-candidates" name="DP3 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="880" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP3. KV 재사용 범위·복원 전략 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/확장 요소" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="900" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — Exact-prefix 재사용 (block-aligned)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1orch" value="«MCR» Inference Orchestration" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="102" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1re" value="&lt;b&gt;Retrieval Engine (RAG)&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;chunk 목록 → 재사용 판정에 미사용&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="80" y="160" width="255" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1router" value="&lt;b&gt;KV-aware Router&lt;/b&gt;&lt;br&gt;prefix 일치 길이만 조회" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="160" width="255" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1me" value="«MCR» Memory Engine" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="580" height="230" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1idx" value="&lt;b&gt;KV Index&lt;/b&gt;&lt;br&gt;· 블록 단위 prefix 해시 체인&lt;br&gt;· prefix 일치 검색만 (infix 불가)&lt;br&gt;&lt;font color=&quot;#1B7A4B&quot;&gt;· 구조 단순 — eviction 일관성 용이&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="318" width="255" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1cm" value="&lt;b&gt;Cache Manager&lt;/b&gt;&lt;br&gt;· KV Cache Manager&lt;br&gt;· Memory Compressor&lt;br&gt;· 복원 파이프라인 없음" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="318" width="255" height="108" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1note1" value="재사용 경로: 일치 prefix 구간 = 그대로 사용 (위치 보존 KV만)&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;불일치 지점부터 전량 재계산 — 복원 경로 자체가 없음&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="84" y="436" width="536" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c1router" target="c1me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeLbl" value="«use» KV Locator — prefix 일치 길이 조회" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#1F2A44;" vertex="1" connectable="0" parent="c1edge">
+          <mxGeometry x="-0.1" relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;구조적 제약:&lt;/b&gt; RAG의 비연속 공유 chunk 히트 불가 (동일 chunk가 요청마다 다른 위치)&lt;br&gt;→ 재사용률 상한이 워크로드 prefix 구조에 갇힘 — agent 장기기억(중간 삽입) 미회수" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="520" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; 재사용발 품질 저하 구조적 0 · vLLM prefix caching으로 대규모 검증된 경로 · DP1 확장형과 완전 호환 · 초기 ≤6인월" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="576" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — 비연속 chunk 재사용 + selective recompute (CacheBlend형)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2orch" value="«MCR» Inference Orchestration" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="102" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2re" value="&lt;b&gt;Retrieval Engine (RAG)&lt;/b&gt;&lt;br&gt;retrieval chunk 목록 생성" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="750" y="160" width="255" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2router" value="&lt;b&gt;KV-aware Router&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#155F3B&quot;&gt;재사용 후보 명단 생성&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1075" y="160" width="255" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeChunk" value="chunk 목록" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;fontSize=9;fontColor=#1B7A4B;" edge="1" parent="1" source="c2re" target="c2router">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2me" value="«MCR» Memory Engine" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="280" width="610" height="320" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edge" value="«use» KV Locator — 재사용 후보 명단 조회 (prefix/infix)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c2router" target="c2me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2idx" value="&lt;b&gt;KV Index (확장)&lt;/b&gt;&lt;br&gt;· content-hash 기반 chunk 단위 키&lt;br&gt;· prefix/infix lookup (01 신설 목적 그대로)&lt;br&gt;· prefix는 content-hash의 특수형" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="318" width="275" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2restore" value="&lt;b&gt;복원 파이프라인 (신설)&lt;/b&gt;&lt;br&gt;· 위치 불일치 chunk 재배치&lt;br&gt;· 경계 토큰 selective recompute&lt;br&gt;  (토큰의 10–15%만 재계산)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1055" y="318" width="275" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeRestore" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B45309;dashed=1;fontSize=9;" edge="1" parent="1" source="c2idx" target="c2restore">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cm" value="&lt;b&gt;Cache Manager&lt;/b&gt;&lt;br&gt;· KV Cache Manager · Compressor&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;· eviction ↔ Index 일관성 부담&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="446" width="275" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2bt" value="&lt;b&gt;block table 밖 1급 KV&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;· DP1 확장형과 구조적 긴장&lt;br&gt;· (2급 시민 시 copy/변환 오버헤드)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1055" y="446" width="275" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2note1" value="재사용 경로: 일치 chunk = 재배치 후 사용 · 경계만 부분 재계산 · 잔여만 전량 재계산&lt;br&gt;재사용/재계산 판단 = 품질 예산 집행의 일부 (DP2 채택안에 종속)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="754" y="536" width="576" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; TTFT 2.2–3.3× · 처리율 2.8–5× (CacheBlend, B) — RAG·agent 재사용률 상한 최대, chunk 전역 dedup으로 유효 KV 용량 동반 상승 · &quot;재사용 축 joint orchestration&quot; 기여 성립" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="610" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; 위치 근사·부분 재계산의 품질 비용 (K&gt;V sensitivity와 결합 — bound 관리 필요), content-hash Index·복원 파이프라인·판정 로직 신규 복잡도 (초기 6–24인월)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="662" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;진화 경로 (검토 노트):&lt;/b&gt; 후보1로 시작하되 KV Index 키 스키마를 처음부터 content-hash로 설계 (prefix = content-hash의 특수형) → 실측 히트율 격차가 임계(chunk 히트 기회 ≥ prefix 히트의 2×)를 넘으면 복원 파이프라인만 증설하여 후보2로 전환 (트리거를 ADR에 명시)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="740" width="1280" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

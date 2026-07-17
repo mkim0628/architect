@@ -123,5 +123,8 @@ description: "Write and organize architecture Design Point (DP) documents in the
 - **architect-ppt 연동**: 각 DP는 `설계 Point 선정` 슬라이드(P9)의 `dpCard`
   한 장으로 요약된다 — items = `(1안) 후보1 한줄`, `(2안) 후보2 한줄`,
   `QA: 관련 QA 나열`. DP 색상은 `COLORS.dp` 토큰(page-specs.md P9 참조).
+  또한 **DP마다 상세 2페이지**(P10 문제 정의·설계 쟁점 + P11 후보구조 비교표 —
+  설계도/특징/장점/단점/Trade-off)가 `pageDpProblem`/`pageDpCompare`로
+  생성된다. 후보구조 설계도(.svg)가 P11의 설계도 셀 원천이 된다.
 - **architect-qa 연동**: QA 정의 문서의 생성·개정과 후보 채점은 `architect-qa`
   스킬로 수행. QA 정의는 Utility Tree/ASR 슬라이드(P7)의 행과 정합해야 한다.

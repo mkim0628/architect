@@ -1,0 +1,97 @@
+<svg viewBox="0 0 1400 800" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrGrn" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP4. Tier Topology Model의 하드웨어 추상화 수준 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">녹색: 구조적 이득 지점 · 적색: 구조적 제약 · 주황: 신설/확장 요소</text>
+
+  <line x1="700" y1="72" x2="700" y2="750" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — 공통 파라미터형 (uniform parametric)</text>
+
+  <!-- Tier Topology Model -->
+  <rect x="60" y="124" width="580" height="196" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«Memory Engine» Tier Topology Model — tier 목록 × 수치 프로파일</text>
+
+  <rect x="84" y="160" width="536" height="34" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="98" y="182" font-size="10.5" fill="#1F2A44"><tspan font-weight="700">GPU HBM</tspan>   대역폭 ↑↑ · 용량 ↓ · 지연 ↓</text>
+  <rect x="84" y="200" width="536" height="34" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="98" y="222" font-size="10.5" fill="#1F2A44"><tspan font-weight="700">PNM DRAM</tspan>   대역폭 ↑ · 용량 ↑ · 지연 ↔ <tspan fill="#B3402A">(근접연산 capability 표현 불가)</tspan></text>
+  <rect x="84" y="240" width="536" height="34" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="98" y="262" font-size="10.5" fill="#1F2A44"><tspan font-weight="700">CXL (CMM-DC)</tspan>   대역폭 ↓ · 용량 ↑↑ · 지연 ↑ <tspan fill="#B3402A">(공유성 표현 불가)</tspan></text>
+
+  <text x="84" y="304" font-size="10" fill="#6B7A90">프로파일 = (대역폭, 용량, 지연 [, 비용/W]) 수치 튜플만</text>
+
+  <line x1="350" y1="320" x2="350" y2="356" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="360" y="344" font-size="10.5" fill="#1F2A44">수치만 소비</text>
+
+  <!-- policy single path -->
+  <rect x="60" y="360" width="580" height="84" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="74" y="382" font-size="12" font-weight="700" fill="#155F3B">정책·커널 — 단일 코드 경로</text>
+  <text x="74" y="402" font-size="10" fill="#155F3B">capability 분기 없음 — 검증 매트릭스 최소 · 동작 예측 가능</text>
+  <text x="74" y="419" font-size="10" fill="#155F3B">타 엔진·타사 HW 이식성 최대 — "범용 레퍼런스" 지위</text>
+
+  <rect x="60" y="464" width="580" height="62" fill="#FFFFFF" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="74" y="486" font-size="11" font-weight="700" fill="#155F3B">디바이스 추가 = 프로파일 등록 + DMA 어댑터 1모듈 (코어 0)</text>
+  <text x="74" y="506" font-size="10" fill="#155F3B">QA4 ★★★ bin의 정면 충족 — "재설계 없는 구조"(필요성 2.1)</text>
+
+  <text x="60" y="566" font-size="10.5" fill="#B3402A" font-weight="700">구조적 제약: PIM in-place 압축 · HBF 영속 · CXL 공유가 (BW, 용량, 지연)로 표현 불가</text>
+  <text x="60" y="584" font-size="10.5" fill="#B3402A">→ 압축/해제가 GPU 사이클 계속 잠식 · DP5 후보2(공유 스테이징)·DP6(근접연산) 원천 배제</text>
+  <text x="60" y="602" font-size="10.5" fill="#B3402A">→ E2E 증명 vehicle(필요성 2.3) 약화 — 자사 차별 기능의 구조적 미회수</text>
+
+  <!-- ================= RIGHT: 후보2 ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — Capability-aware 프로파일형</text>
+
+  <!-- Tier Topology Model -->
+  <rect x="730" y="124" width="610" height="236" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«Memory Engine» Tier Topology Model — 수치 튜플 + capability 디스크립터</text>
+
+  <rect x="754" y="160" width="566" height="34" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <text x="768" y="182" font-size="10.5" fill="#8A5A08"><tspan font-weight="700">HBM-PIM / PNM</tspan>   수치 + NEAR_COMPUTE{codec, gather …}</text>
+  <rect x="754" y="200" width="566" height="34" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <text x="768" y="222" font-size="10.5" fill="#8A5A08"><tspan font-weight="700">HBF</tspan>   수치 + PERSISTENT (agent 장기기억의 HW 대응)</text>
+  <rect x="754" y="240" width="566" height="34" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="6,4"/>
+  <text x="768" y="262" font-size="10.5" fill="#8A5A08"><tspan font-weight="700">CMM-DC (CXL pool)</tspan>   수치 + SHARED (DP5 후보2의 전제)</text>
+  <rect x="754" y="280" width="566" height="34" fill="#FFFFFF" stroke="#44546A"/>
+  <text x="768" y="302" font-size="10.5" fill="#1F2A44"><tspan font-weight="700">GPU HBM</tspan>   수치만 (capability 없음 — 미인지 정책은 무시)</text>
+
+  <text x="754" y="344" font-size="10" fill="#8A5A08">capability: NEAR_COMPUTE{ops} · PERSISTENT · SHARED · IN_PLACE_COMPRESS …</text>
+
+  <line x1="1030" y1="360" x2="1030" y2="396" stroke="#1B7A4B" stroke-width="2" marker-end="url(#arrGrn)"/>
+  <text x="1040" y="384" font-size="10.5" fill="#1B7A4B">capability 질의</text>
+
+  <!-- policy -->
+  <rect x="730" y="400" width="610" height="104" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
+  <text x="744" y="422" font-size="12" font-weight="700" fill="#155F3B">정책 — capability 기반 결정</text>
+  <text x="744" y="442" font-size="10" fill="#155F3B">· NEAR_COMPUTE → 압축/해제 오프로드 (GPU 사이클 보존, decode wait 70–85% 구간 중첩 이득)</text>
+  <text x="744" y="459" font-size="10" fill="#155F3B">· PERSISTENT → 영속 배치 (세션 넘는 KV 자산화) · SHARED → 공유 스테이징 (DP5 후보2 개방)</text>
+  <text x="744" y="476" font-size="10" fill="#155F3B">· CompressionOp 실행 위치를 디바이스로 위임 — 의존 역전(01)의 활용</text>
+
+  <text x="730" y="540" font-size="10.5" fill="#1B7A4B" font-weight="700">이득: 자사 디바이스 차별 가치의 구조적 회수 — "이 capability가 있어서 이만큼 빨라진다"를</text>
+  <text x="730" y="558" font-size="10.5" fill="#1B7A4B">스택이 직접 증명 (E2E 증명 vehicle, 필요성 2.3 정면 충족)</text>
+
+  <text x="730" y="600" font-size="10.5" fill="#B3402A" font-weight="700">리스크: capability × 정책 조합의 코드 분기·검증 매트릭스 확대 (초기 6–24인월),</text>
+  <text x="730" y="618" font-size="10.5" fill="#B3402A">capability 스키마 = 공개 인터페이스(코어) — 신규 capability 등장 시 코어 개정,</text>
+  <text x="730" y="636" font-size="10.5" fill="#B3402A">타사 HW에 무의미한 스키마 — 범용 레퍼런스 지위 저하</text>
+
+  <!-- hybrid note -->
+  <rect x="60" y="660" width="1280" height="54" fill="#F4F6FA" stroke="#6B7A90" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="76" y="682" font-size="10.5" font-weight="700" fill="#1F2A44">hybrid — 2계층 프로파일 (검토 노트): 필수층(수치 튜플, 모든 정책 소비) + 선택층(capability, 인지 정책만 소비·미인지 시 무시 = 하위호환)</text>
+  <text x="76" y="700" font-size="10.5" fill="#6B7A90">진화 경로: 후보1 스키마 + capability 슬롯 예약 → DP5 실측(공유 스테이징 이득)이 임계를 넘으면 SHARED부터 선택층 개방</text>
+
+  <!-- Legend -->
+  <rect x="44" y="756" width="22" height="14" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.3"/>
+  <text x="74" y="767" font-size="10.5" fill="#1F2A44">구조적 이득 지점</text>
+  <rect x="196" y="756" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="226" y="767" font-size="10.5" fill="#1F2A44">신설/확장 요소</text>
+  <text x="360" y="767" font-size="10.5" fill="#B3402A">적색 텍스트 = 구조적 제약/리스크</text>
+</svg>
