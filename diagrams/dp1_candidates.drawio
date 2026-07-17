@@ -4,7 +4,7 @@
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="&lt;b&gt;DP1. Framework 실행 구조 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 지점 · 적색: 구조적 제약 · 주황: 신설/주입 요소 · □ 포트: 공식 확장점 · 베이지: 3rd-party" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+        <mxCell id="title" value="&lt;b&gt;DP1. 실행 스택 소싱 — Inference·Memory Engine의 외부 채택 vs 자체 구현 (후보구조 설계도)&lt;/b&gt;&lt;br&gt;결정 변수 = 자체 구현의 경계선 (자체 범위: 후보2 &amp;gt; 후보1 &amp;gt; 후보3) · 녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/주입 · □ 포트: 공식 확장점 · 베이지: 3rd-party" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
           <mxGeometry x="40" y="14" width="1000" height="50" as="geometry"/>
         </mxCell>
 

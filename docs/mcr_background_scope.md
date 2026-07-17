@@ -96,9 +96,10 @@ memory-centric 디바이스의 레퍼런스 스택으로 성립시킨다.
    plane) / Inference Engine / Memory Engine(data plane)의 3-패키지 구조와 공개
    인터페이스(KV Locator, CompressionOp) 정의. 디바이스는 Tier Topology Model의
    파라미터로 plug-in되는 구조로 설계하여 로드맵 디바이스 수용성을 확보
-2. **핵심 설계 결정(DP) 도출·평가** (← 배경 ④·⑤): DP1 Framework 실행 구조(vLLM
-   확장형 vs 독립형 vs LMCache/KV-계층 확장형), DP2 KV 배치·압축 관리 주체(중앙
-   정책 vs 자율) — 후보구조, QA 평가, ADR
+2. **핵심 설계 결정(DP) 도출·평가** (← 배경 ④·⑤): DP1 실행 스택 소싱 —
+   Inference·Memory Engine의 외부 채택 vs 자체 구현(vLLM 확장형 vs 독립형 vs
+   LMCache/KV-계층 확장형), DP2 KV 배치·압축 관리 주체(중앙 정책 vs 자율) —
+   후보구조, QA 평가, ADR
 3. **E2E 실행 경로 확보 및 정량 성능 증명** (← 배경 ①·⑤): 대표 워크로드
    (long-context RAG, multiturn, agent memory) 기준 P/D disaggregated 벤치마크가
    자사 메모리 tier 위에서 완주하는 E2E 경로를 구축하고, GPU HBM 단일 tier

@@ -1,6 +1,10 @@
-# MCR 설계포인트 전개 — DP1 · DP2 (v0.3)
+# MCR 설계포인트 전개 — DP1 · DP2 (v0.4)
 
-변경 이력: v0.3 — DP1에 후보구조 3(KV-계층(LMCache) 확장형) 추가: 문제 정의에
+변경 이력: v0.4 — DP1을 **실행 스택 소싱**(Inference Engine + Memory Engine을
+외부에서 채택하는가, 자체 구현하는가)의 단일 결정으로 재프레이밍: 제목·문제
+정의·설계 쟁점·검토 노트 개정, 후보별 "자체 구현 경계선" 명시 (후보 구성·QA표는
+유지 — 세 후보는 경계선 위치의 순수형 3점으로 재해석).
+v0.3 — DP1에 후보구조 3(KV-계층(LMCache) 확장형) 추가: 문제 정의에
 KV-계층 생태계 압력 보강, 설계 쟁점 4 신설(DP2·DP6 커플링), 검토 노트를 3후보
 구도로 재작성, 의존성 표 갱신. v0.2 — QA 평가표를
 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3 bin 기준으로 재채점 (DP1
@@ -23,9 +27,23 @@ QA 평가표 별점은 해당 문서의 bin 기준으로 해석한다.
 
 ---
 
-## DP1. Framework 실행 구조
+## DP1. 실행 스택 소싱 — Inference·Memory Engine의 외부 채택 vs 자체 구현
 
 ### 문제 정의
+
+본 DP는 실행 스택의 두 층 — **Inference Engine**(실행·배칭·커널)과 **Memory
+Engine의 KV 데이터-이동 계층**(추출·이동·영속화 골격) — 을 외부 생태계에서
+채택할지 자체 구현할지를 **하나의 결정**으로 다룬다. 두 층의 소싱은
+강결합이기 때문이다: KV-계층(LMCache) 채택은 vLLM connector를 전제하고, 독립
+framework는 KV 골격의 자체 소유를 강제한다. 따라서 실현 가능한 조합은 아래
+3개뿐이며, 결정 변수는 단일 축 — "**자체 구현의 경계선을 어디에 긋는가**" —
+로 환원된다:
+
+| 후보 | Inference Engine | KV 계층(Memory Engine) 골격 | 자체 구현 경계선 |
+|---|---|---|---|
+| 1. vLLM 확장형 | 외부 (vLLM) | **자체 (MCR)** | 두 엔진 사이 |
+| 2. 독립 framework | **자체 (MCR)** | **자체 (MCR)** | 없음 — 전 층 자체 |
+| 3. KV-계층(LMCache) 확장형 | 외부 (vLLM) | 외부 (LMCache) | tier 백엔드·정책 훅 |
 
 MCR은 PIM/PNM/CXL 이종 메모리를 1급 자원으로 다루는 런타임이다. 그러나 현존 오픈소스 추론 프레임워크(vLLM)는 "KV cache는 GPU HBM에 있다"는 가정이 코드 전반에 배어 있다. 구체적으로:
 
@@ -45,7 +63,7 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 
 ### 설계 쟁점
 
-1. MCR의 차별 가치(Memory Engine, tier-aware 배치)가 **vLLM의 공식 확장점**(platform plugin, KV connector, custom attention backend, worker extension) 안에서 표현 가능한가? 표현 불가능한 잔여분은 무엇인가?
+1. **경계선의 위치**: MCR의 차별 가치(tier-aware 배치, non-contiguous KV 1급 관리, 근접 연산)는 실행 스택의 어느 층에 사는가 — 자체 구현 경계선은 최소한 그 층을 안쪽에 두어야 한다. 그 가치가 외부 계층의 확장 통로 — **vLLM의 공식 확장점**(platform plugin, KV connector, custom attention backend, worker extension)·LMCache 정책 훅 — 안에서 표현 가능한가? 표현 불가능한 잔여분은 무엇인가?
 2. 확장점 밖 수정이 필요한 지점(scheduler의 tier 인지, block table 일반화)이 연구·제품 가치의 **핵심인가 주변부인가**?
 3. 조직 리소스로 감당 가능한 유지보수 모델은 무엇인가 — plugin 추종, fork rebase, 독립 코어 유지, KV-계층 백엔드 추종 중.
 4. (DP2·DP6 커플링) 차별 가치 중 어디까지가 KV 데이터-이동 계층(LMCache)의 백엔드·정책 훅으로 표현 가능한가 — 근접 연산 오프로드(DP6)와 tier-aware decode 경로는 이 계층 밖이며, 이 경로 채택 시 중앙 정책(DP2 후보1)의 자리도 LMCache 골격에 제약된다.
@@ -57,6 +75,8 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 *draw.io 소스: [`dp1_candidates.drawio`](../diagrams/dp1_candidates.drawio)*
 
 ### 후보구조 1 — vLLM 확장형 (plugin/connector 기반)
+
+**소싱 경계선**: Inference Engine(외부: vLLM) ↔ Memory Engine(자체: MCR) 사이 — KV 계층의 골격은 MCR이 소유한다.
 
 **구조**: Inference Orchestration은 vLLM 프로세스 밖의 독립 계층(현 disagg proxy 구조의 정식화). Inference Engine 자리는 vLLM이 그대로 담당. Memory Engine은 KV connector API + custom attention backend + worker plugin으로 vLLM에 주입하되, 코어는 vLLM 프로세스 밖 독립 모듈로 유지한다.
 
@@ -86,6 +106,8 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 
 ### 후보구조 2 — 독립 framework
 
+**소싱 경계선**: 없음 — 실행 스택 전 층(Inference Engine + Memory Engine)을 자체 구현한다.
+
 **구조**: Memory Engine을 설계 중심에 놓고, scheduler·block table·executor가 tier topology를 1급으로 인지하는 클린 설계. 커널 계층은 FlashInfer/자체 커널 조합으로 구성. 확정안 v2 다이어그램을 제약 없이 그대로 구현하는 안.
 
 **장점**
@@ -109,6 +131,8 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 | QA5 | ★☆☆ (F) | 초기 "수십 인월+"(A) > 24인월 bin 초과; 유지보수 인력 상시 소요 — vLLM 2주 릴리스(B) 추종을 자체 부담 시 > 2 FTE(C) |
 
 ### 후보구조 3 — KV-계층(LMCache) 확장형 (backend/policy-hook 기반)
+
+**소싱 경계선**: Memory Engine 내부 — 엔진(vLLM)과 KV 계층 골격(LMCache)을 모두 외부에서 채택하고, 자사 tier 백엔드 connector와 정책 훅만 자체 구현한다.
 
 **구조**: Inference Engine 자리는 vLLM 그대로. KV의 추출·이동·영속화 계층은
 LMCache가 담당한다(vLLM 공식 KV offloading connector). MCR은 (a) 자사
@@ -147,19 +171,23 @@ Orchestration은 후보1과 동일하게 프로세스 밖 독립 계층.
 
 ### 검토 노트
 
-- 실질 결정 변수는 두 축이다. **축1 (후보1 vs 후보2)**: "확장점 밖에 있는 것이
-  연구 가치의 핵심인가" — tier-aware co-scheduling과 non-contiguous KV 1급
-  관리가 핵심 기여라면 후보1은 그 기여를 구조적으로 제한한다. **축2 (후보3 vs
-  후보1·2)**: "MCR의 정체성이 KV 데이터-이동 계층인가, 배치×연산을 함께 결정하는
-  메모리 시스템 런타임인가" — 후보3은 계층화(용량) 축의 최단 경로지만 근접
-  연산(대역폭) 축과 decode 경로가 구조적으로 밖에 있다.
+- 실질 결정 변수는 하나다: **자체 구현의 경계선을 어디에 긋는가 = MCR의 핵심
+  차별 자산이 실행 스택의 어느 층에 사는가**. 경계선을 안으로 좁힐수록(후보2 →
+  후보1 → 후보3) 초기 비용·리드타임은 준다(QA5 ★☆☆→★★★). 그 대가로 차별
+  가치가 표현될 구조적 자리 — tier-aware decode 경로, 요청별 품질 집행, 근접
+  연산 통로 — 가 같이 좁아진다(QA1 상한·QA3 집행 단위 하락).
+- 경계선 판단을 가르는 세부 질문 둘: **후보1 vs 후보2** — "확장점 밖에 있는
+  것(tier-aware co-scheduling, non-contiguous KV 1급 관리)이 연구 가치의
+  핵심인가". **후보1 vs 후보3** — "MCR의 정체성이 KV 데이터-이동 계층인가,
+  배치×연산을 함께 결정하는 메모리 시스템 런타임인가" (후보3은 계층화(용량)
+  축의 최단 경로지만 근접 연산(대역폭) 축과 decode 경로가 구조적으로 밖).
 - QA 프로파일 요약: 후보3은 QA2·QA5에서 최강, QA1 상한과 QA3 집행 단위에서
   후보1에 열위, 골격 지배력(축2)에서 후보2에 열위 — 세 후보의 trade-off가 모두
   살아 있어 DP 자격을 유지한다.
-- 현실적 절충은 **진화 경로형 결정**: 후보3으로 시작(자사 tier를 백엔드로 노출 —
-  시장 진입·E2E 완주 최속)하되, 정책 훅·decode 경로가 막히는 지점을 ADR에
-  목록화하고, 임계 초과 시 후보1(vLLM 확장점에 자체 Memory Engine)로, 그다음
-  후보2로 전환한다. 후보3과 후보1은 상호 배타가 아니라 **공존 가능**(LMCache
+- 현실적 절충은 **진화 경로형 결정** — 경계선을 단계적으로 밖으로 넓히는 경로:
+  후보3으로 시작(자사 tier를 백엔드로 노출 — 시장 진입·E2E 완주 최속)하되,
+  정책 훅·decode 경로가 막히는 지점을 ADR에 목록화하고, 임계 초과 시
+  후보1(vLLM 확장점에 자체 Memory Engine)로, 그다음 후보2로 전환한다. 후보3과 후보1은 상호 배타가 아니라 **공존 가능**(LMCache
   백엔드는 유지한 채 Memory Engine 코어를 자체화)하므로 전환 비용이 낮다 — 이
   경로의 실질 장점.
 
