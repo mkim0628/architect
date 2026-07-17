@@ -1,5 +1,7 @@
-# 요구사항 → QA 도출 과정 상세 (v0.2)
+# 요구사항 → QA 도출 과정 상세 (v0.3)
 
+(v0.3: ΔF1 ≤ 1%p 근거를 MLPerf 99% 기준·KIVI 실측 평균·SnapKV·LongBench
+표본 오차 논증으로 보강, QA4 모델 변화 예에서 SSM 제외·linear attention 포함.)
 (v0.2: 요구사항 분석 v0.4 리뷰 반영 — VOC 재귀속(User·MCAS), P/D 전제 제거,
 QA3 F1 전환·gate 상향, QA5 Maintainability 개칭, QA6 Adaptability 추가,
 C-02/R-14 삭제 반영.)
@@ -127,9 +129,24 @@ SEI 계열 표준 방법론을 따른다:
      2-bit(최대 압축단)의 LongBench 실측 저하 상한 "**up to 2%**" —
      LongBench 점수는 태스크별 지표(QA군 = F1)이므로 이 상한이 곧 F1 기준
      저하 상한. 극한 압축을 쓰더라도 문헌이 보인 한계 이내여야 한다.
-   - **ΔF1 ≤ 1%p (상위 bin)**: 사내 기존 기준 1%p(A)를 F1로 이관 +
-     near-lossless 관례 허용선(B). 극한 압축단 실측 상한(2%p)의 절반으로
-     잡아 압축단 선택의 여지를 남긴 보수선(C).
+   - **ΔF1 ≤ 1%p (상위 bin)** — 네 갈래 근거의 교차점:
+     ① *벤치마크 제도 기준*: [MLPerf Inference](https://mlcommons.org/2024/03/mlperf-llama2-70b/)
+     closed division은 **참조 모델 정확도의 99% 이상**을 유지해야 유효 제출
+     (Llama2-70B는 99%/99.9% 두 트랙, [v5.0 이후 99%가 표준](https://mlcommons.org/2025/04/llm-inference-v5/))(B)
+     — 업계 벤치마크가 "최적화된 추론"에 허용하는 저하의 제도화된 상한.
+     LongBench F1 점수대(≈40~50점)에서 상대 99% ≈ 절대 0.4~0.5점이므로 절대
+     1%p(상대 ≈2%)는 MLPerf 99%보다 완화, KIVI 실측 상한(2%p)보다 엄격한
+     중간 경계(C).
+     ② *실측 도달 가능성*: 최대 압축단(2-bit) KIVI조차 LongBench **평균**
+     저하는 **Δ0.25점**(Llama2-7B 44.52 → 44.27)(B) — 1%p는 평균이 아니라
+     worst-case 편차까지 흡수한 상한.
+     ③ *기법 일반성*: [H2O](https://arxiv.org/abs/2306.14048) KV 예산 20%
+     동등 성능(B), [SnapKV](https://arxiv.org/abs/2404.14469) 프롬프트 KV
+     92% 압축에 "negligible" 저하(B) — 양자화·eviction 전반에서 재현.
+     ④ *통계 분해능*: LongBench QA 태스크당 **200샘플**(B) → 태스크 평균
+     F1의 표준오차 ≈ 30/√200 ≈ 2.1점, 다태스크 평균 ≈ 0.5점(C) — 1%p는
+     벤치마크가 신뢰 있게 검출 가능한 최소 저하와 같은 자릿수. 여기에
+     ⑤ 사내 기존 기준 1%p(A) 계승.
    - **토큰 eviction도 동일 bound**: [H2O (NeurIPS'23)](https://arxiv.org/abs/2306.14048)
      — KV 예산 **20%**(80% eviction)에서 full-cache 동등 성능 입증(B) →
      eviction 계열도 near-lossless 운용이 가능하므로 기법 구분 없이 공통 적용.
@@ -151,7 +168,9 @@ SEI 계열 표준 방법론을 따른다:
    (b) 모델 축 — KV 구조 자체가 바뀌는 변화가 실재한다:
    [DeepSeek-V2의 MLA](https://arxiv.org/abs/2405.04434)는 latent KV로 KV
    cache를 **93.3% 축소**(KV의 정의 자체가 변경, B),
-   [Mamba 계열 SSM](https://arxiv.org/abs/2312.00752)은 **KV cache 부재**(B).
+   [linear attention](https://arxiv.org/abs/2006.16236)은 KV cache를 **고정
+   크기 순환 상태로 대체**하며(B) [MiniMax-01](https://arxiv.org/abs/2501.08313)
+   (lightning attention hybrid)처럼 상용 규모 배치 사례도 등장(B).
    구조가 이를 모듈 교체로 수용 못 하면 신모델마다 코어 재설계가 반복된다.
 3. **지표 선택**: (a) tier 추가 시 4개 정량 지표 — 신규/변경 **모듈 수**,
    **코어 변경 LOC 비율(%)**, 공개 인터페이스 **시그니처 변경 건수**(하위호환
@@ -228,7 +247,7 @@ SEI 계열 표준 방법론을 따른다:
 | QA1 Performance | **H** — 과제 최종 판정 지표. 미달 시 나머지가 우수해도 무의미 | **H** — tier×압축×재사용이 모두 맞물려야 1.5× | 1 (목표) |
 | QA3 Accuracy | **H** — QA1·QA2의 전제(gate): bound 위반 시 성능·용량 수치 무효 | **M** — near-lossless가 문헌으로 입증된 선의 재현; 단 요청별 집행은 설계 부담 | 2 (gate — 목표 다음, 수단 앞) |
 | QA2 Resource Efficiency | **H** — HBM당 컨텍스트가 비용 구조 결정, 이종 tier의 존재 이유 | **H** — 압축 단독(1.5×, 문헌 입증)을 넘어 품질 bound 안에서 tier 결합으로 3× | 3 (수단) |
-| QA4 Modifiability | **M** — 초기 가치 실증엔 비직결, 중장기 생존성 좌우 | **H** — 코어/모듈 경계는 되돌리기 어려운 초기 결정; MLA·SSM 수용은 어려움 | 4 |
+| QA4 Modifiability | **M** — 초기 가치 실증엔 비직결, 중장기 생존성 좌우 | **H** — 코어/모듈 경계는 되돌리기 어려운 초기 결정; MLA·linear attention 수용은 어려움 | 4 |
 | QA6 Adaptability | **M** — framework 종속 리스크의 통제 — 산출물 수명 좌우 | **H** — framework마다 확장점 형태가 달라 어댑터 경계 설계가 어려움 | 5 (M/H 동률서 과제 본질 축이 우선) |
 | QA5 Maintainability | **M** — 지속 가능성 좌우하나 성패 지표 아님 | **M** — plugin 경계 유지 시 관리 가능(02 실측) | 6 |
 
@@ -250,7 +269,10 @@ SEI 계열 표준 방법론을 따른다:
 - Bass, Clements, Kazman — *Software Architecture in Practice* (6-part QA scenario, Utility Tree)
 - ISO/IEC 25010 — Systems and software Quality Requirements and Evaluation (SQuaRE)
 - [DeepSeek-V2 (MLA — latent KV, KV cache 93.3% 축소)](https://arxiv.org/abs/2405.04434)
-- [Mamba: Linear-Time Sequence Modeling with Selective State Spaces (KV cache 부재)](https://arxiv.org/abs/2312.00752)
+- [Transformers are RNNs: Linear Attention (ICML'20)](https://arxiv.org/abs/2006.16236) — KV cache의 고정 크기 상태 대체 원리
+- [MiniMax-01: Scaling Foundation Models with Lightning Attention](https://arxiv.org/abs/2501.08313) — linear attention 실전 배치 사례
+- [SnapKV (NeurIPS'24)](https://arxiv.org/abs/2404.14469) — 프롬프트 KV 92% 압축, negligible 저하
+- [MLCommons — MLPerf Inference v5.0](https://mlcommons.org/2025/04/llm-inference-v5/) — closed division 정확도 = 참조의 99%
 - [H2O: Heavy-Hitter Oracle for Efficient Generative Inference (NeurIPS'23)](https://arxiv.org/abs/2306.14048) — 토큰 eviction, KV 예산 20%로 동등 성능
 - [LongBench (ACL'24)](https://arxiv.org/abs/2308.14508) — QA 태스크군 공식 지표 F1
 - [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) — 대안 serving framework (QA6 근거)

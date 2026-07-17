@@ -108,6 +108,7 @@
   <line class="assoc" x1="150" y1="520" x2="290" y2="444"/>
   <line class="assoc" x1="152" y1="535" x2="288" y2="558"/>
   <line class="assoc" x1="148" y1="548" x2="288" y2="643"/>
+  <line class="assoc" x1="152" y1="540" x2="565" y2="445"/>
   <line class="assoc" x1="787" y1="228" x2="924" y2="248"/>
   <line class="assoc" x1="785" y1="518" x2="926" y2="300"/>
   <line class="assoc" x1="925" y1="270" x2="787" y2="310"/>
@@ -127,4 +128,7 @@
 
   <path class="dep" d="M 592,512 C 520,430 520,430 592,332" fill="none" marker-end="url(#openArrow)"/>
   <text class="stereo" x="527" y="428">&#171;extend&#187;</text>
+
+  <line class="dep" x1="500" y1="638" x2="596" y2="460" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="512" y="565">&#171;include&#187;</text>
 </svg>
