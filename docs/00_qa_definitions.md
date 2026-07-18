@@ -1,13 +1,59 @@
-# MCR QA 정의 및 별점 평가 기준 (v0.3)
+# MCR QA 정의 및 별점 평가 기준 (v0.7)
 
 `02_design_points_dp1_dp2.md` §0의 잠정 QA 정의를 분리·승격한 문서.
 모든 DP/후보구조 평가는 본 문서의 정량 bin을 기준으로 별점을 매긴다.
 (잠정 — MCR 공식 QA 확정 시 본 문서를 개정하고 기존 평가표를 재평가한다.)
 
+## QA 요약표 (우선순위 순)
+
+| QA | Refinement | 시나리오 | 중요도 | 난이도 | 우선순위 |
+|---|---|---|---|---|---|
+| **Performance** (QA1. 추론 성능) | SLO 유지 하 최대 처리율 (goodput@SLO) | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 서빙하며, 표준 SLO(TTFT p99 ≤ 450 ms · TPOT p99 ≤ 200 ms — MLPerf Interactive/Server 절충)를 attainment ≥ 90%로 유지하는 최대 처리율의 baseline 대비 비율을 잰다. baseline = GPU HBM 단일 tier 구성(타겟 메모리 없이 달성 가능한 최선 — 순증분 분리 측정). [측정: baseline 대비 goodput@SLO ≥ 1.5× → ★★★] | H | H | 1 |
+| **Accuracy** (QA2. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | M | 2 |
+| **Resource Efficiency** (QA3. 메모리 효율) | 유효 KV 용량 (원본 환산 동시 수용량) | QA2 품질 bound를 지키는 조건에서 Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을 산출하고 물리 HBM 용량 대비 배율을 구한다. baseline = HBM 단일 tier·비압축(정의상 1.0× — HBM당 수용 컨텍스트가 비용 결정). [측정: 유효 KV 용량 ≥ 3× → ★★★] | H | H | 3 |
+| **Modifiability** (QA4. 확장성·진화성) | 신규 메모리 디바이스·KV 구조 변화 수용 용이성 | (a) 신규 tier(HBM4/CMM-DC/HBF) 추가 시 신규/변경 모듈 수, 코어 변경 LOC 비율(%), 공개 인터페이스 시그니처 변경 건수를 세고 (b) KV 구조 영향 모델 변화(GQA/MQA·MLA·sliding-window·linear attention)의 수용 리드타임을 upstream 공개 시점 기준으로 잰다. baseline = 현행 코드베이스. [측정: 신규 어댑터 모듈 ≤ 1 · 코어 변경 LOC 0 · 시그니처 변경 0건 · 수용 ≤ upstream + 2주 → ★★★] | M | H | 4 |
+| **Adaptability** (QA6. framework 적응성) | 서빙 framework 교체(vLLM → SGLang 등) 수용 비용 | upstream framework를 대안으로 교체하는 실험(설계 단계는 결합부 정적 분석)에서 Memory Engine·정책 계층이 보존되는지, framework 결합 코드가 어댑터 계층에 격리되는지를 잰다. baseline = 현 framework(vLLM) 결합 구조 — 교체 비용이 곧 종속 위험의 크기. [측정: framework 결합 코드가 어댑터 계층에 격리(코어 변경 0) · 전환 ≤ 3인월 → ★★★] | M | H | 5 |
+| **Maintainability** (QA5. 유지보수성 — 개발·운영 비용) | 초기 구축 + 지속 유지보수 비용 | 대표 워크로드 E2E 벤치 완주까지의 초기 구축 인월(person-month)과, upstream 추종(rebase)·회귀 검증을 포함한 연간 유지보수 FTE를 산정한다. baseline = DP1 후보별 비용 모델(02 실측 표현). [측정: 초기 ≤ 6 인월 · 유지 ≤ 0.5 FTE → ★★★] | M | M | 6 |
+
+**중요도·난이도·우선순위 규칙**
+
+- **중요도** (H/M/L): 해당 QA 미달이 MCR의 존재 가치·평가 결론에 주는 타격 크기.
+- **난이도** (H/M/L): 상위 bin(★★★) 도달에 필요한 설계·구현·검증의 어려움.
+- **우선순위 산정**: ① **중요도** 우선 ② 동률이면 성능 사슬 내 **역할** —
+  최종 목표 > 그 유효성의 전제(gate) > 수단. QA1(goodput, 목표) >
+  QA2(품질 bound — bound 위반 시 성능·용량 수치 무효인 gate) > QA3(유효 KV
+  용량, 수단) ③ 그 외 동률은 **난이도** (QA4·QA6 M/H > QA5 M/M) ④ 남는
+  동률은 과제 본질 축 우선 — QA4(타겟 메모리·모델 수용)가 QA6(framework
+  교체 헤지)에 우선(C).
+- **QA 번호 ↔ 우선순위**: v0.7에서 QA2·QA3 번호를 우선순위에 맞춰
+  교환하여(전 문서 일괄 치환) QA1–QA4는 **번호 = 우선순위**다. 예외:
+  QA5(Maintainability, 우선순위 6)·QA6(Adaptability, 우선순위 5) — QA6이
+  후발 신설이라 번호가 우선순위와 어긋나며, 참조 안정성을 위해 유지한다
+  (교환이 필요하면 QA2·QA3과 동일하게 전 문서 일괄 치환으로 수행).
+
 **개정 이력**
+- v0.7: **QA2 ↔ QA3 번호 교환** — 응답 품질(Accuracy)=QA2(우선순위 2),
+  메모리 효율(Resource Efficiency)=QA3(우선순위 3)으로 번호를 우선순위에
+  정렬. 본 문서 및 참조 문서 전체(요구사항 분석·도출 문서·DP 02~05·범위
+  문서) 일괄 치환 — 과거 개정 이력 서술도 신 번호 기준으로 읽는다
+- v0.6: ① 본문 절 순서를 우선순위 순(QA1→QA2→QA3→QA4→QA6→QA5)으로 재배열
+  (번호는 식별자로 유지) ② QA2 ★★★ 경계 1%p의 선정 근거를 MLPerf 허용
+  저하(99%)·KIVI 실측 평균(Δ0.25점)·SnapKV·LongBench 표본 오차 논증으로
+  보강 ③ QA4 모델 변화 예에서 SSM 제외, linear attention 계열 포함
+- v0.5: 요구사항 분석 v0.4 리뷰 반영 — ① QA1 baseline에서 P/D 분리 전제
+  제거(동일 실행 구성의 GPU HBM 단일 tier로 재정의, 선정 이유 명시)
+  ② QA2 주지표를 accuracy(%p)에서 **F1-score(ΔF1)** 로 전환(LongBench QA
+  태스크 공식 지표), 압축 기법에 토큰 eviction 포함, gate 역할로 우선순위
+  2 상향 ③ QA4 측정 정량화(모듈 수·코어 LOC 비율·시그니처 변경 건수)
+  ④ QA5 명칭 Affordability → **Maintainability** ⑤ **QA6 Adaptability**
+  (framework 교체) 신설 ⑥ 우선순위 규칙 개정(역할 tie-break 도입) 및
+  번호-우선순위 분리(번호는 식별자로 고정)
+- v0.4: ① QA별 중요도·난이도·우선순위 도입(산정 규칙 명시, 우선순위 = QA 번호)
+  ② QA별 평가 시나리오를 기존 정의·측정 기술로부터 명문화 ③ 문서 상단에
+  QA 요약표(QA·Refinement·시나리오·중요도·난이도·우선순위) 추가
 - v0.3: ① QA1 baseline 정의 명시(P/D 분리 포함) 및 bin 근거를 메모리 측 증분
-  문헌으로 교체 ② QA2 "유효 KV 용량" 용어를 원본 환산 기준으로 재정의
-  ③ QA3 경계값을 문헌 실측치(KVQuant·KIVI)로 재앵커링(B급) ④ QA4 코어/모듈
+  문헌으로 교체 ② QA3 "유효 KV 용량" 용어를 원본 환산 기준으로 재정의
+  ③ QA2 경계값을 문헌 실측치(KVQuant·KIVI)로 재앵커링(B급) ④ QA4 코어/모듈
   용어 정의 추가, 모델 축을 "KV 구조 영향 변화"로 재정의
 - v0.2: 02 §0에서 분리, 별점별 정량 bin 도입
 
@@ -45,6 +91,12 @@
 | KV 압축 품질 (accuracy) | 2-bit 양자화 LongBench accuracy 저하 **최대 2%p** (Llama/Mistral) | [KIVI](https://arxiv.org/html/2402.02750) |
 | upstream 추종 주기 | vLLM 정규 릴리스 **2주 간격** | [vLLM RELEASE.md](https://github.com/vllm-project/vllm/blob/main/RELEASE.md) |
 | 사내 확장성 기준 | 신규 장치 지원 시 기능 추가/변경 ≤ 전체의 40% | Architect 과제 원본 덱 QA-01 측정 기준 |
+| KV 토큰 eviction 품질 | KV 예산 **20%**(80% eviction)로 full-cache 동등 성능 | [H2O (NeurIPS'23)](https://arxiv.org/abs/2306.14048) |
+| long-context 벤치 지표 | LongBench QA 태스크군 공식 지표 = **F1** (요약 Rouge-L 등 태스크별) | [LongBench (ACL'24)](https://arxiv.org/abs/2308.14508) |
+| 대안 framework 실재 | SGLang — RadixAttention 기반, vLLM 동급 이상 처리율 보고 | [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) |
+| 최적화 추론의 허용 저하 (벤치마크 표준) | MLPerf Inference closed division: 정확도 ≥ **참조 모델의 99%** (Llama2-70B는 99%/99.9% 두 트랙) | [MLCommons](https://mlcommons.org/2024/03/mlperf-llama2-70b/) · [MLPerf v5.0](https://mlcommons.org/2025/04/llm-inference-v5/) |
+| KV 압축 실측 평균 저하 | KIVI 2-bit LongBench 평균 저하 **Δ0.25점** (Llama2-7B: 44.52 → 44.27) | [KIVI](https://arxiv.org/html/2402.02750v2) |
+| LongBench 표본 규모 | QA 태스크당 **200 샘플**(MultiFieldQA 150) — F1 평균의 표본 오차 산정 기초 | [LongBench (ACL'24)](https://arxiv.org/html/2308.14508v1) |
 
 **MCR 표준 SLO**(별도 명시 없으면 이 조건으로 측정): 대화형 워크로드
 TTFT p99 ≤ 450 ms · TPOT p99 ≤ 200 ms(장문 컨텍스트 감안해 Server/Interactive
@@ -55,11 +107,26 @@ agent memory (과제 범위 3.2-3).
 
 ## QA1. 추론 성능 (goodput@SLO)
 
+- **중요도: H** — MCR의 존재 목적이 "SLO를 지키면서 처리율을 올리는 것"이며,
+  과제의 최종 판정 지표. 이 QA 미달이면 나머지 QA가 모두 우수해도 무의미(C).
+- **난이도: H** — 이종 tier 오케스트레이션·압축·재사용이 모두 맞물려야 1.5×에
+  도달하며, decode wait 70–85%(A) 병목을 실제로 해소해야 함. 워크로드 의존성이
+  커서 대표 워크로드 전반에서 bin을 지키기 어려움.
+- **우선순위: 1** — 최종 목표 지표(과제 판정 기준)이므로 최우선
+  (규칙은 문서 상단 참조).
+- **평가 시나리오**: 동일 HW·동일 실행 구성에서 GPU HBM 단일 tier
+  baseline과 MCR을 대표 워크로드(long-context RAG · multiturn · agent memory)로
+  구동하고, 표준 SLO(TTFT p99 ≤ 450 ms · TPOT p99 ≤ 200 ms)를 attainment ≥ 90%로
+  유지하면서 달성하는 최대 처리율(goodput)의 배율을 비교한다.
+  [측정: baseline 대비 goodput@SLO ≥ 1.5× → ★★★]
+
 - **정의**: 표준 SLO를 attainment ≥ 90%로 유지하면서 달성하는 최대 처리율.
 - **측정**: goodput(req/s @ SLO), baseline 대비 배율.
-  **Baseline 정의 (필수)**: 동일 HW에서 **P/D 분리를 동일하게 적용한
-  GPU HBM 단일 tier** 구성 (과제 범위 3.2-3). 즉 본 QA는 P/D 분리 효과가
-  아니라 **이종 tier + 압축 + 재사용 orchestration의 증분**을 측정한다.
+  **Baseline 정의 (필수)**: 동일 HW·동일 실행 구성에서 **GPU HBM 단일
+  tier만 사용하는 구성**. 선정 이유: 타겟 메모리 없이 현행 표준 서빙
+  스택이 달성 가능한 최선이므로, **이종 tier + 압축 + 재사용 orchestration의
+  순증분**이 분리 측정된다. P/D 분리 여부는 전제하지 않는다 — 실험 변수로
+  두되 baseline과 MCR 양쪽에 동일하게 적용해 그 효과를 상쇄시킨다.
   보조 지표: decode wait 비중 (자체 실측 70–85%(A)가 개선 대상).
 
 | 별점 | 기준 (baseline 대비 goodput@SLO) |
@@ -71,14 +138,99 @@ agent memory (과제 범위 3.2-3).
 **bin 근거**: 메모리 측 개선 단독의 문헌 상단 — 압축으로 batch를 4×로 키워
 **처리율 2.35–3.47×**(KIVI(B), 단 cache-hit·워크로드 의존) — 에서 1.5×를
 워크로드 비의존적으로 요구 가능한 보수적 하한으로 설정. 1.1× 미만은 A/B
-테스트에서 통상 잡음과 구분 곤란(C). *주의: DistServe의 2×~7.4×는 P/D 미분리
-(colocated) baseline 대비 수치로, P/D가 양쪽에 모두 적용되는 본 QA의 bin
-근거가 아니다 — DistServe는 goodput·attainment ≥90% **정의**의 출처로만 인용.*
+테스트에서 통상 잡음과 구분 곤란(C). *주의: DistServe의 2×~7.4×는 colocated →
+P/D 분리 전환의 효과로, 실행 구성을 양쪽에 동일하게 두어 그 효과를 상쇄하는
+본 QA의 bin 근거가 아니다 — DistServe는 goodput·attainment ≥90% **정의**의
+출처로만 인용.*
 
-## QA2. 메모리 효율 (유효 KV 용량)
+## QA2. 응답 품질 (품질 저하 bound)
+
+- **중요도: H** — QA1·QA3의 전제 조건: 품질 bound를 위반하면 goodput·유효 KV
+  용량 수치 자체가 무효(QA3는 "QA2 품질 bound를 지키는 조건에서만 인정").
+  서비스 품질 저하는 사용자에게 직접 노출되는 리스크(C).
+- **난이도: M** — near-lossless 압축 자체는 문헌으로 입증된 기법의 재현
+  (KVQuant 3-bit ΔPPL < 0.1(B), KIVI 2-bit ≤ 2%p(B)). 단 **요청별** bound
+  집행(★★★ 조건)은 압축 대상 선택·차등 집행 설계가 필요해 추가 부담.
+- **우선순위: 2** — 중요도 H 그룹 내 **전제(gate)** — 성능·용량 수치의
+  유효 조건이므로 수단 지표(QA3)에 앞선다 (v0.5에서 상향).
+- **평가 시나리오**: 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로
+  활성화한 상태에서 long-context 벤치마크(LongBench 등)를 수행하고,
+  baseline(동일 모델·동일 벤치의 비압축 FP16 KV·비재사용 — 품질의 이론적
+  상한) 대비 **F1-score 차이(ΔF1, %p)** 와 보조 지표 ΔPPL(Wikitext-2)을
+  측정하며, bound의 집행 단위(요청별 vs 전역)를 판정한다.
+  [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★]
+
+- **정의**: 압축·재사용으로 인한 품질 저하의 상한 보장 — QA1·QA3 수치의
+  유효 전제(gate).
+- **측정**: **주지표 ΔF1(%p)** — long-context 벤치마크(LongBench 등)의
+  F1-score를 baseline(비압축 FP16 KV·비재사용) 대비 차감. F1 채택 이유:
+  LongBench의 QA 태스크군(HotpotQA·2WikiMQA 등) 공식 지표가 F1이며,
+  정답의 부분 일치를 반영해 이진 accuracy보다 저하를 민감하게 잡는다(B).
+  **보조지표 ΔPPL**(절대, Wikitext-2) — 태스크 무관 선행 신호(PPL은
+  민감하지만 실사용 영향을 직접 반영하지 못해 주지표로는 부적합).
+  bound의 **집행 단위**(요청별 vs 전역)를 함께 판정.
+
+| 별점 | 기준 |
+|---|---|
+| ★★★ | **ΔF1 ≤ 1%p** (보조: ΔPPL ≤ 0.1 절대), **요청별** bound 집행 가능 |
+| ★★☆ | **ΔF1 ≤ 2%p**, **전역** bound만 보장 |
+| ★☆☆ | ΔF1 > 2%p 또는 bound 자체를 보장 못 함 |
+
+**bin 근거** (전 경계 B급 실측 인용):
+- **ΔF1 ≤ 2%p (중간 bin)**: KIVI 2-bit(최대 압축단)의 LongBench 실측 저하
+  상한 "up to 2%"(B) — LongBench 점수는 태스크별 지표(QA군은 F1)의
+  평균이므로 이 상한이 곧 F1 기준 저하 상한이다. 극한 압축을 쓰더라도
+  문헌이 보인 저하 한계 이내여야 함.
+- **ΔF1 ≤ 1%p (상위 bin)** — 네 갈래 근거의 교차점:
+  - ① *벤치마크 제도 기준*: [MLPerf Inference](https://mlcommons.org/2024/03/mlperf-llama2-70b/)는
+    closed division 제출이 **참조 모델 정확도의 99% 이상**(Llama2-70B는
+    99%/99.9% 두 트랙, [v5.0 이후 99%가 표준](https://mlcommons.org/2025/04/llm-inference-v5/))을
+    유지해야 유효로 인정(B) — "최적화된 추론이 허용받는 저하"가 제도화된
+    유일한 업계 기준. LongBench F1 점수대(≈40~50점)에서 상대 99%는 절대
+    Δ0.4~0.5점이므로, **절대 1%p(상대 ≈2%)는 MLPerf 99% 트랙보다 완화되고
+    KIVI 극한 압축 실측 상한(2%p)보다 엄격한 중간 경계**다(C).
+  - ② *실측 도달 가능성*: 최대 압축단(2-bit)인 KIVI조차 LongBench **평균**
+    저하는 **Δ0.25점**(Llama2-7B 44.52 → 44.27)(B) — 1%p는 평균이 아니라
+    모델·태스크 편차(worst-case "up to 2%")까지 흡수한 상한으로서 실현
+    가능한 목표다.
+  - ③ *기법 일반성*: 토큰 eviction 계열도 동일 수준 — [H2O](https://arxiv.org/abs/2306.14048)
+    KV 예산 20%에서 full-cache 동등 성능(B), [SnapKV](https://arxiv.org/abs/2404.14469)
+    프롬프트 KV 92% 압축에서 "negligible" 저하(B) — 양자화·eviction 어느
+    쪽이든 1%p 이내 운용이 문헌 전반에서 재현된다.
+  - ④ *통계 분해능*: LongBench QA 태스크는 태스크당 **200샘플**(B,
+    [LongBench](https://arxiv.org/html/2308.14508v1)) — 샘플별 F1 표준편차를
+    ~30점으로 두면 태스크 평균의 표준오차 ≈ 30/√200 ≈ 2.1점, 16개 태스크
+    평균으로는 ≈ 0.5점(C). 즉 **1%p는 벤치마크가 신뢰 있게 검출할 수 있는
+    최소 저하와 같은 자릿수** — 이보다 엄격한 경계는 측정 잡음과 구분
+    불가하고, 이보다 느슨하면 검출 가능한 실질 저하를 허용하게 된다.
+  - ⑤ *사내 연속성*: 02 문서의 기존 사내 기준 1%p(A)를 accuracy에서 F1로
+    이관 — 기준선의 역사적 일관성 유지.
+- **토큰 eviction도 동일 bound**: H2O가 KV 예산 20%(80% eviction)에서
+  full-cache 동등 성능을 보고(B) — eviction 계열도 near-lossless 운용이
+  가능하므로 기법 구분 없이 ΔF1 bound를 공통 적용한다.
+- **보조 ΔPPL ≤ 0.1**: KVQuant가 3-bit에서 Wikitext-2·C4 기준 ΔPPL < 0.1을
+  LLaMA/Llama-2/-3/Mistral 전반에서 입증(B) — "달성 가능한 near-lossless 선".
+- 집행 단위 조건: K>V sensitivity(B) — 압축 대상 선택이 품질을 좌우하므로
+  요청별 차등 집행 가능 여부가 bound 보장성을 가름(C).
+
+## QA3. 메모리 효율 (유효 KV 용량)
+
+- **중요도: H** — HBM이 희소 자원이며 "HBM 한 장당 서빙 가능한 컨텍스트"가
+  비용 구조를 결정. QA1(goodput) 달성의 직접 수단이자 이종 tier 도입의
+  존재 이유(1.5× 미만이면 압축 단독 대비 열위)(C).
+- **난이도: H** — 압축 단독 1.5×는 문헌으로 입증(KIVI(B))되어 있으나, 상위 bin
+  3×는 tier 오프로딩과 압축을 QA2 품질 bound 안에서 결합해야 도달 가능하며
+  tier 활용률·압축률 분포 관리가 필요.
+- **우선순위: 3** — 중요도 H 그룹 내 **수단 지표** — 목표(QA1)와 그 유효
+  전제(QA2 gate) 다음 (v0.5에서 응답 품질과 우선순위 교환, v0.7에서 번호도 교환).
+- **평가 시나리오**: QA2 품질 bound를 지키는 설정에서
+  Σ_tier(tier 용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을
+  산출하고, 물리 HBM 용량 대비 배율을 구한다(= 동시 수용 가능한 컨텍스트 토큰
+  수의 배율). 보조로 tier 활용률·압축률 분포를 함께 기록한다.
+  [측정: 유효 KV 용량 ≥ 3× → ★★★]
 
 - **정의**: **원본(비압축) 환산**으로 시스템이 동시에 수용할 수 있는 KV 총량의,
-  물리 HBM 용량 대비 배율 (QA3 품질 bound를 지키는 조건에서만 인정).
+  물리 HBM 용량 대비 배율 (QA2 품질 bound를 지키는 조건에서만 인정).
   압축 n×는 같은 물리 공간에 원본 환산 n×의 KV를 담으므로 이 값을 **키운다**
   (저장된 압축 바이트가 아니라 "몇 토큰어치를 서빙할 수 있나"의 지표).
   등가 표현: **동시 수용 가능한 컨텍스트 토큰 수의 배율**.
@@ -97,43 +249,40 @@ agent memory (과제 범위 3.2-3).
 **tier 오프로딩과 압축을 함께 쓰는 MCR은 3×를 상위 bin**으로 요구. 1.5× 미만은
 압축 단독 대비 열위 — 이종 tier 도입의 존재 이유 미달(C).
 
-## QA3. 응답 품질 (품질 저하 bound)
-
-- **정의**: 압축·재사용으로 인한 품질 저하의 상한 보장.
-- **측정**: 대표 벤치마크 accuracy 저하(%p) + PPL 증가(절대 ΔPPL, Wikitext-2
-  기준). bound의 **집행 단위**(요청별 vs 전역)를 함께 판정.
-
-| 별점 | 기준 |
-|---|---|
-| ★★★ | accuracy 저하 **≤ 1%p** 그리고 **ΔPPL ≤ 0.1 (절대)**, **요청별** bound 집행 가능 |
-| ★★☆ | accuracy 저하 **≤ 2%p**, **전역** bound만 보장 |
-| ★☆☆ | accuracy 저하 > 2%p 또는 bound 자체를 보장 못 함 |
-
-**bin 근거** (전 경계 B급 실측 인용):
-- **ΔPPL ≤ 0.1**: KVQuant가 3-bit에서 Wikitext-2·C4 기준 ΔPPL < 0.1을
-  LLaMA/Llama-2/-3/Mistral 전반에서 입증(B) — "달성 가능한 near-lossless 선".
-- **accuracy ≤ 1%p**: 02 문서의 기존 사내 기준(A)이자 KV 압축 문헌의
-  near-lossless 관례 허용선(B).
-- **accuracy ≤ 2%p**: KIVI 2-bit(최대 압축단)의 LongBench 실측 저하 상한
-  "up to 2%"(B) — 극한 압축을 쓰더라도 문헌이 보인 저하 한계 이내여야 함.
-- 집행 단위 조건: K>V sensitivity(B) — 압축 대상 선택이 품질을 좌우하므로
-  요청별 차등 집행 가능 여부가 bound 보장성을 가름(C).
-
 ## QA4. 확장성·진화성
 
+- **중요도: M** — 초기 가치 실증(QA1–3)에는 직결되지 않으나, 메모리 디바이스
+  로드맵(HBM4/CMM-DC/HBF)과 모델 구조 변화(MLA·linear attention 등) 속도를 감안하면
+  중장기 유지 비용과 생존성을 좌우(C).
+- **난이도: H** — 코어/모듈 경계와 공개 인터페이스(KV Locator, CompressionOp)는
+  되돌리기 어려운 초기 설계 결정이며, MLA(KV 정의 변경)·linear attention(고정 크기 상태로 KV 대체)처럼
+  KV 구조 자체가 바뀌는 변화까지 "코어 수정 0"으로 수용하기는 어려움.
+- **우선순위: 4** — M/H. 중요도 M 그룹 중 난이도가 높아 선순위.
+- **평가 시나리오**: (a) 신규 메모리 tier(HBM4/CMM-DC/HBF) 1종 추가 실험에서
+  **신규/변경 모듈 수 · 코어 변경 LOC 비율(%) · 공개 인터페이스 시그니처
+  변경 건수**를 세고, (b) KV 구조 영향 모델 변화(GQA/MQA · MLA ·
+  sliding-window/hybrid attention · linear attention 계열)의 수용 리드타임을
+  upstream 공개 시점 기준으로 측정한다. baseline = 현행 코드베이스.
+  [측정: 신규 어댑터 모듈 ≤ 1 · 코어 변경 LOC 0 · 시그니처 변경 0건 ·
+  수용 ≤ upstream + 2주 → ★★★]
+
 - **정의**: 신규 메모리 디바이스(HBM4/CMM-DC/HBF)와 **KV 구조에 영향을 주는
-  모델 변화**의 수용 비용. (코어/모듈 정의는 문서 상단 용어 정의 참조.)
-- **측정**: (a) tier 추가 시 변경 범위 — 수정이 **모듈**에 갇히는가, **코어**
-  (골격·공개 인터페이스)까지 침범하는가, 기능 변경 비율(%).
+  모델 변화**(GQA 계열을 넘어 linear attention까지)의 수용 비용. (코어/모듈 정의는 문서 상단 용어 정의 참조.)
+- **측정**: (a) tier 추가 시 변경 범위 — 4개 정량 지표: ① **신규/변경 모듈
+  수** ② **코어 변경 LOC 비율(%)** = (코어 패키지·공개 인터페이스에서 변경된
+  LOC) ÷ (코어 전체 LOC) ③ **공개 인터페이스(KV Locator·CompressionOp)
+  시그니처 변경 건수** (하위호환 여부 병기) ④ 기능 변경 비율(%).
   (b) KV 구조 영향 모델 변화 — GQA/MQA(head 공유로 KV 크기 변화),
   MLA(latent KV — KV 정의 자체가 바뀜), sliding-window/hybrid attention,
-  SSM 계열(KV 부재) — 의 수용 리드타임 (upstream 공개 시점 기준).
+  linear attention 계열(KV cache가 **고정 크기 순환 상태**로 대체 —
+  Katharopoulos et al.(B), 실전 배치 예 MiniMax-01 lightning attention(B)) —
+  의 수용 리드타임 (upstream 공개 시점 기준).
 
 | 별점 | 기준 (a·b 모두 충족) |
 |---|---|
-| ★★★ | tier 추가 = topology 파라미터 등록 + **어댑터 모듈 ≤ 1개, 코어 수정 0** · KV 구조 변화 수용 **≤ upstream + 2주** |
-| ★★☆ | 코어 수정이 전체 기능의 **≤ 40%** · 수용 ≤ upstream + 1분기 |
-| ★☆☆ | 코어 재설계 수반(> 40%) 또는 수용 > 1분기 (만성 지연) |
+| ★★★ | tier 추가 = topology 파라미터 등록 + **신규 어댑터 모듈 ≤ 1개 · 코어 변경 LOC 0 · 시그니처 변경 0건** · KV 구조 변화 수용 **≤ upstream + 2주** |
+| ★★☆ | 코어 변경 LOC(또는 기능 변경 비율)이 전체의 **≤ 40%** · 시그니처 변경은 **하위호환**(기존 호출부 수정 불요) 형태만 · 수용 ≤ upstream + 1분기 |
+| ★☆☆ | 코어 변경 > 40%, 비호환 시그니처 변경(호출부 전면 수정), 또는 수용 > 1분기 (만성 지연) |
 
 **bin 근거**: 40% 기준은 Architect 과제 원본 덱 QA-01의 사내 측정 기준
 계승(A). "upstream + 2주"는 vLLM 정규 릴리스가 2주 간격(B)이므로 **한 릴리스
@@ -147,7 +296,61 @@ agent memory (과제 범위 3.2-3).
 > 확장 적용한다 — 독립 framework의 최대 리스크(02 §DP1 후보2 단점)를 평가에서
 > 놓치지 않기 위함.
 
-## QA5. 개발·운영 비용
+## QA6. framework 적응성 (Adaptability) — v0.5 신설
+
+- **중요도: M** — 현재 vLLM이 기본 선택이지만 **고정이 아니다** — SGLang 등
+  대안 framework가 부상 중이며(B), upstream의 방향 전환·정체 시 교체가
+  현실적 선택지다. 교체 비용이 통제되지 않으면 framework 종속이 과제 산출물
+  (레퍼런스 스택)의 수명을 좌우한다(C). 단 과제 성패의 직접 판정 지표는
+  아니므로 M.
+- **난이도: H** — framework 결합부(스케줄러 훅, KV 캐시 인터페이스, 커널
+  호출 경계)를 어댑터 계층으로 격리하는 것은 초기 구조 결정이며, framework
+  마다 확장점의 형태가 달라(vLLM connector/plugin vs SGLang의 구조) 경계
+  설계가 어렵다.
+- **우선순위: 5** — M/H. QA4와 동률이나 과제 본질 축(타겟 메모리·모델
+  수용)이 리스크 헤지 축(framework 교체)에 우선하므로 QA4 다음.
+- **평가 시나리오**: upstream framework를 vLLM에서 대안(SGLang 등)으로
+  교체한다고 가정하고(설계 단계에서는 결합부 정적 분석, 구현 단계에서는
+  파일럿 포팅) Memory Engine·정책 계층이 보존되는지를 잰다.
+  baseline = 현 framework(vLLM) 결합 구조 — 교체 비용이 곧 종속 위험의 크기.
+  [측정: framework 결합 코드의 어댑터 격리(코어 변경 0) · 전환 ≤ 3인월 → ★★★]
+
+- **정의**: 서빙 framework 교체(vLLM → SGLang 등) 시 MCR 고유 자산
+  (Memory Engine, 배치·압축·재사용 정책)을 보존하는 능력.
+- **측정**: ① **framework 결합 코드 비율(%)** = (framework API에 직접
+  의존하는 LOC) ÷ (MCR 전체 LOC) — 정적 분석으로 산출 ② 교체 시
+  **코어(Memory Engine·정책·공개 인터페이스) 변경 LOC** ③ **전환
+  공수(인월)** — 파일럿 포팅 또는 견적.
+
+| 별점 | 기준 |
+|---|---|
+| ★★★ | framework 결합 코드가 **어댑터 계층에 격리**(결합 코드 ≤ 전체의 10%) · 교체 시 **코어 변경 0** · 전환 **≤ 3인월** |
+| ★★☆ | 교체 시 코어 변경 ≤ 전체의 **40%** · 전환 ≤ 1분기 |
+| ★☆☆ | 사실상 전면 재작성(> 40%) 또는 전환 > 1분기 |
+
+**bin 근거**: 40%는 사내 기준(A, QA4와 동일 계승). 10%/3인월은 어댑터
+(ports-and-adapters) 패턴이 성립할 때 결합부가 인터페이스 구현 계층에
+국한된다는 구조 논증(C) + QA5의 plugin형 초기 구축 "수 인월"(A)에서 포팅은
+그 절반 이하라는 추정(C). 대안 framework의 실재는 SGLang(RadixAttention,
+vLLM 대비 동급 이상 처리율 보고)(B)로 뒷받침. F 평가 시 결합부 정적 분석
+결과를 근거로 제시할 것.
+
+## QA5. 유지보수성 (Maintainability — 개발·운영 비용)
+
+(v0.5에서 Affordability → Maintainability로 개칭 — ISO/IEC 25010 표준
+품질속성 어휘로 정렬. 정의·bin은 동일.)
+
+- **중요도: M** — 프로젝트 지속 가능성(추종·유지 인력)을 좌우하나, 과제 성패의
+  판정 지표는 아님. DP1(플랫폼 전략) 선택에 따라 수십 인월 단위로 갈리므로
+  구조 결정 시 반드시 함께 평가(C).
+- **난이도: M** — plugin 경계를 유지하면 관리 가능함이 02 실측 표현(A)으로
+  뒷받침됨. 비용 산정 자체는 표준적 방법(인월·FTE 추정)으로 수행 가능.
+- **우선순위: 6** — M/M. 중요도 M 그룹 중 난이도가 낮아 최후순위
+  (v0.5에서 QA6 신설로 한 단계 하향).
+- **평가 시나리오**: 대표 워크로드 E2E 벤치 완주까지의 초기 구축
+  인월(person-month)과, upstream 추종(rebase/2주 릴리스 주기)·회귀 검증을
+  포함한 연간 유지보수 FTE를 산정한다.
+  [측정: 초기 ≤ 6 인월 · 유지 ≤ 0.5 FTE → ★★★]
 
 - **정의**: 초기 구축(대표 워크로드 E2E 벤치 완주까지) + 지속 유지보수 비용.
 - **측정**: 초기 인월(person-month), 연간 유지보수 FTE(rebase/추종/검증 포함).
@@ -174,4 +377,11 @@ fork/독립 유지의 하한으로 설정.
 - [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/html/2402.02750v2) (2.6× 메모리, batch 4×, 처리율 2.35–3.47×, LongBench 저하 ≤2%p)
 - [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization (NeurIPS'24)](https://arxiv.org/html/2401.18079v4) (3-bit ΔPPL < 0.1, Wikitext-2·C4)
 - [vLLM RELEASE.md](https://github.com/vllm-project/vllm/blob/main/RELEASE.md) (2주 릴리스 케이던스)
+- [H2O: Heavy-Hitter Oracle for Efficient Generative Inference of LLMs (NeurIPS'23)](https://arxiv.org/abs/2306.14048) (KV 예산 20%로 full-cache 동등 — 토큰 eviction 품질 근거)
+- [SnapKV: LLM Knows What You are Looking for Before Generation (NeurIPS'24)](https://arxiv.org/abs/2404.14469) (프롬프트 KV 92% 압축에서 negligible 저하)
+- [MLCommons — MLPerf Inference v5.0](https://mlcommons.org/2025/04/llm-inference-v5/) (closed division 정확도 기준 = 참조의 99%)
+- [Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention (ICML'20)](https://arxiv.org/abs/2006.16236) (linear attention — KV cache의 고정 크기 상태 대체 원리)
+- [MiniMax-01: Scaling Foundation Models with Lightning Attention](https://arxiv.org/abs/2501.08313) (linear attention 계열의 실전 배치 사례 — QA4 모델 변화 축 근거)
+- [LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding (ACL'24)](https://arxiv.org/abs/2308.14508) (QA 태스크군 지표 = F1)
+- [SGLang: Efficient Execution of Structured Language Model Programs (NeurIPS'24)](https://arxiv.org/abs/2312.07104) (대안 serving framework — QA6 근거)
 - 사내: Architect 과제 원본 덱 QA-01 (40% 기준), MCR 자체 P/D 분리 벤치 실측 (decode wait 70–85%)
