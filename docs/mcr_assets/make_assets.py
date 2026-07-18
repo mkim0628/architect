@@ -252,6 +252,10 @@ def ag_context():
     ax.set_title("Long-term memory ⇒ context length explodes (order-of-magnitude)",
                  fontsize=11.5,color=INK,fontweight="bold",loc="left")
     for s in ["top","right","left"]: ax.spines[s].set_visible(False)
+    # magnitudes anchored to shipped model specs (see docs/chart_sources.md);
+    # the per-workload mapping itself is an illustrative ordering
+    fig.text(0.01,-0.06,"Source: magnitudes = shipped model context specs — Llama 2 4K (arXiv 2307.09288, Table 1) · Mixtral 8x7B 32K (arXiv 2401.04088)\n· Qwen3-235B-2507 262K native (HF model card) · Gemini 1.5 Pro 1M in production (Google, 2024-02) — workload mapping illustrative",
+             fontsize=6.8,style="italic",color="#7F7F7F",ha="left",va="top")
     save(fig,"ag_context.png",6.6,2.6)
 
 # 18. Naive DRAM->SSD offloading — bandwidth cliff and throughput collapse
@@ -276,6 +280,9 @@ def bg_offload():
     for a in (a1,a2):
         for s in ["top","right","left"]: a.spines[s].set_visible(False)
     fig.subplots_adjust(wspace=0.3,top=0.72)
+    # tier bandwidths anchored to shipping parts (see docs/chart_sources.md)
+    fig.text(0.01,-0.06,"Source: HBM3 3.35TB/s — NVIDIA H100 SXM · DDR5-6400 2ch = 102.4GB/s — JEDEC (derived) · PCIe 5.0 SSD 13GB/s — Samsung PM1743\n(2021-12) · right panel illustrative; cf. FlexGen (ICML'23): offloading policy alone shifts max throughput up to 100×",
+             fontsize=6.8,style="italic",color="#7F7F7F",ha="left",va="top")
     save(fig,"bg_offload.png",6.6,2.6)
 
 if __name__=="__main__":
