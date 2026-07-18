@@ -195,10 +195,14 @@ class ExcelChart:
 
     def save(self, path, w=6.6, h=3.0, dpi=200):
         self.fig.set_size_inches(w, h)
-        # Source footnote — below everything (negative y + bbox_inches="tight"
-        # keeps it clear of xlabel/legend), small italic gray deck citation
-        self.fig.text(0.01, -0.04, f"Source: {self.source}", fontsize=7.5,
-                      style="italic", color="#7F7F7F", ha="left", va="top")
+        # Source footnote — measure the lowest artist (xlabel or bottom
+        # legend) and place the note just below it, so it never collides;
+        # bbox_inches="tight" then includes it in the crop
+        self.fig.canvas.draw()
+        bbox = self.fig.get_tightbbox(self.fig.canvas.get_renderer())
+        self.fig.text(0.01, bbox.y0 / h - 0.02, f"Source: {self.source}",
+                      fontsize=7.5, style="italic", color="#7F7F7F",
+                      ha="left", va="top")
         self.fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.12,
                          facecolor="white")
         plt.close(self.fig)
