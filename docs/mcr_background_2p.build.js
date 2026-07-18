@@ -16,11 +16,11 @@ A.pageColumns(pptx, {
   cols: [
     { header: "① AI Agent 워크로드의 특징", items: [
       { text: "Agent 기본 패턴: multi-turn loop × 툴 호출 × sub-agent 분업 — 한 요청이 수십~수백 스텝의 루프로 실행되며 툴 결과가 계속 유입", image: img("ag_loop.png") },
-      { text: "매 스텝이 이전 대화·툴 결과·sub-agent 산출물 참조, 기억은 세션을 넘어 축적 → 장기 기억 요구 = 컨텍스트 길이 폭증", image: img("ag_context.png") },
+      { text: "매 스텝이 이전 대화·툴 결과·sub-agent 산출물 참조, 기억은 세션을 넘어 축적 → 장기 기억 요구 = 컨텍스트 길이 폭증", image: img("ag_context_evidence.png") },
     ]},
     { header: "② 메모리 병목 심화", items: [
-      { text: "컨텍스트 증가 → KV cache 증가(∝ 컨텍스트×동시 세션) — decode는 매 토큰 KV 전체 read, 용량·대역폭 동시 압박", image: img("bg_kv.png") },
-      { text: "KV가 HBM 용량 초과 — 단순 DRAM→SSD offloading은 tier마다 ~10× 낮아지는 대역폭 계단을 그대로 노출 → 성능 급락", image: img("bg_offload.png") },
+      { text: "컨텍스트 증가 → KV cache 증가(∝ 컨텍스트×동시 세션) — decode는 매 토큰 KV 전체 read, 용량·대역폭 동시 압박", image: img("bg_kv_evidence.png") },
+      { text: "KV가 HBM 용량 초과 — 단순 DRAM→SSD offloading은 tier마다 ~10× 낮아지는 대역폭 계단을 그대로 노출 → 성능 급락", image: img("bg_offload_evidence.png") },
     ]},
     { header: "③ 업계 현황 — 메모리 중심 제품군", items: [
       { text: "메모리 업계의 대응: 대역폭 축 HBM 고도화·근접 연산(PIM/PNM), 용량 축 CXL 확장·신규 tier(HBF) — 계층은 5+ tier로 심화", image: img("hbm3e_photo.png") },
