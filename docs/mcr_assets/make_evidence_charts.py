@@ -20,11 +20,11 @@ def bg_gap_evidence():
         "Same hardware, runtime only: reported max throughput gain",
         source="Kwon et al., SOSP'23 (vLLM), Abstract — arxiv.org/abs/2309.06180; "
                "Sheng et al., ICML'23 (FlexGen), §1 — arxiv.org/abs/2303.06865")
-    c.bar(["vLLM vs Orca / FasterTransformer\n(same latency)",
-           "FlexGen vs ZeRO-Inf. / Accelerate\n(OPT-175B, one 16GB T4, 4-bit)"],
-          {"gain": [4, 100]}, value_labels=True,
-          fmt="{:g}x", xlabel="Throughput gain (log scale)", xlog=True)
-    c.save(os.path.join(HERE, "bg_gap_evidence.png"), w=6.4, h=2.8)
+    c.column(["vLLM vs Orca /\nFasterTransformer\n(same latency)",
+              "FlexGen vs ZeRO-Inf. /\nAccelerate\n(OPT-175B, 16GB T4, 4-bit)"],
+             {"gain": [4, 100]}, value_labels=True,
+             fmt="{:g}x", ylabel="Throughput gain (log scale)", ylog=True)
+    c.save(os.path.join(HERE, "bg_gap_evidence.png"), w=5.6, h=3.4)
 
 
 if __name__ == "__main__":

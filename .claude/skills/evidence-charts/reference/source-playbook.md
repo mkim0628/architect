@@ -49,6 +49,35 @@
 | ⑤ 현 런타임 한계 | KV 계층도 수동 백엔드 | LMCache (arXiv 2510.09665) + 아키텍처 문서, Mooncake (arXiv 2407.00079), CacheGen (arXiv 2310.07240), CacheBlend (arXiv 2405.16444) | 기능 유무 비교는 차트보다 표가 적합할 수 있음 — 억지 차트화 금지 |
 | ⑥ MCR 필요 | goodput@SLO 개선 여지 | DistServe (goodput 정의, 최대 7.4× 보고), Sarathi-Serve (arXiv 2403.02310) | 개선 배율 column (A) |
 
+## 실물 이미지 소싱 (제품 사진·보도 이미지)
+
+존재·등장 claim(SKILL.md의 판단 규칙)에 쓸 실제 이미지를 구하는 방법.
+
+1. **공식 뉴스룸/프레스킷 우선** — 보도용으로 배포된 이미지라 품질·권리
+   면에서 안전하다. 자주 쓰는 곳:
+   - Samsung: `news.samsung.com/global` (이미지 호스트
+     `img.global.news.samsung.com`), semiconductor.samsung.com
+   - SK hynix: `news.skhynix.com` (이미지 호스트 `d36ae2cxtn9mcr.cloudfront.net`)
+   - Micron/NVIDIA/SanDisk 등: 각 사 newsroom·press kit 페이지
+   - 표준 단체: JEDEC·CXL Consortium 발표 자료
+2. **URL 확보** — 제품 발표 기사를 WebFetch해서 "이미지 src URL을 나열하라"
+   고 요청하면 직접 링크가 나온다. 그 다음
+   `curl -sSL --cacert /root/.ccr/ca-bundle.crt -o <파일> "<URL>"` 로 받는다.
+3. **봇 차단(403) 우회** — 일부 뉴스룸(SK hynix 등)은 기본 UA를 차단한다.
+   `curl -A "Mozilla/5.0 ..."` 브라우저 UA로 HTML을 받아
+   `grep -oE 'https://[^"]*\.(jpg|png|webp)'` 로 이미지 URL을 추출하면 대개
+   CDN 직링크는 열려 있다.
+4. **다운로드 후 검증** — `file`로 실제 이미지인지 확인하고, Read로 열어
+   내용이 claim과 맞는지 본다 (로고만 있는 배너, 무관한 썸네일 주의).
+5. **합성 허용** — 한 슬롯에 제품 두 개를 보여야 하면 PIL로 나란히 붙인다
+   (흰 배경, 원본 비율 유지). 원장에는 원본 이미지별로 출처를 적는다.
+6. **출처·권리 표기** — 보도 이미지는 출처 표기 후 인용이 관례지만
+   저작권은 각 사에 있다. 원장에 기사 제목·게시일·URL을 적고, 대외 공개
+   자료로 나갈 데크면 사용 범위를 사용자에게 알린다.
+
+이미지 표기 형식: `Samsung Newsroom, "Samsung Develops Industry's First
+HBM-PIM" (2021-02-17) — news.samsung.com/global/...`
+
 ## 표기 형식
 
 - 논문: `Kwon et al., Efficient Memory Management for LLM Serving with

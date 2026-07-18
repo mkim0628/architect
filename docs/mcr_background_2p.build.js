@@ -23,8 +23,8 @@ A.pageColumns(pptx, {
       { text: "KV가 HBM 용량 초과 — 단순 DRAM→SSD offloading은 tier마다 ~10× 낮아지는 대역폭 계단을 그대로 노출 → 성능 급락", image: img("bg_offload.png") },
     ]},
     { header: "③ 업계 현황 — 메모리 중심 제품군", items: [
-      { text: "메모리 업계의 대응: 대역폭 축 HBM 고도화·근접 연산(PIM/PNM), 용량 축 CXL 확장·신규 tier(HBF) — 계층은 5+ tier로 심화", image: img("bg_hierarchy.png") },
-      { text: "자사(삼성): 근접 연산(PIM·CIM)부터 계층화(Custom HBM·HBF·CXL)까지 — 근접연산·대역폭·용량 전 축의 포트폴리오 보유", image: img("bg_devices.png") },
+      { text: "메모리 업계의 대응: 대역폭 축 HBM 고도화·근접 연산(PIM/PNM), 용량 축 CXL 확장·신규 tier(HBF) — 계층은 5+ tier로 심화", image: img("hbm3e_photo.png") },
+      { text: "자사(삼성): 근접 연산(PIM·CIM)부터 계층화(Custom HBM·HBF·CXL)까지 — 근접연산·대역폭·용량 전 축의 포트폴리오 보유", image: img("samsung_portfolio_photos.png") },
     ]},
   ],
 });
@@ -35,7 +35,7 @@ A.pageColumns(pptx, {
   cols: [
     { header: "④ 성능은 런타임이 실현한다", items: [
       { text: "HW는 능력만 제공 — 데이터 배치·이동·연산 위치의 '결정'이 성능을 만들며, 이종 tier·근접연산 등장으로 결정 공간 폭발 → 결정 계층(런타임)의 비중 급증", image: img("bg_decision.png") },
-      { text: "같은 HW에서 런타임만으로 처리량 2–4×(vLLM SOSP'23)·100×(FlexGen ICML'23) 격차 — HW 스펙은 상한일 뿐, 도달 성능은 런타임이 결정", image: img("bg_gap.png") },
+      { text: "같은 HW에서 런타임만으로 처리량 2–4×(vLLM SOSP'23)·100×(FlexGen ICML'23) 격차 — HW 스펙은 상한일 뿐, 도달 성능은 런타임이 결정", image: img("bg_gap_evidence.png") },
     ]},
     { header: "⑤ 그런데 현 런타임은 연산기 중심", items: [
       { text: "GPU 중심 설계: '연산=GPU, KV=HBM' 단일 메모리 가정 — 메모리는 GPU 부속물, PIM/PNM 표현 자리 없고 HBM 초과 시 성능 급락", image: img("nec_missing.png") },

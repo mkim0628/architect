@@ -1,15 +1,39 @@
 ---
 name: evidence-charts
-description: "Turn slide claims into evidence-backed charts: find real numbers in external sources (논문 arXiv/SOSP/ICML, vendor datasheets·newsroom, industry news/market research), record them in a source ledger (docs/chart_sources.md), and render Excel-default-style chart PNGs (Office palette, Calibri-look, Source footnote) for deck insertion. Use whenever the user asks to 배경/필요성 슬라이드 내용에 맞는 이미지를 차트로 만들라, 근거 있는 소스(논문·뉴스)로 차트/그래프를 그려라, 출처 있는 데이터 시각화, 엑셀에서 그린 것 같은 차트, or when an architect-ppt slide needs a visual for a factual claim — this replaces architect-ppt's illustrative-chart fallback with sourced charts. Trigger even if the user only says '이 주장 뒷받침할 데이터 찾아서 그래프로' without the word chart/차트."
+description: "Turn slide claims into evidence-backed visuals: quantitative claims become Excel-default-style chart PNGs from real numbers found in external sources (논문 arXiv/SOSP/ICML, vendor datasheets·newsroom, industry news/market research); product-/trend-existence claims get real product photos or press images downloaded from official newsrooms — every visual recorded in a source ledger (docs/chart_sources.md) with citation. Use whenever the user asks to 배경/필요성 슬라이드 내용에 맞는 이미지·차트를 근거 있는 소스로 만들라, 논문·뉴스 데이터로 차트를 그려라, 제품 사진/보도 이미지를 찾아 넣어라, 출처 있는 데이터 시각화, 엑셀에서 그린 것 같은 차트, or when an architect-ppt slide needs a visual for a factual claim — this replaces architect-ppt's illustrative-chart fallback. Trigger even if the user only says '이 주장 뒷받침할 데이터 찾아서 그래프로' without the word chart/차트."
 ---
 
-# Evidence Charts — 근거 소스 수집 → 엑셀풍 차트
+# Evidence Charts — 근거 소스 수집 → 엑셀풍 차트 / 실물 이미지
 
-슬라이드의 사실 명제(claim)마다 **외부 근거 소스에서 실제 수치를 찾아**,
-그 수치로 **엑셀 기본 스타일 차트(PNG)** 를 그리는 스킬. 모든 차트는 Source
-각주를 달고 원장(`docs/chart_sources.md`)에 등록된다. 손으로 그린 개념도
-(`docs/mcr_assets/make_assets.py` 류)의 예시 수치를 근거 수치로 승격하는
-작업이 전형적 사용처다.
+슬라이드의 사실 명제(claim)마다 **외부 근거 소스에서 실제 수치나 실물
+이미지를 찾아** 시각물을 만드는 스킬. 정량 claim은 **엑셀 기본 스타일
+차트(PNG)** 로, 제품·트렌드의 존재를 말하는 claim은 **공식 보도 사진·제품
+이미지**로 만든다. 모든 시각물은 출처와 함께 원장(`docs/chart_sources.md`)에
+등록된다. 손으로 그린 개념도(`docs/mcr_assets/make_assets.py` 류)의 예시
+수치를 근거 시각물로 승격하는 작업이 전형적 사용처다.
+
+## 차트 vs 실물 이미지 판단 — 전부 차트로 만들지 않는다
+
+claim의 성격이 시각물의 형태를 정한다. 억지 차트는 억지 다이어그램만큼
+나쁘다:
+
+- **정량 claim** ("X가 Y보다 N배", "~%가 낭비", "매년 ~씩 증가") → **차트**.
+  수치 비교·추세가 본질이므로 축과 막대가 정보를 담는다.
+- **존재·등장 claim** ("PIM/PNM·tiered memory 제품군이 등장하고 있다",
+  "자사가 이런 포트폴리오를 보유") → **실물 이미지**: 공식 뉴스룸의 제품
+  보도 사진, 발표 기사 배너, datasheet 도판 발췌. 제품이 실재한다는 것이
+  메시지이므로 사진이 차트보다 설득력 있다. 이런 claim을 막대 2개짜리
+  차트로 만들면 오히려 근거가 빈약해 보인다.
+- **구조·관계 claim** ("계층이 5+ tier로 깊어진다", "런타임이 결정 계층")
+  → 다이어그램 영역 — architect-ppt의 생성 규칙에 맡기되, 공신력 있는
+  원 도판(논문 Figure, 표준 문서 그림)을 발췌·인용할 수 있으면 그쪽 우선.
+- 한 블록에 성격이 섞여 있으면 아이템별로 다르게: 예컨대 MCR 배경 ③은
+  "업계 대응"(존재) = 보도 이미지, ②의 "KV 증가"(정량) = 차트.
+
+실물 이미지도 원장 등록 대상이다 — 어떤 기사/페이지에서 받았는지, 게시일,
+접근일을 기록하고 슬라이드나 참고 문헌에 출처를 남긴다. 이미지 검색·다운로드
+방법은 [reference/source-playbook.md](reference/source-playbook.md)의 "실물
+이미지 소싱" 절 참조.
 
 ## 철칙 3가지
 
@@ -27,10 +51,11 @@ description: "Turn slide claims into evidence-backed charts: find real numbers i
 
 ## Workflow
 
-1. **Claim 분해** — 슬라이드(또는 문서)의 각 콘텐츠 블록을 "차트 하나로
-   증명할 한 문장"으로 환원한다. 예: "② KV cache는 컨텍스트×세션에 비례해
-   HBM을 초과한다" → *모델 X에서 컨텍스트 N일 때 KV가 HBM 용량을 넘는다*.
-   한 블록에 명제가 둘이면 차트도 둘로 나눈다 (억지로 한 장에 합치지 않기).
+1. **Claim 분해 + 시각물 유형 판단** — 슬라이드(또는 문서)의 각 콘텐츠
+   블록을 "시각물 하나로 증명할 한 문장"으로 환원하고, 위의 판단 규칙으로
+   차트/실물 이미지/다이어그램을 정한다. 예: "② KV cache는 컨텍스트×세션에
+   비례해 HBM을 초과한다" → 정량 → 차트. "③ PIM·tiered memory 제품군 등장"
+   → 존재 → 제품 보도 사진. 한 블록에 명제가 둘이면 시각물도 둘로 나눈다.
 2. **소스 탐색** — WebSearch/WebFetch로 1차 출처를 찾는다. claim 유형별
    검색처·앵커 소스·쿼리 패턴은 [reference/source-playbook.md](reference/source-playbook.md)
    를 읽고 따른다. MCR 배경 ①~⑥의 검증된 앵커 소스 표가 있으므로 그
@@ -50,12 +75,14 @@ description: "Turn slide claims into evidence-backed charts: find real numbers i
 
 ## 원장 형식 (docs/chart_sources.md)
 
+차트와 실물 이미지 모두 등록한다.
+
 | 열 | 내용 |
 |---|---|
-| 차트 | 파일명 (`bg_gap.png`) + 대상 슬라이드/블록 (배경 2/2 ④) |
-| Claim | 차트가 증명하는 한 문장 |
-| 데이터 | 차트에 실린 수치 전부 (예: Orca 1.0× / vLLM 2.7×) |
-| 근거 위치 | 소스 내 위치 (§6.2, Fig.12) |
+| 시각물 | 파일명 (`bg_gap.png`) + 대상 슬라이드/블록 (배경 2/2 ④) |
+| Claim | 시각물이 증명하는 한 문장 |
+| 데이터 | 차트: 실린 수치 전부 / 이미지: 무엇의 사진인지 (제품명·발표 시점) |
+| 근거 위치 | 차트: 소스 내 위치 (§6.2, Fig.12) / 이미지: 게재 기사·페이지 |
 | 소스 | 표기 형식: `Kwon et al., …PagedAttention (SOSP 2023) — arxiv.org/abs/2309.06180` |
 | 등급 | A 논문·공식 datasheet 보고치 / B 공식 블로그·벤치마크·신뢰 언론 / C 공식 스펙 산술 유도(식 병기) / D illustrative |
 | 접근일 | YYYY-MM-DD |
