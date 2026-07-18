@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp4-candidates" name="DP4 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP4. Tier Topology Model의 하드웨어 추상화 수준 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;녹색: 구조적 이득 · 적색: 구조적 제약 · 주황: 신설/확장 요소" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="900" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="h1" value="후보구조 1 — 공통 파라미터형 (uniform parametric)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1ttm" value="«Memory Engine» Tier Topology Model — tier 목록 × 수치 프로파일" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="196" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1r1" value="&lt;b&gt;GPU HBM&lt;/b&gt;   대역폭 ↑↑ · 용량 ↓ · 지연 ↓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="84" y="160" width="536" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1r2" value="&lt;b&gt;PNM DRAM&lt;/b&gt;   대역폭 ↑ · 용량 ↑ · 지연 ↔ &lt;font color=&quot;#B3402A&quot;&gt;(근접연산 capability 표현 불가)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="84" y="200" width="536" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1r3" value="&lt;b&gt;CXL (CMM-DC)&lt;/b&gt;   대역폭 ↓ · 용량 ↑↑ · 지연 ↑ &lt;font color=&quot;#B3402A&quot;&gt;(공유성 표현 불가)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="84" y="240" width="536" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1rNote" value="프로파일 = (대역폭, 용량, 지연 [, 비용/W]) 수치 튜플만" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#6B7A90;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="84" y="284" width="536" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1policy" value="&lt;b&gt;정책·커널 — 단일 코드 경로&lt;/b&gt;&lt;br&gt;capability 분기 없음 — 검증 매트릭스 최소 · 동작 예측 가능&lt;br&gt;타 엔진·타사 HW 이식성 최대 — &quot;범용 레퍼런스&quot; 지위" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="580" height="84" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edge" value="수치만 소비" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;fontSize=10;fontColor=#1F2A44;" edge="1" parent="1" source="c1ttm" target="c1policy">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1add" value="&lt;b&gt;디바이스 추가 = 프로파일 등록 + DMA 어댑터 1모듈 (코어 0)&lt;/b&gt;&lt;br&gt;QA4 ★★★ bin의 정면 충족 — &quot;재설계 없는 구조&quot;(필요성 2.1)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="464" width="580" height="62" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1risk" value="&lt;b&gt;구조적 제약:&lt;/b&gt; PIM in-place 압축 · HBF 영속 · CXL 공유가 (BW, 용량, 지연)로 표현 불가&lt;br&gt;→ 압축/해제가 GPU 사이클 계속 잠식 · DP5 후보2(공유 스테이징)·DP6(근접연산) 원천 배제&lt;br&gt;→ E2E 증명 vehicle(필요성 2.3) 약화 — 자사 차별 기능의 구조적 미회수" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="546" width="580" height="66" as="geometry"/>
+        </mxCell>
+        <mxCell id="h2" value="후보구조 2 — Capability-aware 프로파일형" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2ttm" value="«Memory Engine» Tier Topology Model — 수치 튜플 + capability 디스크립터" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="236" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2r1" value="&lt;b&gt;HBM-PIM / PNM&lt;/b&gt;   수치 + NEAR_COMPUTE{codec, gather …}" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="754" y="160" width="566" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2r2" value="&lt;b&gt;HBF&lt;/b&gt;   수치 + PERSISTENT (agent 장기기억의 HW 대응)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="754" y="200" width="566" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2r3" value="&lt;b&gt;CMM-DC (CXL pool)&lt;/b&gt;   수치 + SHARED (DP5 후보2의 전제)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="754" y="240" width="566" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2r4" value="&lt;b&gt;GPU HBM&lt;/b&gt;   수치만 (capability 없음 — 미인지 정책은 무시)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="754" y="280" width="566" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2rNote" value="capability: NEAR_COMPUTE{ops} · PERSISTENT · SHARED · IN_PLACE_COMPRESS …" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#8A5A08;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="754" y="322" width="566" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2policy" value="&lt;b&gt;정책 — capability 기반 결정&lt;/b&gt;&lt;br&gt;· NEAR_COMPUTE → 압축/해제 오프로드 (GPU 사이클 보존, decode wait 70–85% 구간 중첩 이득)&lt;br&gt;· PERSISTENT → 영속 배치 (세션 넘는 KV 자산화) · SHARED → 공유 스테이징 (DP5 후보2 개방)&lt;br&gt;· CompressionOp 실행 위치를 디바이스로 위임 — 의존 역전(01)의 활용" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E9F5EE;strokeColor=#1B7A4B;fontColor=#155F3B;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="730" y="400" width="610" height="104" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edge" value="capability 질의" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;fontSize=10;fontColor=#1B7A4B;" edge="1" parent="1" source="c2ttm" target="c2policy">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; 자사 디바이스 차별 가치의 구조적 회수 — &quot;이 capability가 있어서 이만큼 빨라진다&quot;를 스택이 직접 증명 (E2E 증명 vehicle, 필요성 2.3 정면 충족)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="520" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;리스크:&lt;/b&gt; capability × 정책 조합의 코드 분기·검증 매트릭스 확대 (초기 6–24인월), capability 스키마 = 공개 인터페이스(코어) — 신규 capability 등장 시 코어 개정, 타사 HW에 무의미한 스키마 — 범용 레퍼런스 지위 저하" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="572" width="610" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="evo" value="&lt;b&gt;hybrid — 2계층 프로파일 (검토 노트):&lt;/b&gt; 필수층(수치 튜플, 모든 정책 소비) + 선택층(capability, 인지 정책만 소비·미인지 시 무시 = 하위호환)&lt;br&gt;진화 경로: 후보1 스키마 + capability 슬롯 예약 → DP5 실측(공유 스테이징 이득)이 임계를 넘으면 SHARED부터 선택층 개방" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#6B7A90;dashed=1;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=10;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="660" width="1280" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

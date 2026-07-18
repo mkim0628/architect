@@ -220,10 +220,68 @@ def nec_kvlayer():
             ha="center",va="center",color=GRAY,fontsize=9.5,fontweight="bold")
     save(fig,"nec_kvlayer.png",6.6,2.7)
 
+# 16. Agent workload pattern — multi-turn loop x tool calls x sub-agents
+def ag_loop():
+    fig, ax = plt.subplots(); ax.set_xlim(0,10); ax.set_ylim(0,5.2); ax.axis("off")
+    ax.text(5,4.95,"Agent = multi-turn loop × tool calls × sub-agents",ha="center",
+            fontsize=12.5,color=INK,fontweight="bold")
+    box(ax,0.4,3.3,2.4,1.0,"Plan",NAVY,NAVY,fs=12.5)
+    box(ax,3.8,3.3,2.4,1.0,"Act\n(tool call)",NAVYL,NAVYL,fs=11)
+    box(ax,7.2,3.3,2.4,1.0,"Observe",GREEN,GREEN,fs=12.5)
+    arrow(ax,2.85,3.8,3.75,3.8); arrow(ax,6.25,3.8,7.15,3.8)
+    ax.add_patch(FancyArrowPatch((8.4,3.25),(1.6,3.25),connectionstyle="arc3,rad=-0.35",
+        arrowstyle="-|>",mutation_scale=16,lw=2.2,color=INK,linestyle=(0,(4,2))))
+    ax.text(5,2.5,"× 10s–100s steps",ha="center",fontsize=10.5,
+            color=INK,fontweight="bold")
+    ax.text(5,1.28,"fan-out for one goal",ha="center",fontsize=9.5,color=GRAY,fontweight="bold")
+    for i in range(3):
+        box(ax,2.85+i*1.75,0.25,1.55,0.85,"sub-agent",ICE,NAVY,tc=NAVY,fs=9)
+    save(fig,"ag_loop.png",6.6,2.8)
+
+# 17. Context length explosion across workload generations (order-of-magnitude)
+def ag_context():
+    fig, ax = plt.subplots()
+    labs=["Chatbot\n(single turn)","RAG","Multi-turn\nagent","Agent +\nlong-term memory"]
+    vals=[4,32,256,1500]; cols=[GRAY,NAVYL,NAVY,GREEN]
+    ax.bar(range(4),vals,color=cols,width=0.55)
+    for i,(v,t) in enumerate(zip(vals,["4K","32K","256K","1M+"])):
+        ax.text(i,v*1.25,t,ha="center",fontsize=10.5,color=INK,fontweight="bold")
+    ax.set_yscale("log"); ax.set_ylim(1,9000); ax.set_yticks([])
+    ax.set_xticks(range(4)); ax.set_xticklabels(labs,fontsize=9)
+    ax.set_ylabel("context (K tokens, log)",fontsize=9.5)
+    ax.set_title("Long-term memory ⇒ context length explodes (order-of-magnitude)",
+                 fontsize=11.5,color=INK,fontweight="bold",loc="left")
+    for s in ["top","right","left"]: ax.spines[s].set_visible(False)
+    save(fig,"ag_context.png",6.6,2.6)
+
+# 18. Naive DRAM->SSD offloading — bandwidth cliff and throughput collapse
+def bg_offload():
+    fig,(a1,a2) = plt.subplots(1,2)
+    fig.suptitle("KV > HBM — naive offloading exposes the bandwidth cliff",
+                 fontsize=11.5,color=INK,fontweight="bold",x=0.02,ha="left")
+    tiers=["HBM","DRAM","SSD"]; bws=[3000,100,10]; cols=[NAVY,NAVYL,GRAY]
+    a1.barh([2,1,0],bws,color=cols,height=0.55)
+    a1.set_xscale("log"); a1.set_xlim(1,20000)
+    for y,(t,b,lab) in zip([2,1,0],[("HBM",3000,"~TB/s"),("DRAM",100,"~100 GB/s"),("SSD",10,"~10 GB/s")]):
+        a1.text(b*1.4,y,f"{t}  {lab}",va="center",fontsize=9.5,color=INK,fontweight="bold")
+    a1.set_yticks([]); a1.set_xticks([])
+    a1.set_title("~10×+ bandwidth drop per tier",fontsize=9,color=NAVY,loc="left")
+    a2.bar([0,1],[1.0,0.15],color=[NAVY,GRAY],width=0.5)
+    a2.text(0,1.04,"1.0",ha="center",fontsize=10,color=INK,fontweight="bold")
+    a2.text(1,0.19,"collapse",ha="center",fontsize=9.5,color=INK,fontweight="bold")
+    a2.set_xticks([0,1]); a2.set_xticklabels(["KV fits\nin HBM","naive\nDRAM→SSD swap"],fontsize=8.5)
+    a2.set_ylim(0,1.25); a2.set_yticks([])
+    a2.set_ylabel("throughput (rel.)",fontsize=9)
+    a2.set_title("passive swap → perf collapse (illustrative)",fontsize=9,color=GRAY,loc="left")
+    for a in (a1,a2):
+        for s in ["top","right","left"]: a.spines[s].set_visible(False)
+    fig.subplots_adjust(wspace=0.3,top=0.72)
+    save(fig,"bg_offload.png",6.6,2.6)
+
 if __name__=="__main__":
     import sys
     ALL=[bg_decode,bg_kv,bg_devices,bg_axes,bg_shift,bg_hierarchy,nec_arch,nec_orch,nec_stack,nec_e2e,
-         bg_decision,bg_gap,nec_missing,nec_demos,nec_kvlayer]
+         bg_decision,bg_gap,nec_missing,nec_demos,nec_kvlayer,ag_loop,ag_context,bg_offload]
     names=sys.argv[1:]
     for f in ALL:
         if not names or f.__name__ in names:

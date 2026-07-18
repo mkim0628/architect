@@ -1,0 +1,145 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="dp2-candidates" name="DP2 후보구조 설계도">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="&lt;b&gt;DP2. KV 배치·압축의 관리 주체 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;동일 패키지 구조 위에서 policy의 위치만 다름 — 화살표 굵기 = 인터페이스 폭 · 주황: 신설 컴포넌트" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="40" y="14" width="1000" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="h1" value="후보구조 1 — Orchestration 중앙 정책 (central policy)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="76" width="620" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1orch" value="«MCR» Inference Orchestration — «package» Scheduling" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="124" width="580" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1router" value="&lt;b&gt;KV-aware Router&lt;/b&gt;&lt;br&gt;배치 결정 시 Policy와 협조" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="104" y="170" width="230" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1policy" value="&lt;b&gt;KV Placement &amp;amp;&lt;br&gt;Compression Policy (신설)&lt;/b&gt;&lt;br&gt;SLO class·재사용확률·품질예산 기반" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="360" y="170" width="236" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1slo" value="&lt;b&gt;SLO / QoS Monitor&lt;/b&gt;&lt;br&gt;metric → Policy 입력" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="104" y="262" width="230" height="52" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeSlo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6B7A90;dashed=1;fontSize=9;" edge="1" parent="1" source="c1slo" target="c1policy">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1me" value="«MCR» Memory Engine — passive executor (mechanism 전담)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="60" y="432" width="580" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeCmd" value="&lt;b&gt;지시(굵은 I/F): 목표 tier · 압축 수준 · reuse/recompute&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;strokeWidth=3.5;fontSize=10;fontColor=#1F2A44;exitX=0.33;exitY=1;exitDx=0;exitDy=0;entryX=0.33;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c1orch" target="c1me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1edgeRep" value="&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;tier 상태 상시 상향 보고&lt;/b&gt; — 인터페이스 비대·결합도↑&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#B3402A;strokeWidth=3.5;dashed=1;fontSize=10;exitX=0.72;exitY=0;exitDx=0;exitDy=0;entryX=0.72;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="c1me" target="c1orch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1kvcm" value="&lt;b&gt;KV Cache Manager (집행)&lt;/b&gt;&lt;br&gt;KV Index 갱신·조회 제공" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="472" width="255" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1comp" value="&lt;b&gt;Memory Compressor (집행)&lt;/b&gt;&lt;br&gt;지시된 수준으로만 압축" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="472" width="255" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1mig" value="&lt;b&gt;Migration (집행)&lt;/b&gt;&lt;br&gt;지시된 승격/강등만 수행" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="84" y="548" width="255" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1kt" value="&lt;b&gt;KV Transport&lt;/b&gt;&lt;br&gt;P↔D 전송·drain 집행" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="365" y="548" width="255" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1meNote" value="자체 정책 없음 — 지시 대기. 로컬 지식(압박 스파이크)을 결정에 못 씀&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;제약: 제어 루프 = 요청 단위 → μs 압박 스파이크 대응 지연 (TPOT p99 tail 악화)&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#6B7A90;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="84" y="622" width="536" height="76" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1gain" value="&lt;b&gt;이득:&lt;/b&gt; 품질 예산의 요청별 중앙 집행 — quality-aware joint orchestration (reuse × compression)의 자연스러운 구현 위치 · 전역 최적 배치" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="732" width="580" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c1cpl" value="&lt;font color=&quot;#6B7A90&quot;&gt;DP1 커플링: 자체 구현형(DP1-후보2)에서만 온전히 실현 가능&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;DP1-후보1 변형 B(LMCache 편승) 채택 시 실현 최소 — 정책 골격을 LMCache가 소유, 굵은 지시 I/F의 자리 없음&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="786" width="580" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="h2" value="후보구조 2 — Memory Engine 자율 (hint 기반, madvise 모델)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="710" y="76" width="650" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2orch" value="«MCR» Inference Orchestration — «package» Scheduling&lt;br&gt;&lt;font style=&quot;font-weight:normal&quot;&gt;Policy 컴포넌트 없음 — 결정권을 아래로 위임, 문맥은 hint로만 하향&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="124" width="610" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2router" value="&lt;b&gt;KV-aware Router&lt;/b&gt;&lt;br&gt;배치 결정 + hint 생성" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="774" y="192" width="250" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2slo" value="&lt;b&gt;SLO / QoS Monitor&lt;/b&gt;&lt;br&gt;metric → hint 갱신 입력" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1046" y="192" width="250" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2me" value="«MCR» Memory Engine — 자율 주체 (mechanism + local policy)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F4F6FA;strokeColor=#44546A;fontColor=#1F2A44;fontSize=12;fontStyle=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="432" width="610" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeHint" value="&lt;b&gt;hint API (얇은 I/F):&lt;/b&gt; pin · priority · quality budget · reuse 후보 명단" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1F2A44;strokeWidth=1.4;fontSize=10;fontColor=#1F2A44;exitX=0.28;exitY=1;exitDx=0;exitDy=0;entryX=0.28;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2orch" target="c2me">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeStat" value="집계 통계만 보고" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#6B7A90;dashed=1;strokeWidth=1.2;fontSize=10;fontColor=#6B7A90;exitX=0.74;exitY=0;exitDx=0;exitDy=0;entryX=0.74;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2me" target="c2orch">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2lpe" value="&lt;b&gt;Local Policy Engine (신설)&lt;/b&gt;&lt;br&gt;· 접근 온도 기반 승격/강등&lt;br&gt;· watermark 기반 압축 트리거&lt;br&gt;· hint를 제약조건으로 반영" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;fontColor=#8A5A08;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="754" y="472" width="280" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cm" value="&lt;b&gt;Cache Manager&lt;/b&gt;&lt;br&gt;KV Cache Manager ·&lt;br&gt;Memory Compressor · KV Index" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="472" width="256" height="86" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2tl" value="&lt;b&gt;Tier &amp;amp; Lifecycle&lt;/b&gt;&lt;br&gt;Tier Topology Model · Migration · KV Transport — Local Policy가 직접 구동" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="900" y="586" width="416" height="58" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2edgeLoop" value="μs 자율 제어 루프" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeColor=#1B7A4B;strokeWidth=2.2;fontSize=10;fontColor=#1B7A4B;fontStyle=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.1;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c2lpe" target="c2tl">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2risk" value="&lt;b&gt;제약:&lt;/b&gt; 요청 문맥 부재 — 재사용 예정 KV 오강등, 품질 예산 로컬 집행 → 요청 간 품질 편차 · joint orchestration 연구 기여 지점이 구조에서 소실" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#B3402A;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="754" y="656" width="562" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2gain" value="&lt;b&gt;이득:&lt;/b&gt; 압박 스파이크 즉시 대응(tail 방어) · 얇은 결합 · memory engine 독립 이식성 (자사 메모리 SW 생태계 전략과 부합)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1B7A4B;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="732" width="610" height="46" as="geometry"/>
+        </mxCell>
+        <mxCell id="c2cpl" value="&lt;font color=&quot;#6B7A90&quot;&gt;DP1 커플링: DP1-후보1 변형 A(vLLM 확장)와 가장 정합 — connector 뒤 자율 모듈로 성립&lt;br&gt;DP1-후보1 변형 B(LMCache 편승)에서도 성립 — hint를 pin/priority·Policy Hook 경유로 하향 (사실상 유일 후보)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="730" y="786" width="610" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mxTitle" value="&lt;b&gt;DP1 채택안·변형 → DP2 실현 가능 집합&lt;/b&gt; (02_design_points §DP 간 의존성)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontColor=#1F2A44;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="44" y="880" width="800" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxh0" value="&lt;b&gt;DP1 채택안&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="44" y="908" width="300" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxh1" value="&lt;b&gt;DP2-후보1: Orchestration 중앙 정책&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="344" y="908" width="508" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxh2" value="&lt;b&gt;DP2-후보2: Memory Engine 자율 (hint)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DCE3EE;strokeColor=#44546A;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="852" y="908" width="508" height="26" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr1a" value="&lt;b&gt;후보1 변형 A — vLLM 확장 (KV 골격 자체)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="44" y="934" width="300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr1b" value="&lt;font color=&quot;#B45309&quot;&gt;&lt;b&gt;△&lt;/b&gt; 부분 — 엔진 scheduler에 통합 불가, orchestration 레벨 정책만&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="344" y="934" width="508" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr1c" value="&lt;font color=&quot;#1B7A4B&quot;&gt;&lt;b&gt;○&lt;/b&gt; 가장 정합 — connector 뒤 자율 모듈&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="852" y="934" width="508" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr2a" value="&lt;b&gt;후보2 — 자체 구현형 (독립 framework)&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="44" y="968" width="300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr2b" value="&lt;font color=&quot;#1B7A4B&quot;&gt;&lt;b&gt;○&lt;/b&gt; 온전 실현 — 자체 scheduler에 정책 통합 가능&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="344" y="968" width="508" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr2c" value="&lt;font color=&quot;#1B7A4B&quot;&gt;&lt;b&gt;○&lt;/b&gt; 실현 가능&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="852" y="968" width="508" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr3a" value="&lt;b&gt;후보1 변형 B — KV-계층(LMCache) 편승&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="44" y="1002" width="300" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr3b" value="&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;✕&lt;/b&gt; 최소 — 정책 골격을 LMCache가 소유, 지시 I/F 자리 없음 (훅 범위로 축소)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="344" y="1002" width="508" height="34" as="geometry"/>
+        </mxCell>
+        <mxCell id="mxr3c" value="&lt;font color=&quot;#B45309&quot;&gt;&lt;b&gt;△&lt;/b&gt; 성립 — hint를 pin/priority·Policy Hook 경유로 하향&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FDF6E9;strokeColor=#8B97A8;fontColor=#1F2A44;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="852" y="1002" width="508" height="34" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
