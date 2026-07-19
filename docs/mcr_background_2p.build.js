@@ -36,8 +36,8 @@ A.pageColumns(pptx, {
     { header: "④ 런타임 스택의 중요도", items: [
       { subtitle: "AI 씬의 승부처 = 실행 계층(런타임)",
         text: "배치·이동·스케줄링을 결정하는 실행 계층 — 업계 전체가 자체 런타임(TensorRT-LLM·ONNX Runtime·vLLM·SGLang)에 투자, CUDA 해자도 실리콘 아닌 SW 스택", image: img("bg_stack_runtime.png") },
-      { subtitle: "같은 HW, 런타임만으로 갈린 성능",
-        text: "런타임만으로 처리량 2–4×(vLLM SOSP'23)·100×(FlexGen ICML'23) 격차 — HW 스펙은 상한일 뿐, 도달 성능은 런타임이 결정", image: img("bg_gap_evidence.png") },
+      { subtitle: "같은 HW, 관리 정책만으로 갈린 성능",
+        text: "커널을 빠르게 한 게 아니라 메모리 관리(vLLM, paging)·배치 정책(FlexGen, offloading)만 바꿔 2–4×·100× 격차 — 컴파일 축과 독립인 동적 자원 관리 축의 지렛대", image: img("bg_gap_evidence.png") },
     ]},
     { header: "⑤ 그런데 현 런타임은 연산기 중심", items: [
       { subtitle: "GPU 중심 설계 — 메모리는 부속물",

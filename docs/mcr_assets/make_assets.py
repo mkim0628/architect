@@ -340,7 +340,14 @@ def bg_stack_runtime():
     box(ax, 0.4, 0.28, 9.2, 0.72,
         "Hardware — GPU · Memory tiers (HBM · DRAM · CXL · Flash)",
         LGRAY, GRAY, tc=INK, fs=9.5)
-    save(fig, "bg_stack_runtime.png", 6.6, 3.0)
+    # two independent levers inside the runtime layer — this project takes ②
+    ax.set_ylim(-0.75, 4.75)
+    ax.text(0.4, -0.18, "Runtime levers:  ① kernels & compilation — how fast each op runs"
+            "   ·   ② dynamic resource management — where data lives,",
+            fontsize=7.8, color="#7F7F7F", style="italic")
+    ax.text(0.4, -0.55, "when it moves, what runs where (→ this project's axis)",
+            fontsize=7.8, color="#7F7F7F", style="italic")
+    save(fig, "bg_stack_runtime.png", 6.6, 3.1)
 
 # 18. Naive DRAM->SSD offloading — bandwidth cliff and throughput collapse
 def bg_offload():

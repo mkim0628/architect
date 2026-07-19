@@ -17,7 +17,7 @@ from excelchart import ExcelChart
 def bg_gap_evidence():
     # 배경 2/2 ④ — same HW, runtime alone decides throughput (ledger row 1)
     c = ExcelChart(
-        "Same hardware, runtime only: reported max throughput gain",
+        "Same GPU, no faster kernels — management policy alone",
         source="Kwon et al., SOSP'23 (vLLM), Abstract — arxiv.org/abs/2309.06180; "
                "Sheng et al., ICML'23 (FlexGen), §1 — arxiv.org/abs/2303.06865")
     c.column(["vLLM vs Orca /\nFasterTransformer\n(same latency)",
