@@ -2,11 +2,11 @@
 
 MCR(Memory-Centric Runtime)은 PIM/PNM/CXL 등 이종 메모리를 1급 자원으로 다루는 LLM 추론 런타임이다. 본 문서는 패키지 다이어그램 확정안 v2의 구조와, 검수 과정에서 반영된 결정 사항을 기록한다.
 
-다이어그램: [`diagrams/mcr_package_diagram_v2.svg`](../diagrams/mcr_package_diagram_v2.svg)
+다이어그램: [`diagrams/mcr_package_diagram_v2.svg`](../../diagrams/mcr_package_diagram_v2.svg)
 
-![MCR 패키지 다이어그램 확정안 v2](../diagrams/mcr_package_diagram_v2.svg)
+![MCR 패키지 다이어그램 확정안 v2](../../diagrams/mcr_package_diagram_v2.svg)
 
-*draw.io 소스: [`mcr_package_diagram_v2.drawio`](../diagrams/mcr_package_diagram_v2.drawio)*
+*draw.io 소스: [`mcr_package_diagram_v2.drawio`](../../diagrams/mcr_package_diagram_v2.drawio)*
 
 ## 패키지 구조
 

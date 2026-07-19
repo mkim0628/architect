@@ -1,50 +1,61 @@
-// Regenerate: NODE_PATH="$(npm root -g)" node docs/mcr_req_deck.build.js
-// 요구사항 챕터 덱 (mcr_deck.pptx P1–P4 배경~개요의 후속):
-//   본문 5–9: 5 요구사항 수집 · 6 요구사항 정제 · 7 요구사항 → QA 도출(내용) ·
-//             8 Utility Tree 활용한 ASR 선정 · 9 선정 QA 정의·평가 기준
-//   부록 26–33: 26 부록 A VOC 전량 · 27 부록 B 도출 방법론(SEI 5단계) ·
-//               28–33 부록 C QA별 평가 기준 상세 (QA1·2·3·4·6·5 — 우선순위 순)
-// 내용 출처: docs/00_requirements_analysis.md · 00_qa_derivation.md · 00_qa_definitions.md
-// 이미지: docs/mcr_assets/make_req_assets.py 로 생성 (웹 차단 환경 — 로컬 생성).
+// Regenerate: NODE_PATH="$(npm root -g)" node docs/ppt/mcr_requirements.build.js
+// 요구사항 PPT (조합본) — 사용자 지정 순서:
+//   본문 5–9: 5 요구사항 수집 · 6 요구사항 정제 · 7 요구사항 수집·목표 정의 — 상세 ·
+//             8 시나리오 기반 핵심 요소 → QA 도출 — 상세 · 9 Utility Tree 활용한 ASR 선정
+//   부록 25–33: 25 부록 A VOC 전량 · 26 부록 B 도출 방법론 · 27 부록 C 선정 QA 정의·평가 기준 ·
+//               28–33 부록 C-1~6 QA별 평가 기준 상세
+// 소스: mcr_req_deck.build.js(본문 수집/정제/ASR·부록) + mcr_req_detail.build.js(상세 2장).
+// 내용 출처: docs/md/00_requirements_analysis.md · 00_qa_derivation.md · 00_qa_definitions.md
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 
 const pptx = A.newDeck();
-const OUT = process.argv[2] || path.join(__dirname, "mcr_req_deck.pptx");
-const navy = A.COLORS.navy;
-const green = A.COLORS.green;
-const gray = "595959";
+const OUT = process.argv[2] || path.join(__dirname, "mcr_requirements.pptx");
+const navy = A.COLORS.navy, green = A.COLORS.green, gray = "595959", ink = A.COLORS.ink;
+const blue = "2E5496";
 const img = (n) => path.join(__dirname, "mcr_assets", n);
 
-// 표 셀에서 핵심 어구만 navy bold로 강조하는 run 배열 헬퍼
-// parts: ["일반 ", ["강조"], " 일반"] — 배열 원소는 bold+navy
 const em = (parts, fontSize) => parts.map((p) => Array.isArray(p)
   ? { text: p[0], options: { bold: true, color: navy, fontSize } }
   : { text: p, options: { fontSize } });
 
-// 헤드라인: "○ …" 큰 줄 + 들여쓴 "- …" 서브 줄
+// 헤드라인(딕셔너리형) — 본문 수집/정제/ASR·부록용
 function headline(s, { y, main, sub }) {
   s.addText(main, { x: A.MARGIN, y, w: A.PAGE.w - 2 * A.MARGIN, h: 0.38, margin: 0, fontFace: A.FONT.head, valign: "middle", align: "left" });
   if (sub) s.addText(sub, { x: A.MARGIN + 0.35, y: y + 0.38, w: A.PAGE.w - 2 * A.MARGIN - 0.35, h: 0.28, margin: 0, fontFace: A.FONT.body, valign: "middle", align: "left" });
 }
+// 헤드라인(run 배열형) — 상세 2장용
+function headline2(s, runs) {
+  s.addText(runs, { x: A.MARGIN, y: A.CONTENT_TOP - 0.04, w: A.PAGE.w - 2 * A.MARGIN, h: 0.36, margin: 0, valign: "middle", align: "left", fontFace: A.FONT.head });
+}
+function blueHeader(s, { x, y, w, text, h = 0.36, fontSize = 12.5 }) {
+  s.addShape("roundRect", { x, y, w, h, rectRadius: 0.06, fill: { color: blue }, line: { type: "none" } });
+  s.addText(text, { x, y, w, h, margin: 0, align: "center", valign: "middle", color: "FFFFFF", bold: true, fontFace: A.FONT.head, fontSize });
+  return y + h;
+}
+function roundPanel(s, { x, y, w, h, fill = "FBFCFE" }) {
+  s.addShape("roundRect", { x, y, w, h, rectRadius: 0.05, fill: { color: fill }, line: { color: A.COLORS.grayBorder, width: 1 } });
+}
+function bottomSummary(s, runs) {
+  s.addText(runs, { x: A.MARGIN, y: 6.72, w: A.PAGE.w - 2 * A.MARGIN, h: 0.4, margin: 0, align: "center", valign: "middle", fontFace: A.FONT.head });
+}
 
-// ───────────────── 5. 요구사항 수집 (navy) ─────────────────
+// ═════════ 5. 요구사항 수집 (navy) ═════════
 {
   const s = A.slide(pptx, { title: "요구사항 수집", active: 1, band: "navy", page: 5 });
-  A.linkButton(s, { label: "원시 요구사항(VOC) R-01~R-23 전량 : 부록 A (p.26)", w: 5.2 });
+  A.linkButton(s, { label: "원시 요구사항(VOC) R-01~R-23 전량 : 부록 A (p.25)", w: 5.2 });
   headline(s, {
     y: A.CONTENT_TOP - 0.02,
     main: [
       { text: "○ ", options: { fontSize: 16, bold: true, color: navy } },
       { text: "Stakeholder 인터뷰·QAW", options: { fontSize: 15, bold: true, color: navy } },
-      { text: " + 자체 실측·문헌 조사 병행 → 원시 요구사항 ", options: { fontSize: 15, color: A.COLORS.ink } },
+      { text: " + 자체 실측·문헌 조사 병행 → 원시 요구사항 ", options: { fontSize: 15, color: ink } },
       { text: "23건(유효 22건)", options: { fontSize: 15, bold: true, color: navy } },
-      { text: " 수집", options: { fontSize: 15, color: A.COLORS.ink } },
+      { text: " 수집", options: { fontSize: 15, color: ink } },
     ],
     sub: [{ text: "- 연구 과제 성격상 서비스 운영 조직은 stakeholder 아님 — 서빙 SLO·워크로드 요구는 업계 벤치마크·문헌 + 자체 실측으로 대체 수집", options: { fontSize: 11, color: gray } }],
   });
   const top = A.CONTENT_TOP + 0.78;
-  // 좌: Stakeholder 표
   const Lx = A.MARGIN, Lw = 7.35;
   let y = A.sectionHeader(s, { x: Lx, y: top, w: Lw, text: "주요 Stakeholder 및 역할", color: "navy" });
   A.specTable(s, {
@@ -60,7 +71,6 @@ function headline(s, { y, main, sub }) {
       [{ text: "(간접) 오픈소스\n커뮤니티", bold: true }, { text: em(["vLLM·SGLang·LMCache 등 진화 주체 — 요구는 없으나 ", ["릴리스 주기·인터페이스 변화가 제약"], "으로 작용"], 9.5) }],
     ],
   });
-  // 우: 수집 방법 표
   const Rx = Lx + Lw + 0.25, Rw = A.PAGE.w - A.MARGIN - Rx;
   y = A.sectionHeader(s, { x: Rx, y: top, w: Rw, text: "요구사항 수집 방법", color: "navy" });
   A.specTable(s, {
@@ -77,21 +87,20 @@ function headline(s, { y, main, sub }) {
   });
 }
 
-// ───────────────── 6. 요구사항 정제 (green) ─────────────────
+// ═════════ 6. 요구사항 정제 (green) ═════════
 {
   const s = A.slide(pptx, { title: "요구사항 정제", active: 1, band: "green", page: 6 });
-  A.linkButton(s, { label: "품질 분류분 10건은 Utility Tree로(P8)", w: 4.6 });
+  A.linkButton(s, { label: "품질 분류분 10건은 Utility Tree로 (p.9)", w: 4.2 });
   headline(s, {
     y: A.CONTENT_TOP - 0.02,
     main: [
-      { text: "○ 수집 요구사항 23건(유효 22건) → ", options: { fontSize: 15, color: A.COLORS.ink } },
+      { text: "○ 수집 요구사항 23건(유효 22건) → ", options: { fontSize: 15, color: ink } },
       { text: "기능 요구사항 9건 · 품질 요구(QA 후보) 10건 · 제약사항 2건", options: { fontSize: 15, bold: true, color: navy } },
-      { text: " 정제", options: { fontSize: 15, color: A.COLORS.ink } },
+      { text: " 정제", options: { fontSize: 15, color: ink } },
     ],
     sub: [{ text: "- 정제 규칙: ① 중복 병합 ② 검증 가능한 문장으로 재기술 ③ 기능(FR)/품질(QA 후보)/제약(C) 3분류 ④ 범위 밖 기각(사유 기록)", options: { fontSize: 11, color: gray } }],
   });
   const top = A.CONTENT_TOP + 0.78;
-  // 좌: FR + C 표
   const Lx = A.MARGIN, Lw = 7.55;
   let y = A.sectionHeader(s, { x: Lx, y: top, w: Lw, text: "기능 요구사항 (FR)", color: "navy", h: 0.3, fontSize: 12 });
   const fr = (no, tag, parts) => [{ text: no, align: "center", fontSize: 8 }, { text: tag, bold: true, fontSize: 8 }, { text: em(parts, 8) }];
@@ -119,7 +128,6 @@ function headline(s, { y, main, sub }) {
       fr("C-02", "Transformer 모델 한정", ["최적화 대상은 ", ["KV cache를 갖는 Transformer 기반 모델"], " — 압축·재사용이 KV cache 전제, ", ["탈Transformer(순수 SSM 등)는 범위 외"]]),
     ],
   });
-  // 우: use-case diagram
   const Rx = Lx + Lw + 0.25, Rw = A.PAGE.w - A.MARGIN - Rx;
   y = A.sectionHeader(s, { x: Rx, y: top, w: Rw, text: "시스템 경계 · Use-case (UC-01~11)", color: "navy", h: 0.3, fontSize: 12 });
   const ih = A.CONTENT_BOTTOM - y - 0.42;
@@ -130,67 +138,116 @@ function headline(s, { y, main, sub }) {
   ], { x: Rx, y: A.CONTENT_BOTTOM - 0.32, w: Rw, h: 0.3, margin: 0, valign: "middle", fontFace: A.FONT.body });
 }
 
-// ───────────────── 7. 요구사항 → QA 도출 — 내용 빌드업 (navy) ─────────────────
-// 절차가 아니라 내용: 요구사항(VOC·실측·문헌)에 무엇이 있었고 그것이 어느 QA로
-// 귀결되는가. 방법론(SEI 5단계·체인)은 부록 B로 이동.
+// ═════════ 7. 요구사항 수집 · 목표 정의 — 상세 (navy) ═════════
 {
-  const s = A.slide(pptx, { title: "요구사항 → QA 도출", active: 1, band: "navy", page: 7 });
-  A.linkButton(s, { label: "도출 방법론(SEI 5단계·도출 체인) : 부록 B (p.27)", w: 5.0 });
-  headline(s, {
-    y: A.CONTENT_TOP - 0.04,
-    main: [
-      { text: "○ 요구사항이 말하는 것(VOC) + 실측·문헌이 보태는 근거 → ", options: { fontSize: 14.5, color: A.COLORS.ink } },
-      { text: "품질 요구 6건으로 귀결", options: { fontSize: 14.5, bold: true, color: navy } },
-      { text: "  (근거 등급: A 자체 실측 · B 문헌 · C 구조 논증)", options: { fontSize: 10.5, color: gray } },
+  const s = A.slide(pptx, { title: "요구사항 수집 · 목표 정의 — 상세", active: 1, band: "navy", page: 7, titleSize: 26 });
+  headline2(s, [
+    { text: "○ VOC·QAW·자체 실측·문헌 조사로 요구사항을 수집 → ", options: { fontSize: 14, color: ink } },
+    { text: "정량 목표(QA KPI = Exit Criteria) 정의", options: { fontSize: 14, bold: true, color: navy } },
+  ]);
+  const top = 1.68, bot = 6.5;
+  const Lx = A.MARGIN, Lw = 6.15, Rx = 6.78, Rw = A.PAGE.w - A.MARGIN - Rx;
+  roundPanel(s, { x: Lx, y: top, w: Lw, h: bot - top });
+  roundPanel(s, { x: Rx, y: top, w: Rw, h: bot - top });
+  let y = blueHeader(s, { x: Lx + 0.12, y: top + 0.12, w: Lw - 0.24, text: "요구사항 수집 — 방식 · 대상 · 산출" });
+  const coll = (n, m, d) => [
+    { text: `${n} `, options: { bullet: false, bold: true, color: blue, fontSize: 10.5 } },
+    { text: `${m}\n`, options: { bold: true, color: navy, fontSize: 10.5 } },
+    { text: d, options: { fontSize: 9.5, color: ink } },
+  ];
+  A.bulletList(s, {
+    x: Lx + 0.2, y: y + 0.12, w: Lw - 0.36, h: bot - y - 0.2, fontSize: 10.5,
+    items: [
+      coll("①", "Stakeholder 인터뷰 · VOC 접수", "메모리 사업부 · MCAS 팀 · User · 개발 임원 · MCR 개발팀 · 고객사(잠재) → 원시 요구 R-01~R-23 (유효 22건)"),
+      coll("②", "QAW (Quality Attribute Workshop)", "이해관계자 합동 — 품질 발화를 6-part 시나리오(자극→환경→응답→측정)로 구체화"),
+      coll("③", "자체 벤치마크 실측", "P/D 분리 벤치 → decode 대기 70–85% (근거 A) — QA1 baseline·개선 대상 정의"),
+      coll("④", "문헌 · 업계 벤치마크 조사", "DistServe·MLPerf·KIVI·CacheBlend·SmartANNS·vLLM·FlexGen → 정량 목표의 앵커 (근거 B)"),
+      coll("⑤", "upstream 로드맵 · 릴리스 분석", "vLLM 2주 릴리스 케이던스 → 진화성·유지보수 목표 근거"),
+      coll("⑥", "유사 시스템 분석", "LMCache 등 KV offloading 계층 → 설계 후보(DP) 발굴"),
     ],
   });
-  const voc = (parts) => ({ text: em(parts, 8) });
-  const ev = (parts) => ({ text: em(parts, 8) });
-  const qaCell = (no, name, sub) => ({ text: [
-    { text: `${no} ${name}`, options: { bold: true, color: green === "4E7C3A" ? navy : navy, fontSize: 8.7 } },
-    { text: "", options: { breakLine: true } },
-    { text: sub, options: { fontSize: 7.5, color: gray } },
-  ] });
+  y = blueHeader(s, { x: Rx + 0.12, y: top + 0.12, w: Rw - 0.24, text: "달성 목표(QA / Exit Criteria) 정의" });
+  A.bulletList(s, {
+    x: Rx + 0.2, y: y + 0.1, w: Rw - 0.36, h: 1.15, fontSize: 9.5,
+    items: [
+      [{ text: "① 분류 ", options: { bold: true, color: blue, fontSize: 9.5 } }, { text: "→ 기능 FR 9 · 제약 C 2 · 품질(QA 후보) 10", options: { fontSize: 9.5 } }],
+      [{ text: "② Utility Tree ", options: { bold: true, color: blue, fontSize: 9.5 } }, { text: "(중요도·난이도) → 상위 6건 ASR 선정", options: { fontSize: 9.5 } }],
+      [{ text: "③ 정량화 ", options: { bold: true, color: blue, fontSize: 9.5 } }, { text: "→ 각 QA에 문헌 앵커 기반 KPI(정량 bin) = Exit Criteria 부여", options: { fontSize: 9.5 } }],
+    ],
+  });
+  const ey = y + 1.28;
   A.specTable(s, {
-    x: A.MARGIN, y: A.CONTENT_TOP + 0.42, w: A.PAGE.w - 2 * A.MARGIN,
-    colW: [5.35, 4.9, 2.38], fontSize: 8, headerFontSize: 9,
-    header: ["요구사항이 말하는 것 — VOC (누가 · 무엇을)", "실측·문헌이 보태는 것 (왜 QA가 되는가)", "귀결 QA"],
+    x: Rx + 0.16, y: ey, w: Rw - 0.32, colW: [1.9, Rw - 0.32 - 1.9], fontSize: 8.3, headerFontSize: 8.6, headerColor: blue,
+    header: ["선정 QA", "★★★ Exit Criteria (KPI)"],
     rows: [
-      [voc([["R-01 개발팀"], " 「컨텍스트 폭증으로 KV cache가 HBM 용량을 넘는다」 · ", ["R-09 사업부"], " 「PIM/PNM 연산의 효용성을 E2E에서 테스트」 — ", ["RAG retrieval 가속 수요"], " · ", ["R-11 임원"], " 「baseline 대비 E2E 정량 입증」"]),
-       ev([["prefill 축(TTFT)"], ": KV 재사용·retrieval 가속 — CacheBlend TTFT 2.2–3.3×↓(B) · SmartANNS 검색 QPS ≤10.7×(B, SSD-PIM·ADR-001, ", ["일반 런타임과의 차별 축"], ") // ", ["decode 축(throughput)"], ": tier 확장·압축 batch — KIVI 2.35–3.47×·vLLM 2–4×(B), decode 대기 70–85%(A)"]),
-       qaCell("QA1", "Performance", "baseline 대비 TTFT·throughput 모두 ≥2× — 최종 판정 지표")],
-      [voc([["R-06 User"], " 「압축·재사용 때문에 답변 품질이 떨어지면 쓸 수 없다 — ", ["품질 저하의 상한을 보장"], "해달라」"]),
-       ev(["압축(양자화·eviction)은 본질적으로 lossy(C) — 품질은 올리는 목표가 아니라 ", ["지키는 제약(gate)"], ": bound 위반 시 성능·용량 수치가 무효 · KIVI ≤2%p·H2O 예산 20% 동등(B) — near-lossless 운용이 실재"]),
-       qaCell("QA2", "Accuracy", "ΔF1 bound — QA1·QA3 수치의 유효 전제(gate)")],
-      [voc([["R-02 MCAS"], " 「시뮬레이션으로 예측한 이종 메모리 효과가 실측에서 재현되는지 — ", ["같은 HBM으로 동시 컨텍스트를 얼마나 더 수용"], "하는지 정량으로」 · ", ["R-01 개발팀"], " (HBM 용량 병목)"]),
-       ev(["KV 산식(C): Llama-2-70B 기준 32k 컨텍스트 1세션 ≈ 10.5 GB — ", ["용량이 동시성(=처리율)의 상한"], " · vLLM: KV 낭비 60–80%→<4%(B) · FlexGen: offloading 정책만으로 100×(B) — 메모리 관리가 성능을 가름"]),
-       qaCell("QA3", "Resource Efficiency", "유효 KV 용량 — 이종 tier 도입의 존재 이유")],
-      [voc([["R-17 개발팀"], " 「tier 조합을 바꿔가며 실험 — ", ["신규 tier 등록이 쉬워야"], "」 · ", ["R-21 User"], " 「MLA·hybrid attention 등 ", ["KV 구조가 바뀌는 신모델을 곧바로 서빙"], "」"]),
-       ev(["사업부 로드맵(HBM4/CMM-DC/HBF)이 과제 기간 중에도 갱신(A) · MLA: KV 93.3% 축소 — KV 정의 자체가 변경(B) · linear attention hybrid 상용 배치(B) — ", ["변화 주기가 구조 결정의 수명보다 짧다"]]),
-       qaCell("QA4", "Modifiability", "신규 디바이스·KV 구조 변화의 모듈 교체 수용")],
-      [voc([["R-23 개발팀"], " 「vLLM이 유일한 선택지가 아니다 — SGLang 등 대안 부상, ", ["framework를 갈아탈 때의 비용이 통제"], "되도록 종속을 관리해야」"]),
-       ev(["SGLang(B): RadixAttention 기반 vLLM 동급 이상 처리율 — ", ["실존하는 교체 후보"], " · 교체 비용 미통제 시 framework 종속이 MCR 고유 자산(Memory Engine·정책)의 수명을 좌우(C)"]),
-       qaCell("QA6", "Adaptability", "framework 교체 — 어댑터 격리·전환 공수")],
-      [voc([["R-12 임원"], " 「과제 종료 후에도 ", ["소수 인력으로 지속 유지"], " — 상시 전담팀 불가」 · ", ["R-08 사업부"], " 「자체 레퍼런스 스택을 고객에 제공」 · ", ["R-13 개발팀"], " 「vLLM 추종 비용」"]),
-       ev([["vLLM 정규 릴리스 2주 간격(B)"], " — 구조 선택(DP1: plugin vs 독립)에 따라 추종 비용이 ", ["수 인월 vs 수십 인월+(A)"], "로 한 자릿수 이상 갈림 — 유지되지 않는 스택은 제공물이 못 된다"]),
-       qaCell("QA5", "Maintainability", "초기 구축 인월 · 연간 유지 FTE")],
+      [{ text: "QA1 성능", bold: true }, { text: [{ text: "TTFT ≥ 2× ", options: { bold: true, color: navy, fontSize: 8.3 } }, { text: "AND ", options: { fontSize: 8.3 } }, { text: "throughput ≥ 2×", options: { bold: true, color: navy, fontSize: 8.3 } }, { text: " (vs GPU HBM 단일 tier)", options: { fontSize: 8.3, color: gray } }] }],
+      [{ text: "QA2 품질(gate)", bold: true }, "ΔF1 ≤ 1%p · 요청별 bound 집행"],
+      [{ text: "QA3 메모리 효율", bold: true }, "유효 KV 용량 ≥ 3× (원본 환산)"],
+      [{ text: "QA4 확장성", bold: true }, "어댑터 ≤ 1 · 코어 LOC 0 · ≤ upstream + 2주"],
+      [{ text: "QA6 적응성", bold: true }, "framework 결합 격리 ≤ 10% · 전환 ≤ 3인월"],
+      [{ text: "QA5 유지보수", bold: true }, "초기 ≤ 6인월 · 유지 ≤ 0.5 FTE"],
     ],
   });
-  s.addText([
-    { text: "품질성 발화 10건 전량은 Utility Tree(P8)에서 (중요도, 난이도) 평가 — ", options: { fontSize: 9, color: gray } },
-    { text: "위 6건이 상위 우선순위로 선정", options: { fontSize: 9, bold: true, color: navy } },
-    { text: ", 미선정 4건(Availability·Security·Interoperability·Scalability)의 사유는 P8 하단 기록", options: { fontSize: 9, color: gray } },
-  ], { x: A.MARGIN, y: A.CONTENT_BOTTOM - 0.3, w: A.PAGE.w - 2 * A.MARGIN, h: 0.3, margin: 0, valign: "middle", fontFace: A.FONT.body });
 }
 
-// ───────────────── 8. Utility Tree 활용한 ASR 선정 (green) ─────────────────
+// ═════════ 8. 시나리오 기반 핵심 요소 → QA 도출 — 상세 (green) ═════════
 {
-  const s = A.slide(pptx, { title: "Utility Tree 활용한 ASR 선정", active: 1, band: "green", page: 8 });
-  A.linkButton(s, { label: "QA별 평가 기준 상세 : 부록 C (p.28~33)", w: 4.6 });
+  const s = A.slide(pptx, { title: "시나리오 기반 핵심 요소 → QA 도출 — 상세", active: 1, band: "green", page: 8, titleSize: 24 });
+  headline2(s, [
+    { text: "○ 대표 워크로드 시나리오의 정량 관찰(효과 %·배율) → ", options: { fontSize: 14, color: ink } },
+    { text: "필요 기능(FR) · 목표(QA) 도출", options: { fontSize: 14, bold: true, color: navy } },
+  ]);
+  const top = 1.62;
+  const Lx = A.MARGIN, Lw = 5.75, aX = Lx + Lw + 0.12, aW = 0.62, Rx = aX + aW + 0.12, Rw = A.PAGE.w - A.MARGIN - Rx;
+  blueHeader(s, { x: Lx, y: top, w: Lw, text: "대표 워크로드 시나리오 — 정량 핵심 요소", fontSize: 11.5 });
+  blueHeader(s, { x: Rx, y: top, w: Rw, text: "도출된 필요 기능(FR) → 귀결 목표(QA)", fontSize: 11.5 });
+  const rowsTop = top + 0.46, rowsBot = 6.55, n = 5, gap = 0.14;
+  const rh = (rowsBot - rowsTop - gap * (n - 1)) / n;
+  const rows = [
+    { sc: "long-context RAG — 수십k 토큰 프롬프트를 매 요청 re-prefill (반복 비용 지배)",
+      scEv: "KV 재사용 시 TTFT 2.2–3.3×↓ · 히트율 85%+ (CacheBlend, B)",
+      fr: "KV 영속·재사용 (FR-04)", qa: "→ TTFT ≥ 2× (QA1 prefill 축)" },
+    { sc: "RAG retrieval이 TTFT 임계 경로 — SSD 기반 ANN은 I/O가 실행의 ~67% (B)",
+      scEv: "near-storage 검색 가속 QPS 10.7× (SmartANNS, B) — SSD-PIM",
+      fr: "근접연산 오프로드 (FR-07)", qa: "→ retrieval 가속 (QA1 · 차별 축)" },
+    { sc: "KV 용량 병목 — 32k 컨텍스트 1세션 ≈ 10.5 GB, HBM 용량 초과 (C)",
+      scEv: "2-bit 압축 시 peak memory 2.6×↓ · batch 4× (KIVI, B)",
+      fr: "KV 압축 (FR-03)", qa: "→ 유효 KV 용량 ≥ 3× (QA3)" },
+    { sc: "decode 단계가 지배 — 자체 실측 대기 70–85%, memory-BW-bound (A)",
+      scEv: "이종 tier 확장으로 batch↑ → 처리량 2–4× (vLLM paging, B)",
+      fr: "이종 tier KV 배치 (FR-02)", qa: "→ throughput ≥ 2× (QA1 decode 축)" },
+    { sc: "압축·재사용 시 답변 품질 저하 우려 — 저하 크면 사용 불가 (User VOC)",
+      scEv: "near-lossless 운용 실재 — LongBench 저하 ≤ 2%p (KIVI, B)",
+      fr: "요청별 SLO·품질 정책 (FR-06)", qa: "→ 품질 저하 bound (QA2 gate)" },
+  ];
+  rows.forEach((r, i) => {
+    const y = rowsTop + i * (rh + gap);
+    A.panel(s, { x: Lx, y, w: Lw, h: rh, fill: "EAF1FB" });
+    s.addText([
+      { text: r.sc, options: { fontSize: 9, bold: true, color: ink, breakLine: true } },
+      { text: r.scEv, options: { fontSize: 8.3, color: blue, bold: true } },
+    ], { x: Lx + 0.1, y: y + 0.04, w: Lw - 0.2, h: rh - 0.08, margin: 0, valign: "middle", align: "left", fontFace: A.FONT.body, lineSpacingMultiple: 0.98 });
+    s.addShape("rightArrow", { x: aX, y: y + rh / 2 - 0.15, w: aW, h: 0.3, fill: { color: green }, line: { type: "none" } });
+    A.panel(s, { x: Rx, y, w: Rw, h: rh, fill: "EAF3E6" });
+    s.addText([
+      { text: r.fr, options: { fontSize: 9.5, bold: true, color: navy, breakLine: true } },
+      { text: r.qa, options: { fontSize: 9.5, bold: true, color: A.COLORS.greenDark } },
+    ], { x: Rx + 0.12, y: y + 0.04, w: Rw - 0.22, h: rh - 0.08, margin: 0, valign: "middle", align: "left", fontFace: A.FONT.body, lineSpacingMultiple: 0.98 });
+  });
+  bottomSummary(s, [
+    { text: "시나리오의 정량 효과가 곧 기능·목표의 근거 — ", options: { fontSize: 13, color: navy, bold: true } },
+    { text: "모든 QA는 측정 가능한 시나리오에서 도출(A 실측 · B 문헌 · C 논증)", options: { fontSize: 13, color: navy, bold: true } },
+  ]);
+}
+
+// ═════════ 9. Utility Tree 활용한 ASR 선정 (navy) ═════════
+{
+  const s = A.slide(pptx, { title: "Utility Tree 활용한 ASR 선정", active: 1, band: "navy", page: 9 });
+  A.linkButton(s, { label: "QA별 평가 기준 상세 : 부록 C (p.27~33)", w: 4.6 });
   headline(s, {
     y: A.CONTENT_TOP - 0.04,
     main: [
-      { text: "○ QA 후보 10건을 (중요도, 난이도) 2축 평가 → 상위 ", options: { fontSize: 14.5, color: A.COLORS.ink } },
+      { text: "○ QA 후보 10건을 (중요도, 난이도) 2축 평가 → 상위 ", options: { fontSize: 14.5, color: ink } },
       { text: "6건을 ASR로 선정", options: { fontSize: 14.5, bold: true, color: navy } },
       { text: "  (우선순위: 중요도 → 역할(목표>gate>수단) → 난이도 → 과제 본질 축)", options: { fontSize: 10.5, color: gray } },
     ],
@@ -203,7 +260,6 @@ function headline(s, { y, main, sub }) {
     { text: meas, options: { fontSize: 7.3, color: gray } },
   ] });
   const C = (t, b) => ({ text: t, align: "center", bold: !!b });
-  // 선정 QA 셀: 이름 + 평가 기준 상세 페이지 점프 표기
   const qaSel = (name, pg) => ({ text: [
     { text: name, options: { bold: true, fontSize: 8 } },
     { text: "", options: { breakLine: true } },
@@ -227,21 +283,125 @@ function headline(s, { y, main, sub }) {
       [C("QA-10"), "Scalability", "클러스터 수평 확장", sc(["노드 추가 시 goodput이 선형에 가깝게 확장"], "[측정: N노드 goodput ÷ (N × 단일 노드 goodput) — baseline = 단일 노드]"), C("L"), C("H"), C("10"), C("")],
     ],
   });
-  // 하단: 미선정 4건 탈락 논거 (전건 기록)
   s.addText([
     { text: "미선정 사유(전건 기록)  ", options: { bold: true, color: navy, fontSize: 8.5 } },
     { text: "Availability — KV는 재계산 가능한 파생 데이터, 유실은 성능 문제로 환원(QA-01에 흡수) · Security — 실증 단계 재사용 범위를 사용자/세션 내로 한정(정책 제약으로 완화) · Interoperability — 독립 QA가 아닌 DP1의 결정 변수로 흡수 · Scalability — 고정 N 테스트베드 전제로 N 조정이 범위 외(중요도 L)", options: { fontSize: 8, color: gray } },
   ], { x: A.MARGIN, y: A.CONTENT_BOTTOM - 0.42, w: A.PAGE.w - 2 * A.MARGIN, h: 0.44, margin: 0, valign: "middle", fontFace: A.FONT.body });
 }
 
-// ───────────────── 9. 선정 QA 정의·평가 기준 (navy) ─────────────────
+// ═════════════════ 부록 (p.25~33) ═════════════════
+
+// ─── 25. 부록 A. 수집 원시 요구사항(VOC) (navy) ───
 {
-  const s = A.slide(pptx, { title: "선정 QA 정의 및 평가 기준", active: 1, band: "navy", page: 9 });
-  A.linkButton(s, { label: "QA별 bin·근거 상세 : 부록 C (p.28~33)", w: 4.2 });
+  const s = A.slide(pptx, { title: "부록 A. 수집 원시 요구사항 (VOC)", active: 1, band: "navy", page: 25, titleSize: 26 });
+  A.linkButton(s, { label: "본문: 요구사항 수집 (p.5) · 정제 (p.6)", w: 4.2 });
   headline(s, {
     y: A.CONTENT_TOP - 0.04,
     main: [
-      { text: "○ 선정 QA 6건의 정의·측정·정량 bin — ", options: { fontSize: 14.5, color: A.COLORS.ink } },
+      { text: "○ 원시 요구사항 R-01~R-23 전량 ", options: { fontSize: 14, color: ink } },
+      { text: "(R-14 결번 — 유효 22건)", options: { fontSize: 14, bold: true, color: navy } },
+      { text: " — 정제 결과(FR/QA/C) 매핑 포함", options: { fontSize: 14, color: ink } },
+    ],
+  });
+  const vr = (no, src, txt, out) => [
+    { text: no, align: "center", fontSize: 7.5 },
+    { text: src, bold: true, fontSize: 7.5 },
+    { text: txt, fontSize: 7.5 },
+    { text: out, align: "center", fontSize: 7.5, color: navy, bold: true },
+  ];
+  const half = (A.PAGE.w - 2 * A.MARGIN - 0.25) / 2;
+  const colW = [0.5, 1.05, half - 0.5 - 1.05 - 1.05, 1.05];
+  const top = A.CONTENT_TOP + 0.4;
+  A.specTable(s, {
+    x: A.MARGIN, y: top, w: half, colW, fontSize: 7.5, headerFontSize: 8,
+    header: ["번호", "출처", "내용 (요지)", "정제 결과"],
+    rows: [
+      vr("R-01", "MCR 개발팀", "컨텍스트 폭증으로 KV cache가 HBM 용량을 넘어선다 — 타겟 메모리로 풀리는지가 효용성 입증의 핵심", "QA-01·03"),
+      vr("R-02", "MCAS 팀", "시뮬레이션 예측 효과가 실측에서 재현되는지 — 같은 HBM으로 동시 컨텍스트 수용량을 정량으로", "QA-03,\nFR-02·03"),
+      vr("R-03", "User", "수십 k 토큰 RAG 프롬프트를 매 요청 re-prefill — 같은 문서 chunk의 KV를 재사용하고 싶다", "FR-01·04"),
+      vr("R-04", "User", "multiturn 세션이 이어질 때마다 이전 턴 컨텍스트 복원 비용이 크다", "FR-01·04"),
+      vr("R-05", "User", "agent가 세션을 넘는 장기 기억 요구 — KV가 세션·사용자 단위로 영속하는 자산이어야", "FR-04"),
+      vr("R-06", "User", "압축·재사용 때문에 답변 품질이 떨어지면 쓸 수 없다 — 품질 저하의 상한을 보장해달라", "QA-02"),
+      vr("R-07", "메모리 사업부", "E2E 관점에서 당사 제품의 가치를 확인할 수 있어야 — 그래야 고객도 신뢰한다", "QA-01·03"),
+      vr("R-08", "메모리 사업부", "자체 레퍼런스 스택을 가지고 있으면 고객에 제공할 수 있다", "FR-01,\nQA-06"),
+      vr("R-09", "메모리 사업부", "PIM/PNM 연산의 효용성을 E2E에서 테스트하고 싶다", "FR-07,\nQA-01"),
+      vr("R-10", "메모리 사업부", "디바이스 HW 스펙은 변경 불가 — 주어진 스펙(대역폭·용량·지연)을 전제로 설계하라", "C-01"),
+      vr("R-11", "개발 임원", "GPU HBM 단일 tier baseline 대비 개선을 E2E 정량으로 입증 — 대표 워크로드 벤치 완주", "QA-01,\nFR-01·05"),
+      vr("R-12", "개발 임원", "과제 종료 후에도 소수 인력으로 지속 유지 가능해야 — 상시 전담팀 불가", "QA-06"),
+    ],
+  });
+  A.specTable(s, {
+    x: A.MARGIN + half + 0.25, y: top, w: half, colW, fontSize: 7.5, headerFontSize: 8,
+    header: ["번호", "출처", "내용 (요지)", "정제 결과"],
+    rows: [
+      vr("R-13", "MCR 개발팀", "vLLM은 2주마다 릴리스 — 구조에 따라 추종 비용이 수십 인월로 갈린다", "QA-06·04"),
+      vr("R-14", "—", "(결번 — v0.4 삭제: 자체 KV 압축·재사용 알고리즘 개발이 과제 범위이므로 '기존 기법 채용' 제약 불성립)", "—"),
+      vr("R-15", "고객사", "기존 서빙 API·생태계(vLLM 호환)와의 호환성이 도입의 전제 조건", "QA-09"),
+      vr("R-16", "MCR 개발팀", "기존 KV 계층에 없는 요청별 SLO·품질 예산 기반 정책이 차별점 — 요청마다 배치·압축·재사용 차등", "FR-06"),
+      vr("R-17", "MCR 개발팀", "tier 조합·P/D 구성을 바꿔가며 실험 — 신규 tier 등록 용이 + 고정 노드 내 role 자동 재배분", "FR-05·08·09,\nQA-04"),
+      vr("R-18", "MCAS 팀", "tier 디바이스 장애로 영속 KV 유실 시 세션이 깨지지 않고 복구되어야", "QA-07"),
+      vr("R-19", "고객사", "멀티테넌트에서 사용자 간 KV 재사용이 프롬프트 유출 통로가 되지 않도록 격리 보장", "QA-08"),
+      vr("R-20", "고객사", "클러스터 규모를 늘릴 때 노드 추가만으로 선형에 가깝게 확장", "QA-10"),
+      vr("R-21", "User", "MLA·hybrid attention 등 KV 구조가 바뀌는 신모델이 나오면 곧바로 서빙하고 싶다", "QA-04"),
+      vr("R-22", "개발 임원", "모델 학습 지원은 이번 과제 범위가 아니다 — 추론 서빙에 집중", "범위 판정"),
+      vr("R-23", "MCR 개발팀", "vLLM이 유일한 선택지가 아니다 — framework를 갈아탈 때의 비용이 통제되도록 종속 관리", "QA-05"),
+    ],
+  });
+}
+
+// ─── 26. 부록 B. QA 도출 방법론 (green) ───
+{
+  const s = A.slide(pptx, { title: "부록 B. QA 도출 방법론 — SEI 5단계", active: 1, band: "green", page: 26, titleSize: 26 });
+  A.linkButton(s, { label: "본문: 시나리오 QA 도출 (p.8) · Utility Tree (p.9)", w: 4.8 });
+  headline(s, {
+    y: A.CONTENT_TOP - 0.02,
+    main: [
+      { text: "○ SEI 계열 표준 5단계: ", options: { fontSize: 15, color: ink } },
+      { text: "품질 발화 10건 → 시나리오화 → Utility Tree → QA 6건 선정·정량화", options: { fontSize: 15, bold: true, color: navy } },
+    ],
+  });
+  const steps = [
+    { t: "① 분류", body: "VOC 22건을 기능(FR) /\n품질(QA 후보) / 제약(C)\n으로 3분류", ref: "SEI QAW\n(CMU/SEI-2003-TR-016)" },
+    { t: "② 시나리오화", body: "품질 발화를 자극→환경→\n응답→응답 측정 구조의\n검증 가능 시나리오로 재기술", ref: "6-part QA Scenario\n(SW Arch. in Practice)" },
+    { t: "③ 명명", body: "시나리오를 표준 품질속성\n어휘로 명명 (Performance,\nModifiability, …)", ref: "ISO/IEC 25010\n+ SAiP 분류" },
+    { t: "④ 우선순위", body: "시나리오마다 (사업 중요도,\n달성 난이도) 2축 평가 —\n역할(목표>gate>수단) tie-break", ref: "ATAM Utility Tree\n(CMU/SEI-2000-TR-004)" },
+    { t: "⑤ 선정·정량화", body: "상위 6건을 ASR로 선정,\n[측정]을 문헌 앵커 기반\n정량 bin으로 정제", ref: "bin 경계마다 근거\nA(실측)/B(문헌)/C(논증)" },
+  ];
+  const boxes = A.columns(5, { gap: 0.18 });
+  const py = A.CONTENT_TOP + 0.52;
+  steps.forEach((st, i) => {
+    const { x, w } = boxes[i];
+    const by = A.chevronHeader(s, { x, y: py, w, text: st.t, color: i % 2 ? "navy" : "green", fontSize: 12 });
+    A.panel(s, { x, y: by + 0.06, w, h: 1.62, fill: A.COLORS.white });
+    s.addText(st.body, { x: x + 0.08, y: by + 0.1, w: w - 0.16, h: 1.0, margin: 0, fontFace: A.FONT.body, fontSize: 8.6, color: ink, valign: "top", align: "left" });
+    s.addText(st.ref, { x: x + 0.08, y: by + 1.12, w: w - 0.16, h: 0.5, margin: 0, fontFace: A.FONT.body, fontSize: 8, color: navy, bold: true, valign: "bottom", align: "left" });
+  });
+  const cy = py + 0.42 + 0.06 + 1.62 + 0.18;
+  const yb = A.sectionHeader(s, { x: A.MARGIN, y: cy, w: A.PAGE.w - 2 * A.MARGIN, text: "QA별 도출 체인 — VOC에서 정량 bin까지 4단", color: "navy", h: 0.32, fontSize: 12.5 });
+  const Lw2 = 4.55;
+  A.bulletList(s, {
+    x: A.MARGIN + 0.05, y: yb + 0.12, w: Lw2 - 0.1, h: A.CONTENT_BOTTOM - yb - 0.15, fontSize: 9.5,
+    items: [
+      [{ text: "판별 질문: ", options: { bold: true, color: navy, fontSize: 9.5 } },
+       { text: "무엇을 할 수 있어야(기능) / 얼마나 잘(품질) / 선택지를 지우는가(제약)", options: { fontSize: 9.5 } }],
+      [{ text: "핵심 원칙: ", options: { bold: true, color: navy, fontSize: 9.5 } },
+       { text: "\"빠르면 좋겠다\"는 QA가 아니다 — 측정 가능한 response measure가 붙은 시나리오만 Utility Tree에 올림", options: { fontSize: 9.5 } }],
+      [{ text: "모든 행에 [측정: 지표+baseline]이 있고, 그 수치마다 출처(A/B/C 등급)가 있다", options: { fontSize: 9.5 } }],
+    ],
+  });
+  const Rx2 = A.MARGIN + Lw2 + 0.2, Rw2 = A.PAGE.w - A.MARGIN - Rx2;
+  const ih2 = A.CONTENT_BOTTOM - yb - 0.16;
+  s.addImage({ path: img("req_qa_chain.png"), x: Rx2, y: yb + 0.1, w: Rw2, h: ih2, sizing: { type: "contain", w: Rw2, h: ih2 } });
+}
+
+// ─── 27. 부록 C. 선정 QA 정의 및 평가 기준 (navy) ───
+{
+  const s = A.slide(pptx, { title: "부록 C. 선정 QA 정의 및 평가 기준", active: 1, band: "navy", page: 27, titleSize: 24 });
+  A.linkButton(s, { label: "QA별 bin·근거 상세 : 부록 C-1~6 (p.28~33)", w: 4.6 });
+  headline(s, {
+    y: A.CONTENT_TOP - 0.04,
+    main: [
+      { text: "○ 선정 QA 6건의 정의·측정·정량 bin — ", options: { fontSize: 14.5, color: ink } },
       { text: "별점(★)은 문헌 앵커 기반 정량 bin으로만 판정", options: { fontSize: 14.5, bold: true, color: navy } },
       { text: "  (QA1~QA4는 번호 = 우선순위)", options: { fontSize: 10.5, color: gray } },
     ],
@@ -268,7 +428,6 @@ function headline(s, { y, main, sub }) {
       qa("6", "QA5", "Maintainability (유지보수성)", "초기 구축(E2E 벤치 완주) + 지속 유지보수 비용 — DP1 선택이 한 자릿수 이상 가름", "초기 구축 인월(person-month) · 연간 유지보수 FTE(rebase·추종·회귀 검증 포함)", "초기 ≤ 6인월 · 유지 ≤ 0.5 FTE  (★☆☆ > 24인월/2 FTE)", "M / M"),
     ],
   });
-  // 하단: 별점 공통 규칙 + 문헌 앵커
   A.bulletList(s, {
     x: A.MARGIN + 0.05, y: A.CONTENT_BOTTOM - 0.95, w: A.PAGE.w - 2 * A.MARGIN - 0.1, h: 0.95, fontSize: 8.5,
     items: [
@@ -280,116 +439,10 @@ function headline(s, { y, main, sub }) {
   });
 }
 
-// ═════════════════ 부록 (p.26~33) ═════════════════
-
-// ───────────────── 26. 부록 A. 수집 원시 요구사항(VOC) (navy) ─────────────────
-{
-  const s = A.slide(pptx, { title: "부록 A. 수집 원시 요구사항 (VOC)", active: 1, band: "navy", page: 26, titleSize: 26 });
-  A.linkButton(s, { label: "본문: 요구사항 수집 (p.5) · 정제 (p.6)", w: 4.2 });
-  headline(s, {
-    y: A.CONTENT_TOP - 0.04,
-    main: [
-      { text: "○ 원시 요구사항 R-01~R-23 전량 ", options: { fontSize: 14, color: A.COLORS.ink } },
-      { text: "(R-14 결번 — 유효 22건)", options: { fontSize: 14, bold: true, color: navy } },
-      { text: " — 정제 결과(FR/QA/C) 매핑 포함", options: { fontSize: 14, color: A.COLORS.ink } },
-    ],
-  });
-  const vr = (no, src, txt, out) => [
-    { text: no, align: "center", fontSize: 7.5 },
-    { text: src, bold: true, fontSize: 7.5 },
-    { text: txt, fontSize: 7.5 },
-    { text: out, align: "center", fontSize: 7.5, color: navy, bold: true },
-  ];
-  const half = (A.PAGE.w - 2 * A.MARGIN - 0.25) / 2;
-  const colW = [0.5, 1.05, half - 0.5 - 1.05 - 1.05, 1.05];
-  const top = A.CONTENT_TOP + 0.4;
-  A.specTable(s, {
-    x: A.MARGIN, y: top, w: half, colW, fontSize: 7.5, headerFontSize: 8,
-    header: ["번호", "출처", "내용 (요지)", "정제 결과"],
-    rows: [
-      vr("R-01", "MCR 개발팀", "컨텍스트 폭증으로 KV cache가 HBM 용량을 넘어선다 — 타겟 메모리로 풀리는지가 효용성 입증의 핵심", "QA-01·03"),
-      vr("R-02", "MCAS 팀", "시뮬레이션 예측 효과가 실측에서 재현되는지 — 같은 HBM으로 동시 컨텍스트 수용량을 정량으로", "QA-03,\nFR-02·03"),
-      vr("R-03", "User", "수십 k 토큰 RAG 프롬프트를 매 요청 re-prefill — 같은 문서 chunk의 KV를 재사용하고 싶다", "FR-01·04"),
-      vr("R-04", "User", "multiturn 세션이 이어질 때마다 이전 턴 컨텍스트 복원 비용이 크다", "FR-01·04"),
-      vr("R-05", "User", "agent가 세션을 넘는 장기 기억 요구 — KV가 세션·사용자 단위로 영속하는 자산이어야", "FR-04"),
-      vr("R-06", "User", "압축·재사용 때문에 답변 품질이 떨어지면 쓸 수 없다 — 품질 저하의 상한을 보장해달라", "QA-02"),
-      vr("R-07", "메모리 사업부", "E2E 관점에서 당사 제품의 가치를 확인할 수 있어야 — 그래야 고객도 신뢰한다", "QA-01·03"),
-      vr("R-08", "메모리 사업부", "자체 레퍼런스 스택을 가지고 있으면 고객에 제공할 수 있다", "FR-01,\nQA-06"),
-      vr("R-09", "메모리 사업부", "PIM/PNM 연산의 효용성을 E2E에서 테스트하고 싶다", "FR-07"),
-      vr("R-10", "메모리 사업부", "디바이스 HW 스펙은 변경 불가 — 주어진 스펙(대역폭·용량·지연)을 전제로 설계하라", "C-01"),
-      vr("R-11", "개발 임원", "GPU HBM 단일 tier baseline 대비 개선을 E2E 정량으로 입증 — 대표 워크로드 벤치 완주", "QA-01,\nFR-01·05"),
-      vr("R-12", "개발 임원", "과제 종료 후에도 소수 인력으로 지속 유지 가능해야 — 상시 전담팀 불가", "QA-06"),
-    ],
-  });
-  A.specTable(s, {
-    x: A.MARGIN + half + 0.25, y: top, w: half, colW, fontSize: 7.5, headerFontSize: 8,
-    header: ["번호", "출처", "내용 (요지)", "정제 결과"],
-    rows: [
-      vr("R-13", "MCR 개발팀", "vLLM은 2주마다 릴리스 — 구조에 따라 추종 비용이 수십 인월로 갈린다", "QA-06·04"),
-      vr("R-14", "—", "(결번 — v0.4 삭제: 자체 KV 압축·재사용 알고리즘 개발이 과제 범위이므로 '기존 기법 채용' 제약 불성립)", "—"),
-      vr("R-15", "고객사", "기존 서빙 API·생태계(vLLM 호환)와의 호환성이 도입의 전제 조건", "QA-09"),
-      vr("R-16", "MCR 개발팀", "기존 KV 계층에 없는 요청별 SLO·품질 예산 기반 정책이 차별점 — 요청마다 배치·압축·재사용 차등", "FR-06"),
-      vr("R-17", "MCR 개발팀", "tier 조합·P/D 구성을 바꿔가며 실험 — 신규 tier 등록 용이 + 고정 노드 내 role 자동 재배분", "FR-05·08·09,\nQA-04"),
-      vr("R-18", "MCAS 팀", "tier 디바이스 장애로 영속 KV 유실 시 세션이 깨지지 않고 복구되어야", "QA-07"),
-      vr("R-19", "고객사", "멀티테넌트에서 사용자 간 KV 재사용이 프롬프트 유출 통로가 되지 않도록 격리 보장", "QA-08"),
-      vr("R-20", "고객사", "클러스터 규모를 늘릴 때 노드 추가만으로 선형에 가깝게 확장", "QA-10"),
-      vr("R-21", "User", "MLA·hybrid attention 등 KV 구조가 바뀌는 신모델이 나오면 곧바로 서빙하고 싶다", "QA-04"),
-      vr("R-22", "개발 임원", "모델 학습 지원은 이번 과제 범위가 아니다 — 추론 서빙에 집중", "범위 판정"),
-      vr("R-23", "MCR 개발팀", "vLLM이 유일한 선택지가 아니다 — framework를 갈아탈 때의 비용이 통제되도록 종속 관리", "QA-05"),
-    ],
-  });
-}
-
-// ───────────────── 27. 부록 B. QA 도출 방법론 (green) ─────────────────
-{
-  const s = A.slide(pptx, { title: "부록 B. QA 도출 방법론 — SEI 5단계", active: 1, band: "green", page: 27, titleSize: 26 });
-  A.linkButton(s, { label: "본문: 요구사항 → QA 도출 (p.7)", w: 3.8 });
-  headline(s, {
-    y: A.CONTENT_TOP - 0.02,
-    main: [
-      { text: "○ SEI 계열 표준 5단계: ", options: { fontSize: 15, color: A.COLORS.ink } },
-      { text: "품질 발화 10건 → 시나리오화 → Utility Tree → QA 6건 선정·정량화", options: { fontSize: 15, bold: true, color: navy } },
-    ],
-  });
-  const steps = [
-    { t: "① 분류", body: "VOC 22건을 기능(FR) /\n품질(QA 후보) / 제약(C)\n으로 3분류", ref: "SEI QAW\n(CMU/SEI-2003-TR-016)" },
-    { t: "② 시나리오화", body: "품질 발화를 자극→환경→\n응답→응답 측정 구조의\n검증 가능 시나리오로 재기술", ref: "6-part QA Scenario\n(SW Arch. in Practice)" },
-    { t: "③ 명명", body: "시나리오를 표준 품질속성\n어휘로 명명 (Performance,\nModifiability, …)", ref: "ISO/IEC 25010\n+ SAiP 분류" },
-    { t: "④ 우선순위", body: "시나리오마다 (사업 중요도,\n달성 난이도) 2축 평가 —\n역할(목표>gate>수단) tie-break", ref: "ATAM Utility Tree\n(CMU/SEI-2000-TR-004)" },
-    { t: "⑤ 선정·정량화", body: "상위 6건을 ASR로 선정,\n[측정]을 문헌 앵커 기반\n정량 bin으로 정제", ref: "bin 경계마다 근거\nA(실측)/B(문헌)/C(논증)" },
-  ];
-  const boxes = A.columns(5, { gap: 0.18 });
-  const py = A.CONTENT_TOP + 0.52;
-  steps.forEach((st, i) => {
-    const { x, w } = boxes[i];
-    const by = A.chevronHeader(s, { x, y: py, w, text: st.t, color: i % 2 ? "navy" : "green", fontSize: 12 });
-    A.panel(s, { x, y: by + 0.06, w, h: 1.62, fill: A.COLORS.white });
-    s.addText(st.body, { x: x + 0.08, y: by + 0.1, w: w - 0.16, h: 1.0, margin: 0, fontFace: A.FONT.body, fontSize: 8.6, color: A.COLORS.ink, valign: "top", align: "left" });
-    s.addText(st.ref, { x: x + 0.08, y: by + 1.12, w: w - 0.16, h: 0.5, margin: 0, fontFace: A.FONT.body, fontSize: 8, color: navy, bold: true, valign: "bottom", align: "left" });
-  });
-  const cy = py + 0.42 + 0.06 + 1.62 + 0.18;
-  const yb = A.sectionHeader(s, { x: A.MARGIN, y: cy, w: A.PAGE.w - 2 * A.MARGIN, text: "QA별 도출 체인 — VOC에서 정량 bin까지 4단", color: "navy", h: 0.32, fontSize: 12.5 });
-  const Lw2 = 4.55;
-  A.bulletList(s, {
-    x: A.MARGIN + 0.05, y: yb + 0.12, w: Lw2 - 0.1, h: A.CONTENT_BOTTOM - yb - 0.15, fontSize: 9.5,
-    items: [
-      [{ text: "판별 질문: ", options: { bold: true, color: navy, fontSize: 9.5 } },
-       { text: "무엇을 할 수 있어야(기능) / 얼마나 잘(품질) / 선택지를 지우는가(제약)", options: { fontSize: 9.5 } }],
-      [{ text: "핵심 원칙: ", options: { bold: true, color: navy, fontSize: 9.5 } },
-       { text: "\"빠르면 좋겠다\"는 QA가 아니다 — 측정 가능한 response measure가 붙은 시나리오만 Utility Tree에 올림", options: { fontSize: 9.5 } }],
-      [{ text: "모든 행에 [측정: 지표+baseline]이 있고, 그 수치마다 출처(A/B/C 등급)가 있다", options: { fontSize: 9.5 } }],
-    ],
-  });
-  const Rx2 = A.MARGIN + Lw2 + 0.2, Rw2 = A.PAGE.w - A.MARGIN - Rx2;
-  const ih2 = A.CONTENT_BOTTOM - yb - 0.16;
-  s.addImage({ path: img("req_qa_chain.png"), x: Rx2, y: yb + 0.1, w: Rw2, h: ih2, sizing: { type: "contain", w: Rw2, h: ih2 } });
-}
-
-// ───────────────── 28–33. 부록 C. QA별 평가 기준 상세 ─────────────────
-// 내용 출처: docs/00_qa_definitions.md (v0.7) — 정의·측정·baseline·bin·bin 근거 발췌.
+// ─── 28–33. 부록 C-1~6. QA별 평가 기준 상세 ───
 const QA_DETAIL = [
   {
-    page: 28, band: "navy", no: "QA1", name: "Performance", kor: "추론 성능 (TTFT · throughput)",
+    page: 28, band: "green", no: "QA1", name: "Performance", kor: "추론 성능 (TTFT · throughput)",
     prio: "우선순위 1 (목표)", imp: "H", diff: "H",
     role: "과제 최종 판정 지표 — 미달 시 나머지 QA가 우수해도 무의미",
     def: [
@@ -406,7 +459,7 @@ const QA_DETAIL = [
     ],
   },
   {
-    page: 29, band: "green", no: "QA2", name: "Accuracy", kor: "응답 품질 (bound)",
+    page: 29, band: "navy", no: "QA2", name: "Accuracy", kor: "응답 품질 (bound)",
     prio: "우선순위 2 (gate)", imp: "H", diff: "M",
     role: "QA1·QA3 수치의 유효 전제 — bound 위반 시 성능·용량 수치 무효",
     def: [
@@ -424,7 +477,7 @@ const QA_DETAIL = [
     ],
   },
   {
-    page: 30, band: "navy", no: "QA3", name: "Resource Efficiency", kor: "메모리 효율 (유효 KV 용량)",
+    page: 30, band: "green", no: "QA3", name: "Resource Efficiency", kor: "메모리 효율 (유효 KV 용량)",
     prio: "우선순위 3 (수단)", imp: "H", diff: "H",
     role: "HBM당 수용 컨텍스트가 비용 구조 결정 — 이종 tier 도입의 존재 이유",
     def: [
@@ -441,7 +494,7 @@ const QA_DETAIL = [
     ],
   },
   {
-    page: 31, band: "green", no: "QA4", name: "Modifiability", kor: "확장성·진화성",
+    page: 31, band: "navy", no: "QA4", name: "Modifiability", kor: "확장성·진화성",
     prio: "우선순위 4", imp: "M", diff: "H",
     role: "코어/모듈 경계는 되돌리기 어려운 초기 결정 — 중장기 생존성 좌우",
     def: [
@@ -459,7 +512,7 @@ const QA_DETAIL = [
     ],
   },
   {
-    page: 32, band: "navy", no: "QA6", name: "Adaptability", kor: "framework 적응성",
+    page: 32, band: "green", no: "QA6", name: "Adaptability", kor: "framework 적응성",
     prio: "우선순위 5", imp: "M", diff: "H",
     role: "framework 종속 리스크 통제 — 산출물(레퍼런스 스택)의 수명 좌우",
     def: [
@@ -476,7 +529,7 @@ const QA_DETAIL = [
     ],
   },
   {
-    page: 33, band: "green", no: "QA5", name: "Maintainability", kor: "유지보수성",
+    page: 33, band: "navy", no: "QA5", name: "Maintainability", kor: "유지보수성",
     prio: "우선순위 6", imp: "M", diff: "M",
     role: "지속 가능성 좌우 — DP1(plugin vs 독립) 선택이 비용을 한 자릿수 이상 가름",
     def: [
@@ -495,24 +548,22 @@ const QA_DETAIL = [
 
 QA_DETAIL.forEach((q, idx) => {
   const s = A.slide(pptx, { title: `부록 C-${idx + 1}. ${q.no} ${q.kor}`, active: 1, band: q.band, page: q.page, titleSize: 24 });
-  A.linkButton(s, { label: "본문: Utility Tree (p.8) · QA 정의 (p.9)", w: 4.2 });
+  A.linkButton(s, { label: "본문: Utility Tree (p.9) · 정의 요약: 부록 C (p.27)", w: 4.6 });
   headline(s, {
     y: A.CONTENT_TOP - 0.04,
     main: [
       { text: `○ ${q.no} ${q.name} — `, options: { fontSize: 14, bold: true, color: navy } },
-      { text: q.role, options: { fontSize: 13, color: A.COLORS.ink } },
+      { text: q.role, options: { fontSize: 13, color: ink } },
       { text: `   [중요도 ${q.imp} · 난이도 ${q.diff} · ${q.prio}]`, options: { fontSize: 10.5, bold: true, color: gray } },
     ],
   });
   const top = A.CONTENT_TOP + 0.5;
-  // 좌: 정의·측정·baseline
   const Lx = A.MARGIN, Lw = 6.55;
   const ly = A.sectionHeader(s, { x: Lx, y: top, w: Lw, text: "정의 · 측정 · Baseline", color: "navy" });
   A.bulletList(s, {
     x: Lx + 0.05, y: ly + 0.12, w: Lw - 0.1, h: A.CONTENT_BOTTOM - ly - 0.15, fontSize: 10,
     items: q.def.map((parts) => em(parts, 10)),
   });
-  // 우: 별점 bin 표 + bin 근거
   const Rx = Lx + Lw + 0.25, Rw = A.PAGE.w - A.MARGIN - Rx;
   const ry = A.sectionHeader(s, { x: Rx, y: top, w: Rw, text: "별점 정량 bin", color: "green" });
   A.specTable(s, {

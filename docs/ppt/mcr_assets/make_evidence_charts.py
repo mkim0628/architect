@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Evidence-backed charts for the MCR background deck (evidence-charts skill).
 
-Every number here is registered in docs/chart_sources.md with its exact
+Every number here is registered in docs/ppt/chart_sources.md with its exact
 location in the primary source — do not edit values without updating the
 ledger. Style comes from the shared ExcelChart helper so all deck charts
 match Excel's default look.
@@ -10,7 +10,7 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, "../../.claude/skills/evidence-charts/scripts"))
+sys.path.insert(0, os.path.join(HERE, "../../../.claude/skills/evidence-charts/scripts"))
 from excelchart import ExcelChart
 
 

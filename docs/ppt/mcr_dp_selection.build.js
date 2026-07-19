@@ -1,15 +1,15 @@
 /**
  * mcr_dp_selection.build.js — P9 「설계 Point 선정」 단일 슬라이드.
  *
- *   NODE_PATH=<pptxgenjs 위치> node docs/mcr_dp_selection.build.js [out.pptx]
+ *   NODE_PATH=<pptxgenjs 위치> node docs/ppt/mcr_dp_selection.build.js [out.pptx]
  *
  * 구성: 좌측 드라이버 레일(F1~F9 · Q1~Q6 · C1) — 중앙 MCR Module View(확정안 v2
  * 패키지 구조 + 드라이버 배지 + DP 색 프레임) — 우측 DP-01~08 카드.
- * 내용 출처: docs/00_requirements_analysis.md(드라이버) ·
- * docs/01_architecture_overview.md(패키지 구조) · docs/02~05_design_points_*.md(DP·QA).
+ * 내용 출처: docs/md/00_requirements_analysis.md(드라이버) ·
+ * docs/md/01_architecture_overview.md(패키지 구조) · docs/md/02~05_design_points_*.md(DP·QA).
  */
 const path = require("path");
-const A = require(path.join(__dirname, "../.claude/skills/architect-ppt/lib/architect_deck.js"));
+const A = require(path.join(__dirname, "../../.claude/skills/architect-ppt/lib/architect_deck.js"));
 
 const OUT = process.argv[2] || path.join(__dirname, "mcr_dp_selection.pptx");
 

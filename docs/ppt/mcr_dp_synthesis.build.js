@@ -1,9 +1,9 @@
-// Regenerate: NODE_PATH="$(npm root -g)" node docs/mcr_dp_synthesis.build.js
+// Regenerate: NODE_PATH="$(npm root -g)" node docs/ppt/mcr_dp_synthesis.build.js
 // 설계 챕터 종합 슬라이드 — QA1 성능 목표의 축별 분해:
 //   QA1 ★★★(두 축 각 2×)은 단일 DP로 불가 — TTFT축 승자 × throughput축 승자 조합.
-//   내용 출처: docs/02~05_design_points_*.md QA1 재평가(00 v0.9 2지표 bin).
+//   내용 출처: docs/md/02~05_design_points_*.md QA1 재평가(00 v0.9 2지표 bin).
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 
 const pptx = A.newDeck();
 const OUT = process.argv[2] || path.join(__dirname, "mcr_dp_synthesis.pptx");

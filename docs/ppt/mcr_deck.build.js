@@ -1,8 +1,8 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_deck.build.js
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/ppt/mcr_deck.build.js
 // Page order: 1 과제 배경 · 2 과제 필요성 · 3 과제 범위 · 4 과제 개요
-// Images are generated locally by docs/mcr_assets/make_assets.py (web is blocked).
+// Images are generated locally by docs/ppt/mcr_assets/make_assets.py (web is blocked).
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 
 const pptx = A.newDeck();
 const OUT = process.argv[2] || path.join(__dirname, "mcr_deck.pptx");
