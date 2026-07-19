@@ -30,6 +30,15 @@ QA 평가표 별점은 해당 문서의 bin 기준으로 해석한다.
 > 00 v0.7에서 "동일 실행 구성의 GPU HBM 단일 tier"로 개정(P/D 분리 전제
 > 제거)되었으며, QA 번호는 v0.7 교환 후 기준(QA2 응답 품질·QA3 메모리
 > 효율)으로 읽는다.
+>
+> **QA1 재평가 (00 v0.9 — 2지표 bin)**: QA1이 goodput@SLO(단일 배율)에서
+> **TTFT(prefill 축 — 재사용·retrieval) · throughput(decode 축 — tier·압축)
+> 각 ≥ 2×**로 개정됨에 따라 전 DP의 QA1 행을 재채점했다. 각 DP는 대개
+> **한 축**에 작용하므로(예: DP3·DP7·DP8 = TTFT 축, DP2·DP4·DP5·DP6 =
+> throughput 축, DP1 = 두 축 substrate), QA1 별점은 **그 DP가 담당하는
+> 축의 배율**을 신 bin(★★★ 2× · ★★☆ 1.5–2× · ★☆☆ <1.5×)으로 판정하고,
+> 상보 축은 sibling DP가 완성함을 병기한다. 별점 수치 자체는 대부분
+> 유지되나 판정 기준이 "축별 2×"로 강화되었다.
 
 ---
 
@@ -117,7 +126,7 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 | QA | 평점 | 정량 근거 (00 v0.3 bin 판정) |
 |----|------|-----------|
-| QA1 | ★★☆ (F) | 1.1–1.5× bin 예측: connector 경유 압축·오프로딩으로 batch 확대 이득 일부 회수(KIVI 계열 2.35–3.47×의 부분 실현, B). 단 scheduler tier 비인지로 co-scheduling 이득 미회수 — decode wait 70–85%(A) 구간 개선 상한이 확장점에 걸려 ≥1.5× 도달 불확실(C) |
+| QA1 | ★★☆ (F) | 두 축 모두 2× 미달. **throughput 축**: connector 경유 압축·오프로딩으로 batch 이득 일부 회수(KIVI 2.35–3.47×의 부분 실현, B)나 scheduler tier 비인지로 co-scheduling 미회수 — decode wait 70–85%(A) 개선 상한이 확장점에 걸려 1.5–2×(C). **TTFT 축**: 확장점이 비연속 재사용(DP3 후보2)을 구조적으로 제약 — prefix 재사용만 회수해 2× 미달(C). 각 축 1.5× 경로라 종합 ★★☆ |
 | QA2 | ★★★ (F) | acc ≤1%p·ΔPPL ≤0.1은 KVQuant 3-bit급 기법 채택으로 달성 가능(B); 검증된 vLLM 코어라 회귀 리스크가 MCR 추가분에 국한(C). 요청별 bound는 connector 메타데이터로 집행 가능(C — DP2 채택안에 종속) |
 | QA3 | ★★☆ (F) | 1.5–3× bin 예측: 압축 2–4×(A)·CXL 오프로딩은 connector로 가능하나, block table 밖 관리라 재사용·압축 KV의 copy/포맷 변환 오버헤드가 유효 배율을 깎아 ≥3× 미달(C) |
 | QA4 | ★★☆ (F) | (a) tier 추가는 자사 Memory Engine 어댑터 모듈에 갇히나, 확장점 밖 기능은 upstream RFC 경유 — 리드타임 1분기급(C). (b) KV 구조 변화는 upstream이 모델을 지원하므로 어댑터 갱신만 — +2주 가능(B: 2주 릴리스 주기). API 개정 시 재작업 리스크로 ★★★ 미달 |
@@ -127,7 +136,7 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 | QA | 변형 A (기준형) | 변형 B | 델타 근거 |
 |----|------|------|-----------|
-| QA1 | ★★☆ | ★★☆ (상한↓) | 동일 bin이나 tier-aware decode 경로·co-scheduling이 구조적으로 없어 상한이 낮음; 재사용 낮은 워크로드에선 <1.1× 하향 리스크(C) |
+| QA1 | ★★☆ | ★★☆ (상한↓) | 두 축 모두 2× 미달은 동일. tier-aware decode 경로·co-scheduling 부재로 throughput 상한이 더 낮고, 재사용 낮은 워크로드에선 TTFT < 1.5×로 ★☆☆ 하향 리스크(C) |
 | QA2 | ★★★ | **★★☆** | 정책 골격이 LMCache 소유 — 요청별 품질 예산 차등 집행 통로 없음, "전역 bound만 보장" bin(C) |
 | QA3 | ★★☆ | **★★★** | 다단 백엔드(CPU DRAM·SSD·원격)+CacheGen 압축 상속 — 원본 환산 수용량 확장이 주특기(B), 자사 CXL tier는 백엔드 모듈로 즉시 기여(C) |
 | QA4 | ★★☆ | ★★☆ (리스크↑) | tier 추가는 백엔드 모듈 1개로 ★★★급이나, KV 구조 변화 시 vLLM+LMCache 이중 upstream 대응을 모두 대기(C) |
@@ -153,7 +162,7 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 | QA | 평점 | 정량 근거 (00 v0.3 bin 판정) |
 |----|------|-----------|
-| QA1 | ★★★ (상한) / ★☆ (도달 리스크) (F) | 상한: co-scheduling·압축·재사용의 진짜 co-design으로 ≥1.5× bin 도달 가능(C — 압축 단독으로도 2.35–3.47× 문헌(B)). 도달 리스크: vLLM 동등 배칭 효율 재현 실패 시 baseline 자체에 미달 — attainment ≥90% 유지 불확실(C) |
+| QA1 | ★★★ (상한) / ★☆ (도달 리스크) (F) | 상한: 전 층 co-design으로 **throughput 축 2×**(압축·co-scheduling batch, 압축 단독 2.35–3.47×(B))와 **TTFT 축 2×**(비연속 재사용·오프로드 1급 수용, CacheBlend 2.2–3.3×(B))를 **동시에 여는 유일 구조** — 두 축 모두 2× 경로(C). 도달 리스크: vLLM 동등 배칭 효율 재현 실패 시 baseline 자체 미달 — 두 축 동시 무효화(C) |
 | QA2 | ★☆☆ (F) | bound 보장 자체가 리스크: 압축 기법의 acc/PPL은 문헌상 달성 가능(B)하나, 미검증 실행 코어의 수치 정확성 리스크가 저하의 총량을 키워 ≤2%p bound 보장을 장담 못 함(C) |
 | QA3 | ★★★ (F) | ≥3× bin 예측: tier-agnostic block table로 압축 2–4×(A)와 tier 오프로딩을 1급 결합 — 관리 오버헤드 없는 원본 환산 배율 극대화(C) |
 | QA4 | ★☆☆ (F) | (a) 디바이스 축은 ★★★급 — tier 추가가 어댑터 모듈에 갇히는 클린 설계(C). 단 (b) 독립 framework는 00 각주 규칙에 따라 **일반 모델 enablement 전체가 MCR 책임** — 신규 모델·기법 자체 포팅으로 리드타임 만성 열세 >1분기(C). a·b 동시 충족 요건이므로 종합 ★☆☆ |
@@ -226,7 +235,7 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 | QA | 평점 | 정량 근거 (00 v0.3 bin 판정) |
 |----|------|-----------|
-| QA1 | ★★☆ (F) | 정상 상태 배치 품질은 ≥1.5× 경로이나, μs 압박 스파이크에 request-granularity 정책 루프가 늦어 TPOT p99 tail 증가 — attainment ≥90% 경계 리스크로 ★★★ 미달(C) |
+| QA1 | ★★☆ (F) | **throughput 축(decode)**: 정상 상태 배치 품질은 2× 경로이나, μs 압박 스파이크에 request-granularity 정책 루프가 늦어 TPOT p99 tail 증가 — iso-latency 판정에서 2× 미달(1.5–2×)(C). TTFT는 재사용 판정 중앙 집행으로 간접 기여(DP3 종속). 본 DP는 decode 축 책임 — 종합 ★★☆ |
 | QA2 | ★★★ (F) | ★★★ bin의 "요청별 bound 집행" 조건을 구조적으로 정면 충족 — 품질 예산의 요청별 중앙 집행(C); acc ≤1%p·ΔPPL ≤0.1은 기법 문헌로 달성 가능(B) |
 | QA3 | ★★★ (F) | ≥3× bin 예측: SLO class·재사용 확률 기반 배치로 오강등 miss 없이 tier·압축 이득을 온전히 회수(C) — 압축 2–4×(A) × tier 결합의 상한 실현 경로 |
 | QA4 | ★★☆ (F) | 정책이 tier 문맥·KV 의미론에 결합 — tier 추가/KV 구조 변화 시 중앙 정책(코어) 수정 발생, 단 ≤40% 범위·≤1분기 예측(C). 정책-메커니즘 결합으로 Memory Engine 단독 진화 제약 |
@@ -249,7 +258,7 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 | QA | 평점 | 정량 근거 (00 v0.3 bin 판정) |
 |----|------|-----------|
-| QA1 | ★★★ (F) | attainment ≥90% 유지에 최강 — watermark 기반 μs 반응으로 압박 스파이크의 p99 tail 방어(C); 압축·tiering 기본 이득만으로 ≥1.5× 도달 가능(KIVI 계열 처리율 2.35–3.47×(B)). 단 오강등 miss가 배율을 깎으면 1.1–1.5×로 하향할 경계 리스크(C) |
+| QA1 | ★★★ (F) | **throughput 축(decode)**: watermark 기반 μs 반응으로 압박 스파이크의 TPOT p99 tail 방어 → iso-latency throughput **2× 경로에 최강**(C); 압축·tiering 기본 이득(KIVI 2.35–3.47×(B)). TTFT 2×는 재사용 담당 DP(DP3·DP7·DP8)가 완성 — 본 DP는 decode 축 책임. 오강등 miss가 배율 깎으면 1.5–2× 하향 경계 리스크(C) |
 | QA2 | ★★☆ (F) | **v0.2 ★☆☆에서 승격**: "전역 bound만 보장"이 v0.3 ★★☆ bin의 정의와 정확히 일치 — 전역 watermark 압축 수준 제한으로 acc ≤2%p(KIVI 2-bit 실측 상한(B)) 보수 운용 가능(C). 요청별 차등 불가로 ★★★ 미달 |
 | QA3 | ★★☆ (F) | 1.5–3× bin 예측: watermark 압축 트리거로 기본 배율은 확보하나, 문맥 없는 온도 정책이 재사용 예정 KV를 오강등 → miss·재계산 비용이 ≥3× 도달을 막음(C) |
 | QA4 | ★★★ (F) | (a) tier 추가 = Cache Manager 내 어댑터 모듈, 얇은 hint API라 코어(인터페이스) 무수정(C); (b) KV 구조 변화도 Memory Engine 모듈 내 수용 — +2주 추종 가능(C, 2주 주기(B)). 독립 이식성 최고 |
