@@ -179,6 +179,58 @@ def bg_gap():
     save(fig,"bg_gap.png",6.6,2.6)
 
 # 13. Missing realization layer between app and devices
+# 13b. GPU-centric runtime limits — KV overflows HBM, other tiers invisible
+def nec_gpu_limit():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.75); ax.axis("off")
+    ax.text(0.3, 4.5, "GPU-centric runtime — memory the runtime cannot see",
+            fontsize=11.5, color=INK, fontweight="bold")
+    # left: what the runtime manages (GPU + HBM), with KV overflowing
+    box(ax, 0.3, 3.15, 4.6, 0.85, "Runtime manages:\nGPU + HBM only", NAVY, NAVY, fs=10)
+    ax.add_patch(FancyBboxPatch((0.3, 1.55), 4.6, 1.2, boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=1.6, edgecolor=NAVYL, facecolor=WHITE))
+    ax.text(2.6, 2.5, "HBM", ha="center", fontsize=9, color=NAVY, fontweight="bold")
+    ax.add_patch(FancyBboxPatch((0.55, 1.72), 3.4, 0.55, boxstyle="round,pad=0.01,rounding_size=0.03",
+        linewidth=0, facecolor=NAVYL))
+    ax.add_patch(FancyBboxPatch((3.95, 1.72), 0.75, 0.55, boxstyle="round,pad=0.01,rounding_size=0.03",
+        linewidth=0, facecolor="#C00000"))
+    ax.text(2.25, 1.99, "KV cache", ha="center", va="center", color="white", fontsize=8.5, fontweight="bold")
+    ax.text(4.32, 1.99, "KV\n>HBM", ha="center", va="center", color="white", fontsize=6.5, fontweight="bold")
+    ax.text(2.6, 0.95, "overflow → preempt · recompute · swap", ha="center",
+            fontsize=9, color="#C00000", fontweight="bold")
+    ax.text(2.6, 0.45, "→ throughput collapse", ha="center", fontsize=9.5,
+            color="#C00000", fontweight="bold")
+    # right: tiers/devices the runtime cannot express
+    for i, n in enumerate(["DRAM · CXL · HBF tiers", "PIM · PNM (near-compute)"]):
+        y = 2.9 - i * 1.05
+        ax.add_patch(FancyBboxPatch((5.6, y), 4.3, 0.8, boxstyle="round,pad=0.01,rounding_size=0.06",
+            linewidth=1.8, edgecolor=GRAY, facecolor=LGRAY, linestyle="--"))
+        ax.text(7.75, y + 0.4, n, ha="center", va="center", color=GRAY, fontsize=9, fontweight="bold")
+        ax.text(5.75, y + 0.62, "✗", color="#C00000", fontsize=12, fontweight="bold")
+    ax.text(7.75, 0.65, "invisible to the runtime —\nno placement, no near-memory compute",
+            ha="center", fontsize=8.5, color=GRAY, style="italic")
+    save(fig, "nec_gpu_limit.png", 7.0, 2.9)
+
+# 13c. What MCR decides differently — comparison vs today's runtimes
+def nec_mcr_diff():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,5.3); ax.axis("off")
+    ax.text(0.3, 5.05, "What MCR decides differently", fontsize=11.5, color=INK, fontweight="bold")
+    rows = [
+        ("KV placement", "HBM only — else evicted", "SLO-aware: hot→HBM · warm→CXL\n· cold→compressed→flash"),
+        ("On overflow", "preempt · recompute · swap", "planned movement across tiers"),
+        ("Compute runs on", "GPU only", "GPU + PIM/PNM\n(move compute to the data)"),
+        ("KV reuse", "per-request", "cross-session prefix reuse"),
+    ]
+    x_lab, x_old, x_mcr = 0.3, 2.75, 6.15
+    w_lab, w_old, w_mcr = 2.3, 3.25, 3.75
+    box(ax, x_old, 4.15, w_old, 0.6, "Today's runtimes", GRAY, GRAY, fs=9.5)
+    box(ax, x_mcr, 4.15, w_mcr, 0.6, "MCR", GREEN, GREEN, fs=9.5)
+    for i, (lab, old, mcr) in enumerate(rows):
+        y = 3.3 - i * 0.95
+        box(ax, x_lab, y, w_lab, 0.8, lab, ICE, NAVYL, tc=NAVY, fs=8.5)
+        box(ax, x_old, y, w_old, 0.8, old, WHITE, GRAY, tc=INK, fs=8, bold=False)
+        box(ax, x_mcr, y, w_mcr, 0.8, mcr, WHITE, GREEN, tc=INK, fs=8, bold=False)
+    save(fig, "nec_mcr_diff.png", 7.2, 3.5)
+
 def nec_missing():
     fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.2); ax.axis("off")
     box(ax,0.5,3.1,9,0.8,"Application  /  LLM Inference",ICE,NAVY,tc=NAVY,fs=12.5)
@@ -231,7 +283,7 @@ def ag_loop():
     arrow(ax,2.85,3.8,3.75,3.8); arrow(ax,6.25,3.8,7.15,3.8)
     ax.add_patch(FancyArrowPatch((8.4,3.25),(1.6,3.25),connectionstyle="arc3,rad=-0.35",
         arrowstyle="-|>",mutation_scale=16,lw=2.2,color=INK,linestyle=(0,(4,2))))
-    ax.text(5,2.5,"× 10s–100s steps",ha="center",fontsize=10.5,
+    ax.text(5,2.5,"× 10–100 steps",ha="center",fontsize=10.5,
             color=INK,fontweight="bold")
     ax.text(5,1.28,"fan-out for one goal",ha="center",fontsize=9.5,color=GRAY,fontweight="bold")
     for i in range(3):
@@ -246,13 +298,56 @@ def ag_context():
     ax.bar(range(4),vals,color=cols,width=0.55)
     for i,(v,t) in enumerate(zip(vals,["4K","32K","256K","1M+"])):
         ax.text(i,v*1.25,t,ha="center",fontsize=10.5,color=INK,fontweight="bold")
-    ax.set_yscale("log"); ax.set_ylim(1,9000); ax.set_yticks([])
+    ax.set_yscale("log"); ax.set_ylim(1,9000)
+    ax.set_yticks([1,10,100,1000]); ax.set_yticklabels(["1K","10K","100K","1M"],fontsize=8.5,color="#595959")
+    ax.minorticks_off(); ax.tick_params(axis="y",length=0)
+    ax.grid(axis="y",color="#D9D9D9",linewidth=0.7); ax.set_axisbelow(True)
     ax.set_xticks(range(4)); ax.set_xticklabels(labs,fontsize=9)
-    ax.set_ylabel("context (K tokens, log)",fontsize=9.5)
+    ax.set_ylabel("context (tokens, log)",fontsize=9.5)
     ax.set_title("Long-term memory ⇒ context length explodes (order-of-magnitude)",
                  fontsize=11.5,color=INK,fontweight="bold",loc="left")
     for s in ["top","right","left"]: ax.spines[s].set_visible(False)
+    # magnitudes anchored to shipped model specs (see docs/chart_sources.md);
+    # the per-workload mapping itself is an illustrative ordering
+    fig.text(0.01,-0.06,"Source: magnitudes = shipped model context specs — Llama 2 4K (arXiv 2307.09288, Table 1) · Mixtral 8x7B 32K (arXiv 2401.04088)\n· Qwen3-235B-2507 262K native (HF model card) · Gemini 1.5 Pro 1M in production (Google, 2024-02) — workload mapping illustrative",
+             fontsize=6.8,style="italic",color="#7F7F7F",ha="left",va="top")
     save(fig,"ag_context.png",6.6,2.6)
+
+# 17b. AI serving stack — the runtime layer is where the industry invests
+# (real, representative members: vLLM · SGLang · TensorRT-LLM · ONNX Runtime)
+def bg_stack_runtime():
+    fig, ax = plt.subplots(); blank(ax); ax.set_ylim(0, 4.75)
+    ax.text(0.4, 4.5, "AI serving stack — performance is realized in the runtime",
+            fontsize=11.5, color=INK, fontweight="bold")
+    box(ax, 0.4, 3.35, 9.2, 0.72,
+        "Applications / Models — LLM apps · PyTorch · HF",
+        ICE, NAVYL, tc=NAVY, fs=9.5)
+    arrow(ax, 5, 3.30, 5, 3.02)
+    ax.add_patch(FancyBboxPatch((0.4, 1.45), 9.2, 1.5,
+        boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=2.8, edgecolor=YELLOW, facecolor=NAVY))
+    ax.text(5, 2.62, "AI Inference Runtime — every vendor builds one",
+            color="white", ha="center", fontsize=10, fontweight="bold")
+    chips = [("vLLM", "open source"), ("SGLang", "open source"),
+             ("TensorRT-LLM", "NVIDIA"), ("ONNX Runtime", "Microsoft")]
+    cw = 2.08
+    for i, (name, org) in enumerate(chips):
+        cx = 0.62 + i * (cw + 0.24)
+        box(ax, cx, 1.86, cw, 0.6, name, WHITE, ICE, tc=NAVY, fs=8)
+        ax.text(cx + cw / 2, 1.74, org, ha="center", va="center",
+                fontsize=7.5, color=ICE)
+    arrow(ax, 5, 1.40, 5, 1.12)
+    box(ax, 0.4, 0.28, 9.2, 0.72,
+        "Hardware — GPU · Memory tiers (HBM · DRAM · CXL · Flash)",
+        LGRAY, GRAY, tc=INK, fs=9.5)
+    # two independent levers inside the runtime layer — this project takes ②
+    ax.set_ylim(-0.75, 4.75)
+    ax.text(0.4, -0.18, "Runtime levers:  ① kernels & compilation — how fast each op runs"
+            "   ·   ② dynamic resource management — where data lives,",
+            fontsize=7.8, color="#7F7F7F", style="italic")
+    ax.text(0.4, -0.55, "when it moves, what runs where (→ this project's axis)",
+            fontsize=7.8, color="#7F7F7F", style="italic")
+    save(fig, "bg_stack_runtime.png", 6.6, 3.1)
 
 # 18. Naive DRAM->SSD offloading — bandwidth cliff and throughput collapse
 def bg_offload():
@@ -276,6 +371,9 @@ def bg_offload():
     for a in (a1,a2):
         for s in ["top","right","left"]: a.spines[s].set_visible(False)
     fig.subplots_adjust(wspace=0.3,top=0.72)
+    # tier bandwidths anchored to shipping parts (see docs/chart_sources.md)
+    fig.text(0.01,-0.06,"Source: HBM3 3.35TB/s — NVIDIA H100 SXM · DDR5-6400 2ch = 102.4GB/s — JEDEC (derived) · PCIe 5.0 SSD 13GB/s — Samsung PM1743\n(2021-12) · right panel illustrative; cf. FlexGen (ICML'23): offloading policy alone shifts max throughput up to 100×",
+             fontsize=6.8,style="italic",color="#7F7F7F",ha="left",va="top")
     save(fig,"bg_offload.png",6.6,2.6)
 
 if __name__=="__main__":
