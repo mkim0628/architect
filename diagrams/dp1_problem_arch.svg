@@ -1,0 +1,107 @@
+<svg viewBox="0 0 1320 880" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <defs>
+    <marker id="a1" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/></marker>
+    <marker id="ar" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#C0392B"/></marker>
+    <marker id="am" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#B45309"/></marker>
+  </defs>
+  <rect width="1320" height="880" fill="#FFFFFF"/>
+
+  <!-- Header -->
+  <text x="40" y="34" font-size="23" font-weight="700" fill="#1F2A44">기존 SW 구조 (외부 vLLM 생태계 채택) — 이종 tier를 1급으로 넣을 자리가 없다</text>
+  <text x="40" y="60" font-size="13.5" fill="#6B7A90">가정: 「KV cache = GPU HBM 상주」가 코드 전반에 배어 있음. MCR 차별 가치(tier-aware 배치·비연속 KV·근접연산)는 <tspan fill="#C0392B" font-weight="700">3개 확장 통로</tspan>로만 도달 가능</text>
+
+  <!-- ===== Inference Orchestration ===== -->
+  <rect x="40" y="80" width="1240" height="140" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <rect x="40" y="80" width="410" height="26" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="98" font-size="13" font-weight="700" fill="#1F2A44">«package»  Inference Orchestration (제어 평면 · MCR)</text>
+  <rect x="470" y="120" width="380" height="82" fill="#FFFFFF" stroke="#44546A" stroke-width="1.3"/>
+  <text x="490" y="150" font-size="15" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="490" y="174" font-size="11.5" fill="#6B7A90">요청별 KV 재사용·tier 배치 의도를 아래로 내리려 함</text>
+  <text x="490" y="192" font-size="11.5" fill="#6B7A90">— 그러나 엔진이 tier 의도를 받을 통로가 좁다</text>
+
+  <!-- arrows to engines -->
+  <line x1="360" y1="220" x2="360" y2="252" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#a1)"/>
+  <line x1="980" y1="220" x2="980" y2="252" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#a1)"/>
+
+  <!-- ===== Inference Engine = vLLM (external) ===== -->
+  <rect x="40" y="254" width="600" height="430" fill="#F0F5FC" stroke="#3A6EA5" stroke-width="1.4"/>
+  <rect x="40" y="254" width="400" height="26" fill="#DCE9F7" stroke="#3A6EA5" stroke-width="1.4"/>
+  <text x="52" y="272" font-size="13" font-weight="700" fill="#20507F">«package»  Inference Engine = vLLM  (외부 채택)</text>
+
+  <!-- Iteration Scheduler (problem 2) -->
+  <rect x="66" y="298" width="262" height="96" fill="#FDECEA" stroke="#C0392B" stroke-width="1.8"/>
+  <circle cx="90" cy="322" r="14" fill="#C0392B"/><text x="90" y="327" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+  <text x="116" y="322" font-size="14.5" font-weight="700" fill="#1F2A44">Iteration Scheduler</text>
+  <text x="82" y="352" font-size="11" fill="#C0392B">tier 비인지 — admission을 GPU block</text>
+  <text x="82" y="370" font-size="11" fill="#C0392B">잔량만으로 판정. "KV 절반이 CXL에</text>
+  <text x="82" y="388" font-size="11" fill="#C0392B">압축 상태"가 스케줄에 못 들어감</text>
+
+  <!-- Model Runner -->
+  <rect x="352" y="298" width="262" height="96" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="368" y="326" font-size="14.5" font-weight="700" fill="#1F2A44">Model Runner / Step Ctrl</text>
+  <text x="368" y="350" font-size="11" fill="#6B7A90">continuous batching · 검증된 코어</text>
+  <text x="368" y="372" font-size="11" fill="#2E7D32">✔ 생태계 축적 = 무임승차 가치</text>
+
+  <!-- Block Table (problem 1) -->
+  <rect x="66" y="410" width="548" height="90" fill="#FDECEA" stroke="#C0392B" stroke-width="1.8"/>
+  <circle cx="90" cy="434" r="14" fill="#C0392B"/><text x="90" y="439" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+  <text x="116" y="434" font-size="14.5" font-weight="700" fill="#1F2A44">PagedAttention Block Table &amp; Allocator</text>
+  <text x="116" y="462" font-size="11.5" fill="#C0392B">GPU ↔ CPU 이분법 위에 설계 · swap 경로는 CPU 전용 —</text>
+  <text x="116" y="482" font-size="11.5" fill="#C0392B">PNM DRAM · CXL을 제3·4의 tier로 넣을 자리가 구조적으로 없음</text>
+
+  <!-- Attention Kernel -->
+  <rect x="66" y="516" width="262" height="90" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="82" y="544" font-size="14.5" font-weight="700" fill="#1F2A44">Attention Kernel</text>
+  <text x="82" y="568" font-size="11" fill="#6B7A90">custom attention backend</text>
+  <text x="82" y="588" font-size="11" fill="#6B7A90">(확장점 후보)</text>
+
+  <!-- KV Connector (problem 3) -->
+  <rect x="352" y="516" width="262" height="90" fill="#FDECEA" stroke="#C0392B" stroke-width="1.8"/>
+  <circle cx="376" cy="540" r="14" fill="#C0392B"/><text x="376" y="545" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+  <text x="402" y="540" font-size="14.5" font-weight="700" fill="#1F2A44">KV Connector (v1)</text>
+  <text x="368" y="568" font-size="11" fill="#C0392B">P→D prefill 전송 전용 — decode 중</text>
+  <text x="368" y="588" font-size="11" fill="#C0392B">tier 승격/강등·비연속 재사용 경로 없음</text>
+
+  <!-- ===== Memory Engine = MCR value (in-house) ===== -->
+  <rect x="720" y="254" width="560" height="430" fill="#EEF6EA" stroke="#4E7C3A" stroke-width="1.4"/>
+  <rect x="720" y="254" width="420" height="26" fill="#E1F0D8" stroke="#4E7C3A" stroke-width="1.4"/>
+  <text x="732" y="272" font-size="13" font-weight="700" fill="#3B6127">«package»  Memory Engine — MCR 차별 가치 (tier-aware)</text>
+
+  <rect x="746" y="298" width="248" height="96" fill="#FFFFFF" stroke="#4E7C3A" stroke-width="1.3"/>
+  <text x="762" y="326" font-size="14.5" font-weight="700" fill="#1F2A44">KV Cache Manager</text>
+  <text x="762" y="352" font-size="11" fill="#4E7C3A">tier-aware 배치 · 압축 상태</text>
+  <text x="762" y="372" font-size="11" fill="#4E7C3A">인지 관리를 원함</text>
+
+  <rect x="1006" y="298" width="248" height="96" fill="#FFFFFF" stroke="#4E7C3A" stroke-width="1.3"/>
+  <text x="1022" y="326" font-size="14.5" font-weight="700" fill="#1F2A44">Tier Topology</text>
+  <text x="1022" y="352" font-size="12" fill="#4E7C3A">HBM · PNM DRAM · CXL</text>
+  <text x="1022" y="372" font-size="11" fill="#4E7C3A">= 제3·4의 1급 tier</text>
+
+  <rect x="746" y="410" width="508" height="90" fill="#FFFFFF" stroke="#4E7C3A" stroke-width="1.3"/>
+  <text x="762" y="438" font-size="14.5" font-weight="700" fill="#1F2A44">비연속 KV 1급 관리 · 근접연산 (near-compute)</text>
+  <text x="762" y="466" font-size="11.5" fill="#4E7C3A">block table 밖에서 관리되면 재사용 시 copy/포맷 변환 오버헤드 —</text>
+  <text x="762" y="486" font-size="11.5" fill="#4E7C3A">이 가치는 왼쪽 vLLM 구조의 3개 통로를 통과해야만 실현된다</text>
+
+  <!-- 3rd force: LMCache -->
+  <rect x="746" y="516" width="508" height="90" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="7,4"/>
+  <text x="762" y="544" font-size="13.5" font-weight="700" fill="#8A5A08">제3 압력 · LMCache — vLLM 공식 KV offloading 계층 표준 선점</text>
+  <text x="762" y="570" font-size="11.5" fill="#8A5A08">chunking·영속화·CacheGen 압축·CacheBlend 재사용을 이미 갖춤 (프로덕션 안착)</text>
+  <text x="762" y="590" font-size="11.5" fill="#8A5A08">→ 이 계층과 <tspan font-weight="700">경쟁(자체 구현)</tspan>할지 그 <tspan font-weight="700">위에 편승(외부)</tspan>할지</text>
+
+  <!-- Boundary line between engines -->
+  <line x1="682" y1="258" x2="682" y2="680" stroke="#B45309" stroke-width="2.4" stroke-dasharray="10,6"/>
+  <rect x="628" y="632" width="108" height="44" fill="#FFF3D6" stroke="#B45309" stroke-width="1.4"/>
+  <text x="682" y="652" font-size="12.5" font-weight="700" fill="#8A5A08" text-anchor="middle">자체 구현</text>
+  <text x="682" y="669" font-size="12.5" font-weight="700" fill="#8A5A08" text-anchor="middle">경계선 = ?</text>
+  <line x1="628" y1="300" x2="576" y2="300" stroke="#B45309" stroke-width="1.6" marker-end="url(#am)"/>
+  <text x="470" y="296" font-size="10.5" fill="#8A5A08">← 외부 채택 확대</text>
+  <line x1="736" y1="300" x2="788" y2="300" stroke="#B45309" stroke-width="1.6" marker-end="url(#am)"/>
+  <text x="800" y="296" font-size="10.5" fill="#8A5A08">자체 구현 확대 →</text>
+
+  <!-- Bottom question banner -->
+  <rect x="40" y="708" width="1240" height="150" fill="#1F3864"/>
+  <text x="66" y="748" font-size="16" font-weight="700" fill="#FFC000">DP-01 · 실행 스택 소싱 — 자체 구현 경계선은 어디인가?</text>
+  <text x="66" y="782" font-size="13" fill="#FFFFFF">차별 가치(tier-aware 배치 · 비연속 KV 1급 관리 · 근접연산)를 <tspan fill="#FFC000" font-weight="700">외부 확장점</tspan>(vLLM plugin · KV connector · LMCache 정책 훅) 안에서 표현할 수 있는가?</text>
+  <text x="66" y="808" font-size="13" fill="#FFFFFF">위 <tspan fill="#F5A6A0" font-weight="700">3개 마찰점</tspan>이 확장점 밖 수정을 요구한다면 — 그 잔여분은 연구·제품 가치의 <tspan fill="#FFC000" font-weight="700">핵심인가 주변부인가</tspan>.</text>
+  <text x="66" y="834" font-size="12.5" fill="#C9D3E6">후보1 = 외부 스택 활용형(경계선 높음) · 후보2 = 자체 구현형 독립 framework(경계선 최하)</text>
+</svg>

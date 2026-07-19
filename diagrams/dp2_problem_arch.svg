@@ -1,0 +1,96 @@
+<svg viewBox="0 0 1320 880" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <defs>
+    <marker id="a1" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/></marker>
+    <marker id="an" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#20507F"/></marker>
+    <marker id="ag" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#4E7C3A"/></marker>
+    <marker id="am" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#B45309"/></marker>
+  </defs>
+  <rect width="1320" height="880" fill="#FFFFFF"/>
+
+  <!-- Header -->
+  <text x="40" y="34" font-size="23" font-weight="700" fill="#1F2A44">기존 SW 구조에 비어 있는 결정 — KV 배치·압축 policy를 어느 패키지가 소유하는가</text>
+  <text x="40" y="60" font-size="13.5" fill="#6B7A90">확정안 v2 다이어그램은 이 위치를 <tspan fill="#B45309" font-weight="700">미결</tspan>로 남김: 「압축/재사용 quality-aware policy 위치는 DP에서 결정」. 결정에 필요한 두 정보가 <tspan fill="#C0392B" font-weight="700">서로 다른 패키지</tspan>에 있다</text>
+
+  <!-- ===== TOP: Orchestration / Scheduling (request context) ===== -->
+  <rect x="40" y="80" width="1240" height="176" fill="#EDF3FB" stroke="#3A6EA5" stroke-width="1.4"/>
+  <rect x="40" y="80" width="470" height="26" fill="#DCE9F7" stroke="#3A6EA5" stroke-width="1.4"/>
+  <text x="52" y="98" font-size="13" font-weight="700" fill="#20507F">«package»  Inference Orchestration → Scheduling  (요청 문맥 보유)</text>
+
+  <rect x="70" y="120" width="300" height="76" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="86" y="148" font-size="14.5" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="86" y="172" font-size="11" fill="#6B7A90">요청 배치 시 KV 목표 tier·</text>
+  <text x="86" y="188" font-size="11" fill="#6B7A90">압축 수준을 지시할 위치</text>
+
+  <rect x="390" y="120" width="300" height="76" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="406" y="148" font-size="14.5" font-weight="700" fill="#1F2A44">SLO / QoS Monitor</text>
+  <text x="406" y="176" font-size="11" fill="#6B7A90">요청별 SLO·품질 예산 관측</text>
+
+  <!-- context info box + candidate slot -->
+  <rect x="712" y="120" width="288" height="76" fill="#EAF0F8" stroke="#3A6EA5" stroke-width="1.2"/>
+  <text x="728" y="142" font-size="12" font-weight="700" fill="#20507F">보유 정보 · 요청 문맥</text>
+  <text x="728" y="162" font-size="10.8" fill="#20507F">SLO class · multiturn 재사용 확률</text>
+  <text x="728" y="180" font-size="10.8" fill="#20507F">retrieval 공유도 · 허용 품질 예산</text>
+
+  <rect x="1018" y="120" width="238" height="76" fill="#FBEEEC" stroke="#C0392B" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="1137" y="148" font-size="12.5" font-weight="700" fill="#C0392B" text-anchor="middle">Policy 자리 · 후보①</text>
+  <text x="1137" y="168" font-size="10.8" fill="#C0392B" text-anchor="middle">문맥 O · μs 반응 X</text>
+  <text x="1137" y="185" font-size="10.8" fill="#C0392B" text-anchor="middle">(제어 루프 = request 단위)</text>
+
+  <text x="70" y="228" font-size="11.5" fill="#20507F">▸ 실측: <tspan font-weight="700">decode wait = e2e의 70–85%</tspan> — "이 요청의 KV가 어느 tier에 어떤 압축 상태로 있는가"가 goodput을 직접 결정. 그러나 제어 루프가 느리다.</text>
+
+  <!-- ===== MIDDLE: undecided policy ? ===== -->
+  <rect x="430" y="330" width="460" height="128" rx="10" fill="#FDF6E9" stroke="#B45309" stroke-width="2.4" stroke-dasharray="9,5"/>
+  <circle cx="490" cy="372" r="24" fill="#B45309"/><text x="490" y="384" font-size="30" font-weight="700" fill="#FFFFFF" text-anchor="middle">?</text>
+  <text x="528" y="360" font-size="15.5" font-weight="700" fill="#8A5A08">미결 · KV Placement · Compression Level</text>
+  <text x="528" y="382" font-size="15.5" font-weight="700" fill="#8A5A08">· Promotion / Demotion Policy</text>
+  <text x="452" y="428" font-size="13" fill="#8A5A08">이 정책은 <tspan font-weight="700">상반된 두 정보</tspan>가 모두 필요 — 어느 패키지가 소유하는가?</text>
+
+  <!-- info-flow arrows converging on ? -->
+  <line x1="230" y1="256" x2="230" y2="300" stroke="#20507F" stroke-width="2" marker-end="url(#an)"/>
+  <path d="M 230 300 L 230 394 L 426 394" fill="none" stroke="#20507F" stroke-width="2" marker-end="url(#an)"/>
+  <text x="150" y="290" font-size="12" font-weight="700" fill="#20507F">필요 정보 A ↓</text>
+  <text x="150" y="308" font-size="10.8" fill="#20507F">요청 문맥 (위에만 있음)</text>
+
+  <line x1="1090" y1="622" x2="1090" y2="500" stroke="#4E7C3A" stroke-width="2" marker-end="url(#ag)"/>
+  <path d="M 1090 500 L 1090 394 L 894 394" fill="none" stroke="#4E7C3A" stroke-width="2" marker-end="url(#ag)"/>
+  <text x="1120" y="470" font-size="12" font-weight="700" fill="#4E7C3A">필요 정보 B ↑</text>
+  <text x="1120" y="488" font-size="10.8" fill="#4E7C3A">자원 상태 (아래에만 있음)</text>
+
+  <!-- candidate placement arrows (up=central, down=autonomous) -->
+  <line x1="620" y1="330" x2="620" y2="258" stroke="#C0392B" stroke-width="1.8" stroke-dasharray="7,4" marker-end="url(#am)"/>
+  <text x="636" y="300" font-size="11" font-weight="700" fill="#C0392B">후보1: 중앙 정책 (위로)</text>
+  <line x1="700" y1="458" x2="700" y2="528" stroke="#C0392B" stroke-width="1.8" stroke-dasharray="7,4" marker-end="url(#am)"/>
+  <text x="716" y="500" font-size="11" font-weight="700" fill="#C0392B">후보2: 자율 정책 (아래로)</text>
+
+  <!-- ===== BOTTOM: Memory Engine / Cache Manager (resource state) ===== -->
+  <rect x="40" y="530" width="1240" height="176" fill="#EEF6EA" stroke="#4E7C3A" stroke-width="1.4"/>
+  <rect x="40" y="530" width="470" height="26" fill="#E1F0D8" stroke="#4E7C3A" stroke-width="1.4"/>
+  <text x="52" y="548" font-size="13" font-weight="700" fill="#3B6127">«package»  Memory Engine → Cache Manager  (자원 상태 보유)</text>
+
+  <rect x="70" y="570" width="290" height="76" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="86" y="598" font-size="14.5" font-weight="700" fill="#1F2A44">KV Cache Manager</text>
+  <text x="86" y="626" font-size="11" fill="#6B7A90">승격/강등·압축 트리거 집행(mechanism)</text>
+
+  <rect x="380" y="570" width="290" height="76" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="396" y="598" font-size="14.5" font-weight="700" fill="#1F2A44">Memory Compressor</text>
+  <text x="396" y="626" font-size="11" fill="#6B7A90">mechanism 전담 · policy는 미결</text>
+
+  <rect x="1018" y="570" width="238" height="76" fill="#F0F7EB" stroke="#4E7C3A" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="1137" y="598" font-size="12.5" font-weight="700" fill="#4E7C3A" text-anchor="middle">Policy 자리 · 후보②</text>
+  <text x="1137" y="618" font-size="10.8" fill="#4E7C3A" text-anchor="middle">μs 반응 O · 문맥 X</text>
+  <text x="1137" y="635" font-size="10.8" fill="#4E7C3A" text-anchor="middle">(watermark 자율 · madvise 힌트)</text>
+
+  <rect x="712" y="570" width="288" height="76" fill="#EAF3E4" stroke="#4E7C3A" stroke-width="1.2"/>
+  <text x="728" y="592" font-size="12" font-weight="700" fill="#3B6127">보유 정보 · 자원 상태</text>
+  <text x="728" y="612" font-size="10.8" fill="#3B6127">tier별 잔량 · 대역폭 포화도</text>
+  <text x="728" y="630" font-size="10.8" fill="#3B6127">압박 스파이크 (μs~ms 변화)</text>
+
+  <text x="70" y="682" font-size="11.5" fill="#3B6127">▸ 이 정보는 <tspan font-weight="700">μs~ms 단위로 변함</tspan> — request-granularity 제어 루프로는 따라잡을 수 없다. 압박 스파이크에 늦으면 stall/OOM성 지연.</text>
+
+  <!-- Bottom banner -->
+  <rect x="40" y="726" width="1240" height="132" fill="#1F3864"/>
+  <text x="66" y="762" font-size="16" font-weight="700" fill="#FFC000">DP-02 · KV 배치·압축의 관리 주체 — 중앙(문맥) vs 자율(반응)</text>
+  <text x="66" y="794" font-size="12.5" fill="#FFFFFF">품질 예산을 <tspan fill="#FFC000" font-weight="700">요청별로 차등 집행</tspan>하려면 결정 주체가 요청 문맥을 알아야 하고(위), 압박 스파이크 대응은 <tspan fill="#FFC000" font-weight="700">μs 자율성</tspan>이 필요하다(아래).</text>
+  <text x="66" y="820" font-size="12.5" fill="#FFFFFF">구조적으로 <tspan font-weight="700">OS paging policy 위치 논쟁</tspan>(커널 자율 vs madvise 힌트 vs 응용 전권)과 동형. <tspan fill="#F5A6A0">Memory Engine 독립 이식성</tspan>을 policy 결합이 훼손하지 않는가.</text>
+  <text x="66" y="845" font-size="12" fill="#C9D3E6">후보1 = Orchestration 중앙 정책(mechanism만 아래로) · 후보2 = Memory Engine 자율(얇은 hint API)</text>
+</svg>
