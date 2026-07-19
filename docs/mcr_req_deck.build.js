@@ -82,7 +82,7 @@ function headline(s, { y, main, sub }) {
     y: A.CONTENT_TOP - 0.02,
     main: [
       { text: "○ 수집 요구사항 23건(유효 22건) → ", options: { fontSize: 15, color: A.COLORS.ink } },
-      { text: "기능 요구사항 9건 · 품질 요구(QA 후보) 10건 · 제약사항 1건", options: { fontSize: 15, bold: true, color: navy } },
+      { text: "기능 요구사항 9건 · 품질 요구(QA 후보) 10건 · 제약사항 2건", options: { fontSize: 15, bold: true, color: navy } },
       { text: " 정제", options: { fontSize: 15, color: A.COLORS.ink } },
     ],
     sub: [{ text: "- 정제 규칙: ① 중복 병합 ② 검증 가능한 문장으로 재기술 ③ 기능(FR)/품질(QA 후보)/제약(C) 3분류 ④ 범위 밖 기각(사유 기록)", options: { fontSize: 11, color: gray } }],
@@ -113,6 +113,7 @@ function headline(s, { y, main, sub }) {
     header: ["번호", "제약사항", "설명"],
     rows: [
       fr("C-01", "디바이스 불변", ["메모리 디바이스 ", ["HW 설계는 변경 불가"], " — Tier Topology Model 파라미터(대역폭·용량·지연)로만 취급"]),
+      fr("C-02", "Transformer 모델 한정", ["최적화 대상은 ", ["KV cache를 갖는 Transformer 기반 모델"], " — 압축·재사용이 KV cache 전제, ", ["탈Transformer(순수 SSM 등)는 범위 외"]]),
     ],
   });
   // 우: use-case diagram
