@@ -246,9 +246,12 @@ def ag_context():
     ax.bar(range(4),vals,color=cols,width=0.55)
     for i,(v,t) in enumerate(zip(vals,["4K","32K","256K","1M+"])):
         ax.text(i,v*1.25,t,ha="center",fontsize=10.5,color=INK,fontweight="bold")
-    ax.set_yscale("log"); ax.set_ylim(1,9000); ax.set_yticks([])
+    ax.set_yscale("log"); ax.set_ylim(1,9000)
+    ax.set_yticks([1,10,100,1000]); ax.set_yticklabels(["1K","10K","100K","1M"],fontsize=8.5,color="#595959")
+    ax.minorticks_off(); ax.tick_params(axis="y",length=0)
+    ax.grid(axis="y",color="#D9D9D9",linewidth=0.7); ax.set_axisbelow(True)
     ax.set_xticks(range(4)); ax.set_xticklabels(labs,fontsize=9)
-    ax.set_ylabel("context (K tokens, log)",fontsize=9.5)
+    ax.set_ylabel("context (tokens, log)",fontsize=9.5)
     ax.set_title("Long-term memory ⇒ context length explodes (order-of-magnitude)",
                  fontsize=11.5,color=INK,fontweight="bold",loc="left")
     for s in ["top","right","left"]: ax.spines[s].set_visible(False)
