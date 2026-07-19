@@ -179,6 +179,58 @@ def bg_gap():
     save(fig,"bg_gap.png",6.6,2.6)
 
 # 13. Missing realization layer between app and devices
+# 13b. GPU-centric runtime limits — KV overflows HBM, other tiers invisible
+def nec_gpu_limit():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.75); ax.axis("off")
+    ax.text(0.3, 4.5, "GPU-centric runtime — memory the runtime cannot see",
+            fontsize=11.5, color=INK, fontweight="bold")
+    # left: what the runtime manages (GPU + HBM), with KV overflowing
+    box(ax, 0.3, 3.15, 4.6, 0.85, "Runtime manages:\nGPU + HBM only", NAVY, NAVY, fs=10)
+    ax.add_patch(FancyBboxPatch((0.3, 1.55), 4.6, 1.2, boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=1.6, edgecolor=NAVYL, facecolor=WHITE))
+    ax.text(2.6, 2.5, "HBM", ha="center", fontsize=9, color=NAVY, fontweight="bold")
+    ax.add_patch(FancyBboxPatch((0.55, 1.72), 3.4, 0.55, boxstyle="round,pad=0.01,rounding_size=0.03",
+        linewidth=0, facecolor=NAVYL))
+    ax.add_patch(FancyBboxPatch((3.95, 1.72), 0.75, 0.55, boxstyle="round,pad=0.01,rounding_size=0.03",
+        linewidth=0, facecolor="#C00000"))
+    ax.text(2.25, 1.99, "KV cache", ha="center", va="center", color="white", fontsize=8.5, fontweight="bold")
+    ax.text(4.32, 1.99, "KV\n>HBM", ha="center", va="center", color="white", fontsize=6.5, fontweight="bold")
+    ax.text(2.6, 0.95, "overflow → preempt · recompute · swap", ha="center",
+            fontsize=9, color="#C00000", fontweight="bold")
+    ax.text(2.6, 0.45, "→ throughput collapse", ha="center", fontsize=9.5,
+            color="#C00000", fontweight="bold")
+    # right: tiers/devices the runtime cannot express
+    for i, n in enumerate(["DRAM · CXL · HBF tiers", "PIM · PNM (near-compute)"]):
+        y = 2.9 - i * 1.05
+        ax.add_patch(FancyBboxPatch((5.6, y), 4.3, 0.8, boxstyle="round,pad=0.01,rounding_size=0.06",
+            linewidth=1.8, edgecolor=GRAY, facecolor=LGRAY, linestyle="--"))
+        ax.text(7.75, y + 0.4, n, ha="center", va="center", color=GRAY, fontsize=9, fontweight="bold")
+        ax.text(5.75, y + 0.62, "✗", color="#C00000", fontsize=12, fontweight="bold")
+    ax.text(7.75, 0.65, "invisible to the runtime —\nno placement, no near-memory compute",
+            ha="center", fontsize=8.5, color=GRAY, style="italic")
+    save(fig, "nec_gpu_limit.png", 7.0, 2.9)
+
+# 13c. What MCR decides differently — comparison vs today's runtimes
+def nec_mcr_diff():
+    fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,5.3); ax.axis("off")
+    ax.text(0.3, 5.05, "What MCR decides differently", fontsize=11.5, color=INK, fontweight="bold")
+    rows = [
+        ("KV placement", "HBM only — else evicted", "SLO-aware: hot→HBM · warm→CXL\n· cold→compressed→flash"),
+        ("On overflow", "preempt · recompute · swap", "planned movement across tiers"),
+        ("Compute runs on", "GPU only", "GPU + PIM/PNM\n(move compute to the data)"),
+        ("KV reuse", "per-request", "cross-session prefix reuse"),
+    ]
+    x_lab, x_old, x_mcr = 0.3, 2.75, 6.15
+    w_lab, w_old, w_mcr = 2.3, 3.25, 3.75
+    box(ax, x_old, 4.15, w_old, 0.6, "Today's runtimes", GRAY, GRAY, fs=9.5)
+    box(ax, x_mcr, 4.15, w_mcr, 0.6, "MCR", GREEN, GREEN, fs=9.5)
+    for i, (lab, old, mcr) in enumerate(rows):
+        y = 3.3 - i * 0.95
+        box(ax, x_lab, y, w_lab, 0.8, lab, ICE, NAVYL, tc=NAVY, fs=8.5)
+        box(ax, x_old, y, w_old, 0.8, old, WHITE, GRAY, tc=INK, fs=8, bold=False)
+        box(ax, x_mcr, y, w_mcr, 0.8, mcr, WHITE, GREEN, tc=INK, fs=8, bold=False)
+    save(fig, "nec_mcr_diff.png", 7.2, 3.5)
+
 def nec_missing():
     fig, ax = plt.subplots(); ax.set_xlim(-0.2,10.2); ax.set_ylim(0,4.2); ax.axis("off")
     box(ax,0.5,3.1,9,0.8,"Application  /  LLM Inference",ICE,NAVY,tc=NAVY,fs=12.5)
