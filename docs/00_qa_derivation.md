@@ -1,5 +1,9 @@
-# 요구사항 → QA 도출 과정 상세 (v0.4)
+# 요구사항 → QA 도출 과정 상세 (v0.5)
 
+(v0.5: QA 정의 v0.8의 QA1 지표 개정 반영 — §2.1을 goodput@SLO에서 baseline
+대비 throughput 배율(지연 가드·곡선 병행)로 재작성, ★★★ 2× 근거를 축별
+문헌(CacheBlend·SGLang·vLLM·SmartANNS)으로 교체, retrieval(SSD-PIM 가속)
+축을 VOC(R-09)와 함께 체인에 편입.)
 (v0.4: QA2↔QA3 번호 교환(QA 정의 v0.7) 반영 — §2 체인 순서도 번호순으로 재배열.)
 (v0.3: ΔF1 ≤ 1%p 근거를 MLPerf 99% 기준·KIVI 실측 평균·SnapKV·LongBench
 표본 오차 논증으로 보강, QA4 모델 변화 예에서 SSM 제외·linear attention 포함.)
@@ -46,39 +50,59 @@ SEI 계열 표준 방법론을 따른다:
 각 체인은 4단으로 구성된다:
 **VOC(누가 왜)** → **품질 문장(무엇을 얼마나)** → **지표 선택(왜 이 지표)** → **정량 bin(왜 이 수치, 출처)**.
 
-### 2.1 QA1. Performance — goodput@SLO
+### 2.1 QA1. Performance — baseline 대비 throughput (지연 가드 내)
 
 1. **VOC**: R-01 (MCR 개발팀): 컨텍스트 길이 폭증으로 **KV cache 크기가 HBM
    용량을 넘어선다** — 타겟 메모리로 이 병목이 풀리는지가 효용성 입증의 핵심.
    R-07 (메모리 사업부): **E2E 관점의 제품 가치 확인** — 고객 신뢰의 근거.
+   **R-09 (메모리 사업부): PIM/PNM 연산의 효용성을 E2E에서 테스트** —
+   long-context RAG에서 retrieval(유사도 검색)은 TTFT 임계 경로에 있고
+   ([ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md)), SSD 기반 ANN은 I/O가
+   실행 시간의 ~67%(B, SmartANNS)라 **근접연산(SSD-PIM) 검색 가속이 E2E
+   성능 경로에 직접 기여**한다 — KV 관리만 하는 일반 런타임과의 차별 축.
    R-11 (임원): baseline 대비 **E2E 정량 입증** 요구.
    보조 배경(수집 방법의 자체 실측): decode 대기가 E2E latency의
    70–85%(A) — decode는 매 토큰 누적 KV 전체를 읽는 memory-bandwidth-bound
    연산이라 메모리 개선이 곧 성능 개선으로 이어질 여지가 크다.
-2. **품질 문장**: "지연 약속을 지키면서 단위 시간당 처리 요청 수를 높인다."
-3. **지표 선택 — 왜 raw throughput이 아니라 goodput인가**:
-   raw throughput은 SLO를 어긴 응답까지 세어 성능을 **과대평가**한다.
-   [DistServe (OSDI'24)](https://arxiv.org/pdf/2401.09670)가 이 문제를
-   지적하고 **goodput = SLO attainment ≥ 90%를 유지하는 최대 처리율**로
-   정의했다(B). 같은 논문 계열이 인간 독해 속도 ~250 words/min → TPOT
-   ≈ 50 ms면 체감 충분이라는 인지 상한도 제공.
-4. **SLO 수치의 출처**: MLPerf Inference가 공표한 시나리오별 제약 —
-   [Server(Llama2-70B) TTFT p99 ≤ 2,000 ms · TPOT p99 ≤ 200 ms](https://mlcommons.org/2024/03/mlperf-llama2-70b/),
-   [Interactive TTFT p99 ≤ 450 ms · TPOT p99 ≤ 40 ms](https://developer.nvidia.com/blog/nvidia-blackwell-delivers-massive-performance-leaps-in-mlperf-inference-v5-0/)(B).
-   MCR 표준 SLO는 장문 컨텍스트를 감안한 절충: **TTFT 450 ms(Interactive)
-   · TPOT 200 ms(Server)**.
-5. **baseline 정의와 이유**: 동일 HW·동일 실행 구성에서 **GPU HBM 단일
+2. **품질 문장**: "지연을 무너뜨리지 않으면서 단위 시간당 처리량을 높인다 —
+   retrieval을 포함한 E2E 경로에서."
+3. **지표 선택 — 왜 throughput 배율인가 (goodput@SLO가 아니라)**:
+   절대 SLO(MLPerf TTFT 450 ms 등)는 벤치마크 시나리오에 고정된 제약이라
+   GPU 종류·규모가 비확정인 연구 테스트베드에서 취약하다 — 구성이 약하면
+   어떤 처리율에서도 미달(goodput = 0)로 지표가 퇴화한다. 실서빙 SLA가
+   없는 연구 과제 성격상, [vLLM (SOSP'23)](https://arxiv.org/abs/2309.06180)·
+   [KIVI](https://arxiv.org/html/2402.02750v2)·[FlexGen (ICML'23)](https://arxiv.org/abs/2303.06865)
+   계열처럼 **baseline 대비 처리량 배율**로 말하는 것이 문헌과 직접
+   비교된다(C). 단 지연 제약을 전부 없애면 FlexGen형(지연 수십 초의
+   offline 처리량 100×) 퇴화 구성이 이기는 지표가 되므로, **상대적 지연
+   가드(TPOT p99 ≤ baseline의 1.5×)** 안에서 판정하고 **throughput–latency
+   곡선을 병행 보고**한다(컷라인 임의성 보완 + 체리피킹 방지).
+   goodput@SLO([DistServe (OSDI'24)](https://arxiv.org/pdf/2401.09670)(B))는
+   상용화 단계(실서빙 SLO 계약 확정 시) 승격 경로로 유지한다.
+4. **baseline 정의와 이유**: 동일 HW·동일 실행 구성에서 **GPU HBM 단일
    tier만 사용하는 구성** — 타겟 메모리 없이 현행 표준 서빙 스택이 달성
    가능한 최선이므로, 타겟 메모리 도입의 **순증분**이 분리 측정된다.
    P/D 분리는 전제하지 않는다 — 실험 변수로 두되 양쪽에 동일 적용해 효과를
    상쇄시킨다.
-6. **bin(≥1.5×)의 근거**: 메모리 측 개선 단독의 문헌 상단이
-   [KIVI](https://arxiv.org/html/2402.02750v2) — 2-bit KV 양자화로 batch
-   4×, **처리율 2.35–3.47×**(B, cache-hit·워크로드 의존). 여기서 워크로드
-   비의존적으로 요구 가능한 **보수 하한 1.5×**를 상위 bin으로 설정.
-   1.1× 미만은 A/B 테스트 통상 잡음과 구분 곤란(C). *함정 방지: DistServe의
-   2–7.4×는 colocated → P/D 분리 전환의 효과라 인용 불가 — 실행 구성을
-   양쪽에 동일하게 두는 본 QA에서는 상쇄되는 항이다.*
+5. **bin(≥2×)의 근거 — 축별 단독 실측이 모두 2×를 넘는다**:
+   ① 압축 축: [KIVI](https://arxiv.org/html/2402.02750v2) 2-bit 양자화 —
+   batch 4×, **처리율 2.35–3.47×**(B).
+   ② KV 재사용 축: [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444)
+   — RAG KV 재사용+선택 재계산으로 **TTFT 2.2–3.3× 단축 · 처리율 2.8–5×**(B) ·
+   [SGLang RadixAttention](https://arxiv.org/abs/2312.07104) — prefix 공유
+   워크로드(multiturn·RAG·few-shot)에서 **최대 6.4×**(B).
+   ③ 메모리 관리 축: [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)
+   — paging만으로 동일 GPU 처리량 **2–4×**(B).
+   ④ retrieval 축: [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf)
+   — near-storage 협력 인덱싱으로 **QPS 최대 10.7×**(B), RAG E2E의 검색
+   구간 가속(ADR-001).
+   서로 다른 병목에 작용하는 이 축들을 **결합**하는 MCR에 단독 축 실측
+   범위의 하단인 **2×**를 요구하는 것은 보수적이다(C). 구 기준 1.5×는
+   압축(KIVI) **단독**의 보수 하한이라 결합 시스템의 목표 근거로는 논리
+   결함이 있었다(단독 기법 하한 = 결합 목표) — v0.8에서 1.5×는 "단독
+   기법으로도 도달 가능한 수준"으로 ★★☆에 강등. 각 축의 이득은
+   cache-hit·워크로드 의존(B)이므로 대표 워크로드 3종 전반에서 충족을
+   요구한다.
 
 ### 2.2 QA2. Accuracy — 품질 저하 bound (gate, 우선순위 2)
 
@@ -245,7 +269,7 @@ SEI 계열 표준 방법론을 따른다:
 
 | QA | 중요도 판정 | 난이도 판정 | 우선순위 |
 |---|---|---|---|
-| QA1 Performance | **H** — 과제 최종 판정 지표. 미달 시 나머지가 우수해도 무의미 | **H** — tier×압축×재사용이 모두 맞물려야 1.5× | 1 (목표) |
+| QA1 Performance | **H** — 과제 최종 판정 지표. 미달 시 나머지가 우수해도 무의미 | **H** — tier×압축×재사용×근접연산 검색이 모두 맞물려야 2× | 1 (목표) |
 | QA2 Accuracy | **H** — QA1·QA3의 전제(gate): bound 위반 시 성능·용량 수치 무효 | **M** — near-lossless가 문헌으로 입증된 선의 재현; 단 요청별 집행은 설계 부담 | 2 (gate — 목표 다음, 수단 앞) |
 | QA3 Resource Efficiency | **H** — HBM당 컨텍스트가 비용 구조 결정, 이종 tier의 존재 이유 | **H** — 압축 단독(1.5×, 문헌 입증)을 넘어 품질 bound 안에서 tier 결합으로 3× | 3 (수단) |
 | QA4 Modifiability | **M** — 초기 가치 실증엔 비직결, 중장기 생존성 좌우 | **H** — 코어/모듈 경계는 되돌리기 어려운 초기 결정; MLA·linear attention 수용은 어려움 | 4 |
@@ -277,5 +301,9 @@ SEI 계열 표준 방법론을 따른다:
 - [H2O: Heavy-Hitter Oracle for Efficient Generative Inference (NeurIPS'23)](https://arxiv.org/abs/2306.14048) — 토큰 eviction, KV 예산 20%로 동등 성능
 - [LongBench (ACL'24)](https://arxiv.org/abs/2308.14508) — QA 태스크군 공식 지표 F1
 - [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) — 대안 serving framework (QA6 근거)
+- [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) —
+  RAG KV 재사용+선택 재계산: TTFT 2.2–3.3× 단축, 처리율 2.8–5× (QA1 2× bin 근거)
+- [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) —
+  SSD ANN I/O 병목 ~67%, near-storage 협력 인덱싱 QPS 최대 10.7× (QA1 retrieval 축)
 - 기존 앵커(DistServe·MLPerf·KIVI·KVQuant·vLLM SOSP'23·FlexGen·vLLM RELEASE.md)는
   [00_qa_definitions.md](00_qa_definitions.md) §출처 참조

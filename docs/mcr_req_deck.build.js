@@ -70,7 +70,7 @@ function headline(s, { y, main, sub }) {
       [{ text: "Stakeholder 인터뷰·VOC 접수", bold: true }, "원시 요구사항 R-01~R-23 (부록 A)"],
       [{ text: "QAW (Quality Attribute Workshop)", bold: true }, "품질 요구의 시나리오화 — Utility Tree의 시나리오 행"],
       [{ text: "자체 벤치마크 실측", bold: true }, { text: em([["decode 대기 70–85%"], " (근거 A) — QA1 baseline 정의"], 9.5) }],
-      [{ text: "문헌·업계 벤치마크 조사", bold: true }, "MLPerf · DistServe · KIVI · KVQuant · vLLM · FlexGen — QA 정량 bin의 SLO 앵커"],
+      [{ text: "문헌·업계 벤치마크 조사", bold: true }, "KIVI · CacheBlend · SGLang · vLLM · SmartANNS · MLPerf · KVQuant — QA 정량 bin의 문헌 앵커"],
       [{ text: "upstream 로드맵·릴리스 분석", bold: true }, { text: em([["vLLM 정규 릴리스 2주 케이던스"], " (근거 B) — QA4·QA5 bin 근거"], 9.5) }],
       [{ text: "유사 시스템 분석", bold: true }, "LMCache 등 KV offloading 계층 — DP1 후보 발굴"],
     ],
@@ -156,9 +156,9 @@ function headline(s, { y, main, sub }) {
     colW: [5.35, 4.9, 2.38], fontSize: 8, headerFontSize: 9,
     header: ["요구사항이 말하는 것 — VOC (누가 · 무엇을)", "실측·문헌이 보태는 것 (왜 QA가 되는가)", "귀결 QA"],
     rows: [
-      [voc([["R-01 개발팀"], " 「컨텍스트 폭증으로 KV cache가 HBM 용량을 넘는다 — 이 병목 해소가 효용성 입증의 핵심」 · ", ["R-07 사업부"], " 「E2E 관점의 제품 가치 확인」 · ", ["R-11 임원"], " 「baseline 대비 E2E 정량 입증, 대표 워크로드 벤치 완주」"]),
-       ev([["자체 실측: decode 대기 70–85%(A)"], " — decode는 memory-bandwidth-bound라 메모리 개선이 곧 성능 개선 여지 · DistServe(B): SLO 어긴 응답까지 세는 raw throughput은 과대평가 → ", ["\"지연 약속을 지키는 처리율\""], "이 필요"]),
-       qaCell("QA1", "Performance", "baseline 대비 goodput@SLO — 과제 최종 판정 지표")],
+      [voc([["R-01 개발팀"], " 「컨텍스트 폭증으로 KV cache가 HBM 용량을 넘는다 — 이 병목 해소가 효용성 입증의 핵심」 · ", ["R-09 사업부"], " 「PIM/PNM 연산의 효용성을 E2E에서 테스트」 — ", ["RAG retrieval 가속 수요"], " · ", ["R-11 임원"], " 「baseline 대비 E2E 정량 입증」"]),
+       ev([["자체 실측: decode 대기 70–85%(A)"], " — 메모리 개선이 곧 성능 개선 여지 · ", ["retrieval은 TTFT 임계 경로"], " — SSD ANN은 I/O가 ~67%(B, SmartANNS) → SSD-PIM 근접 검색 가속이 E2E 성능에 직접 기여(ADR-001) — ", ["KV 관리만 하는 일반 런타임과의 차별 축"]]),
+       qaCell("QA1", "Performance", "baseline 대비 throughput ≥2× (지연 가드 내) — 최종 판정 지표")],
       [voc([["R-06 User"], " 「압축·재사용 때문에 답변 품질이 떨어지면 쓸 수 없다 — ", ["품질 저하의 상한을 보장"], "해달라」"]),
        ev(["압축(양자화·eviction)은 본질적으로 lossy(C) — 품질은 올리는 목표가 아니라 ", ["지키는 제약(gate)"], ": bound 위반 시 성능·용량 수치가 무효 · KIVI ≤2%p·H2O 예산 20% 동등(B) — near-lossless 운용이 실재"]),
        qaCell("QA2", "Accuracy", "ΔF1 bound — QA1·QA3 수치의 유효 전제(gate)")],
@@ -215,7 +215,7 @@ function headline(s, { y, main, sub }) {
     header: ["번호", "QA", "Refinement", "Scenario  [측정: 지표 + baseline]", "중요도", "난이도", "우선순위", "선정"],
     highlightRows: [0, 1, 2, 3, 4, 5],
     rows: [
-      [C("QA-01"), qaSel("Performance", 28), "SLO 유지 하 최대 처리율 (goodput@SLO)", sc([["표준 SLO(TTFT p99 ≤ 450ms · TPOT p99 ≤ 200ms) attainment ≥ 90%"], "를 유지하는 최대 처리율 — 대표 워크로드, 동일 HW·동일 실행 구성"], "[측정: baseline 대비 goodput@SLO 배율 — baseline = GPU HBM 단일 tier(타겟 메모리 순증분 분리 측정)]"), C("H"), C("H"), C("1"), C("O", 1)],
+      [C("QA-01"), qaSel("Performance", 28), "지연 가드 내 최대 처리율 (baseline 대비 throughput)", sc(["대표 워크로드를 동일 HW·동일 실행 구성에서 서빙 — ", ["retrieval(SSD-PIM 근접 가속) 포함 E2E 경로"], "의 처리율"], "[측정: baseline 대비 throughput 배율 — 지연 가드(TPOT p99 ≤ baseline 1.5×) 내 측정 · 곡선 병행 보고 — baseline = GPU HBM 단일 tier(순증분 분리)]"), C("H"), C("H"), C("1"), C("O", 1)],
       [C("QA-02"), qaSel("Accuracy", 29), "압축·재사용 품질 저하 bound — QA-01·03의 전제(gate)", sc(["압축(양자화·토큰 eviction)·재사용 활성화 상태로 long-context 벤치(LongBench) 수행 — ", ["품질은 지키는 제약, bound 위반 시 성능·용량 수치 무효"]], "[측정: 비압축(FP16 KV)·비재사용 대비 ΔF1(%p) · 보조 ΔPPL · bound 집행 단위(요청별/전역) 판정]"), C("H"), C("M"), C("2"), C("O", 1)],
       [C("QA-03"), qaSel("Resource Efficiency", 30), "유효 KV 용량 (원본 환산 동시 수용량)", sc([["QA-02 품질 bound를 지키는 조건"], "에서 동시 수용 KV 총량을 원본 환산으로 측정"], "[측정: Σ_tier(용량×평균 압축률×KV 가용 비율) ÷ 물리 HBM 용량 — baseline = HBM 단일·비압축(1.0×)]"), C("H"), C("H"), C("3"), C("O", 1)],
       [C("QA-04"), qaSel("Modifiability", 31), "신규 디바이스·KV 구조 변화 수용성", sc(["신규 tier(HBM4/CMM-DC/HBF) 추가와 ", ["KV 구조 영향 모델 변화(GQA·MLA·linear attention)"], " 수용 실험"], "[측정: 신규/변경 모듈 수 · 코어 변경 LOC 비율 · IF 시그니처 변경 건수 · 수용 리드타임 — baseline = 현행 코드베이스]"), C("M"), C("H"), C("4"), C("O", 1)],
@@ -260,7 +260,7 @@ function headline(s, { y, main, sub }) {
     colW: [0.72, 1.55, 2.6, 3.75, 3.11, 0.9], fontSize: 9, headerFontSize: 9.5,
     header: ["우선순위", "QA", "Refinement", "측정 지표 · baseline", "★★★ 기준 (정량 bin)", "중요도/난이도"],
     rows: [
-      qa("1", "QA1", "Performance (추론 성능)", "SLO 유지 하 최대 처리율 (goodput@SLO) — TTFT p99 ≤ 450ms · TPOT p99 ≤ 200ms · attainment ≥ 90%", "baseline 대비 goodput@SLO 배율 — baseline = 동일 HW의 GPU HBM 단일 tier 구성 (타겟 메모리 순증분 분리)", "≥ 1.5×  (★★☆ 1.1–1.5× · ★☆☆ < 1.1×)", "H / H"),
+      qa("1", "QA1", "Performance (추론 성능)", "지연 가드 내 최대 처리율 — retrieval(SSD-PIM 가속) 포함 E2E 경로", "baseline 대비 throughput 배율 — 지연 가드 TPOT p99 ≤ baseline 1.5× · 곡선 병행 보고 — baseline = 동일 HW의 GPU HBM 단일 tier", "≥ 2×  (★★☆ 1.5–2× 단독 기법 수준 · ★☆☆ < 1.5× 또는 가드 위반)", "H / H"),
       qa("2", "QA2", "Accuracy (응답 품질)", "압축·재사용 품질 저하 bound — QA1·QA3 수치의 유효 전제(gate)", "ΔF1(%p, LongBench) · 보조 ΔPPL(Wikitext-2) — baseline = 비압축(FP16 KV)·비재사용", "ΔF1 ≤ 1%p · 요청별 bound 집행  (★★☆ ≤ 2%p·전역)", "H / M"),
       qa("3", "QA3", "Resource Efficiency (메모리 효율)", "유효 KV 용량 — 원본 환산 동시 수용량 (QA2 bound 준수 조건에서만 인정)", "Σ_tier(용량×압축률×가용 비율) ÷ 물리 HBM — baseline = HBM 단일·비압축(1.0×)", "≥ 3×  (★★☆ 1.5–3× · ★☆☆ < 1.5×)", "H / H"),
       qa("4", "QA4", "Modifiability (확장성·진화성)", "신규 메모리 디바이스·KV 구조 변화 (GQA·MLA·linear attention) 수용 용이성", "신규/변경 모듈 수 · 코어 변경 LOC 비율 · 공개 IF 시그니처 변경 건수 · 수용 리드타임", "어댑터 모듈 ≤ 1 · 코어 LOC 0 · 시그니처 0건 · ≤ upstream + 2주", "M / H"),
@@ -275,7 +275,7 @@ function headline(s, { y, main, sub }) {
       [{ text: "별점 공통 규칙: ", options: { bold: true, color: navy, fontSize: 8.5 } },
        { text: "3단계(★★★/★★☆/★☆☆) — bin 판정 근거 없는 별점 무효 · 근거 등급 A(자체 실측)/B(문헌)/C(구조 논증) 병기 · F(forecast)/M(measured) 표기 · 설계 상한과 도달 리스크 분리 표기", options: { fontSize: 8.5 } }],
       [{ text: "bin 앵커 문헌: ", options: { bold: true, color: navy, fontSize: 8.5 } },
-       { text: "MLPerf(SLO·99% 정확도) · DistServe(goodput 정의) · KIVI(2-bit 실측) · KVQuant(ΔPPL) · H2O·SnapKV(eviction) · LongBench(F1) · vLLM RELEASE(2주) · SGLang(대안 framework) + 사내 40% 기준(A) · 자체 실측 decode 대기 70–85%(A)", options: { fontSize: 8.5 } }],
+       { text: "KIVI(압축 2.35–3.47×) · CacheBlend(RAG 재사용 2.8–5×) · SGLang(prefix 재사용 ≤6.4×·대안 framework) · vLLM(paging 2–4×·2주 릴리스) · SmartANNS(near-storage 검색 ≤10.7×) · MLPerf(99% 정확도) · KVQuant(ΔPPL) · H2O·SnapKV(eviction) · LongBench(F1) + 사내 40% 기준(A) · decode 대기 70–85%(A)", options: { fontSize: 8.5 } }],
     ],
   });
 }
@@ -389,20 +389,20 @@ function headline(s, { y, main, sub }) {
 // 내용 출처: docs/00_qa_definitions.md (v0.7) — 정의·측정·baseline·bin·bin 근거 발췌.
 const QA_DETAIL = [
   {
-    page: 28, band: "navy", no: "QA1", name: "Performance", kor: "추론 성능 (goodput@SLO)",
+    page: 28, band: "navy", no: "QA1", name: "Performance", kor: "추론 성능 (throughput)",
     prio: "우선순위 1 (목표)", imp: "H", diff: "H",
     role: "과제 최종 판정 지표 — 미달 시 나머지 QA가 우수해도 무의미",
     def: [
-      [["정의: "], "표준 SLO(TTFT p99 ≤ 450ms · TPOT p99 ≤ 200ms — MLPerf Interactive/Server 절충)를 ", ["attainment ≥ 90%"], "로 유지하며 달성하는 최대 처리율"],
-      [["측정: "], "goodput(req/s @ SLO)의 baseline 대비 배율 · 보조: decode 대기 비중(자체 실측 70–85% (A))"],
-      [["Baseline: "], "동일 HW·동일 실행 구성의 ", ["GPU HBM 단일 tier"], " — 타겟 메모리 없이 달성 가능한 최선이므로 도입의 순증분이 분리 측정됨"],
-      [["실험 통제: "], "P/D 분리는 전제하지 않는 실험 변수 — baseline과 MCR 양쪽에 동일 적용해 효과 상쇄"],
+      [["정의: "], "지연 가드 안에서 달성하는 최대 처리율(throughput)의 ", ["baseline 대비 배율"], " — retrieval(유사도 검색, SSD-PIM 가속 — ADR-001)을 ", ["포함한 E2E 경로"], "로 측정"],
+      [["측정: "], "부하 스윕으로 throughput–latency 곡선을 얻고, ", ["지연 가드(TPOT p99 ≤ baseline의 1.5×)"], " 내 최대 처리율을 비교 — ", ["판정은 가드 내 배율, 보고는 곡선 병행"], " (체리피킹 방지)"],
+      [["Baseline: "], "동일 HW·동일 실행 구성의 ", ["GPU HBM 단일 tier"], " — 타겟 메모리 없이 달성 가능한 최선이므로 도입의 순증분이 분리 측정됨. P/D 분리는 실험 변수(양쪽 동일 적용)"],
+      [["왜 goodput@SLO가 아닌가: "], "절대 SLO(450ms/200ms)는 GPU 종류·규모 비확정인 연구 테스트베드에서 취약(미달 시 goodput=0으로 지표 퇴화) — 배율 지표가 문헌과 직접 비교됨. ", ["상용화 단계에 goodput@SLO로 승격"]],
     ],
-    bins: [["★★★", "baseline 대비 goodput@SLO ≥ 1.5×"], ["★★☆", "1.1× – 1.5×"], ["★☆☆", "< 1.1× (잡음 수준) 또는 SLO attainment < 90%"]],
+    bins: [["★★★", "baseline 대비 throughput ≥ 2× — 결합(압축×재사용×tiering×근접연산)의 부가가치 입증선"], ["★★☆", "1.5× – 2× — 단독 기법(압축만 등)으로도 도달 가능한 수준"], ["★☆☆", "< 1.5×, 또는 지연 가드 위반 구성으로만 달성"]],
     evid: [
-      ["1.5× = ", ["KIVI 처리율 2.35–3.47×(B)"], "에서 워크로드 비의존적으로 요구 가능한 보수 하한"],
-      ["1.1× 미만은 A/B 테스트 통상 잡음과 구분 곤란(C)"],
-      ["주의: DistServe 2–7.4×는 colocated→P/D 전환 효과라 bin 근거로 인용 불가 — goodput·attainment 90% ", ["정의의 출처로만"], " 인용"],
+      ["2× = 축별 단독 실측이 모두 2× 초과: 압축 ", ["KIVI 2.35–3.47×(B)"], " · RAG KV 재사용 ", ["CacheBlend 2.8–5×(B, EuroSys'25 Best Paper)"], " · prefix 재사용 ", ["SGLang ≤6.4×(B)"], " · paging ", ["vLLM 2–4×(B)"], " · 검색 ", ["SmartANNS QPS ≤10.7×(B)"], " → 결합 시스템에 단독 축 하단(2×) 요구는 보수적(C)"],
+      ["1.5×는 압축 단독(KIVI)의 보수 하한 — 결합 부가가치 입증선이 못 되므로 ★★☆로 강등(C)"],
+      ["지연 가드 1.5× = FlexGen형(지연 수십 초 offline 처리량 100×) 퇴화 구성 배제(C) — 컷라인 임의성은 곡선 병행 보고로 보완"],
     ],
   },
   {
