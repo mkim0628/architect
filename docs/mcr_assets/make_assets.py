@@ -231,7 +231,7 @@ def ag_loop():
     arrow(ax,2.85,3.8,3.75,3.8); arrow(ax,6.25,3.8,7.15,3.8)
     ax.add_patch(FancyArrowPatch((8.4,3.25),(1.6,3.25),connectionstyle="arc3,rad=-0.35",
         arrowstyle="-|>",mutation_scale=16,lw=2.2,color=INK,linestyle=(0,(4,2))))
-    ax.text(5,2.5,"× 10s–100s steps",ha="center",fontsize=10.5,
+    ax.text(5,2.5,"× 10–100 steps",ha="center",fontsize=10.5,
             color=INK,fontweight="bold")
     ax.text(5,1.28,"fan-out for one goal",ha="center",fontsize=9.5,color=GRAY,fontweight="bold")
     for i in range(3):
