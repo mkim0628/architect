@@ -23,5 +23,5 @@
 - `mcr_assets/samsung_portfolio_photos.png` = `lpddr5_pim_photo.png` +
   `cxl_module_photo.jpg` — 배경 1/2 ③ 하단 (자사: LPDDR-PIM + CXL).
 
-덱 반영: `docs/mcr_background_2p.build.js` 가 위 시각물을 참조하며
-`docs/mcr_background_2p.pptx` 로 빌드됨.
+덱 반영: `docs/ppt/mcr_background_2p.build.js` 가 위 시각물을 참조하며
+`docs/ppt/mcr_background_2p.pptx` 로 빌드됨.

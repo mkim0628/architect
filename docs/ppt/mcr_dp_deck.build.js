@@ -2,14 +2,14 @@
  * mcr_dp_deck.build.js — MCR DP1~DP8 상세 덱 (DP당 2페이지 = 16장).
  * architect-ppt 스킬의 pageDpProblem / pageDpCompare 빌더 사용.
  *
- *   NODE_PATH=<pptxgenjs 위치> node docs/mcr_dp_deck.build.js [out.pptx]
+ *   NODE_PATH=<pptxgenjs 위치> node docs/ppt/mcr_dp_deck.build.js [out.pptx]
  *
- * 내용 출처: docs/02·03·04·05_design_points_*.md (요약 발췌 — 별점은 QA 평가표 그대로).
- * 이미지: docs/mcr_assets/dp/dpN_problem.png (문제 정의 그림, 생성)
- *         docs/mcr_assets/dp/dpN_c{1,2}.png (diagrams/dpN_candidates.svg 패널 크롭)
+ * 내용 출처: docs/md/02·03·04·05_design_points_*.md (요약 발췌 — 별점은 QA 평가표 그대로).
+ * 이미지: docs/ppt/mcr_assets/dp/dpN_problem.png (문제 정의 그림, 생성)
+ *         docs/ppt/mcr_assets/dp/dpN_c{1,2}.png (diagrams/dpN_candidates.svg 패널 크롭)
  */
 const path = require("path");
-const A = require(path.join(__dirname, "../.claude/skills/architect-ppt/lib/architect_deck.js"));
+const A = require(path.join(__dirname, "../../.claude/skills/architect-ppt/lib/architect_deck.js"));
 
 const ASSET = (f) => path.join(__dirname, "mcr_assets/dp", f);
 const G = "1B7A4B", R = "B3402A"; // QA 우위/열위 강조색

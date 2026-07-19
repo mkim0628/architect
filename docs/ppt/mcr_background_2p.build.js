@@ -1,10 +1,10 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_background_2p.build.js
-// 배경 ①~⑥ 6단 논리 (docs/mcr_background_scope.md v4와 정합):
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/ppt/mcr_background_2p.build.js
+// 배경 ①~⑥ 6단 논리 (docs/md/mcr_background_scope.md v4와 정합):
 //   1p: ① AI Agent의 특징 (장기 기억 요구 → 컨텍스트 폭증) → ② 메모리 병목 심화 (KV↑, naive offload 성능 저하) → ③ 업계 현황 (메모리 제품군 + 자사 포트폴리오)
 //   2p: ④ 성능은 런타임이 실현 (결정 계층 + 동일 HW 실측 격차) → ⑤ 현 런타임은 연산기 중심 → ⑥ MCR 개발 필요
-// Images are generated locally by docs/mcr_assets/make_assets.py (web is blocked).
+// Images are generated locally by docs/ppt/mcr_assets/make_assets.py (web is blocked).
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 
 const pptx = A.newDeck();
 const OUT = process.argv[2] || path.join(__dirname, "mcr_background_2p.pptx");

@@ -86,9 +86,9 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 
 ### 후보구조 설계도
 
-![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../diagrams/dp1_candidates.svg)
+![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../../diagrams/dp1_candidates.svg)
 
-*draw.io 소스: [`dp1_candidates.drawio`](../diagrams/dp1_candidates.drawio)*
+*draw.io 소스: [`dp1_candidates.drawio`](../../diagrams/dp1_candidates.drawio)*
 
 ### 후보구조 1 — 외부 스택 활용형 (vLLM 생태계 기반)
 
@@ -213,9 +213,9 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 ### 후보구조 설계도
 
-![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../diagrams/dp2_candidates.svg)
+![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../../diagrams/dp2_candidates.svg)
 
-*draw.io 소스: [`dp2_candidates.drawio`](../diagrams/dp2_candidates.drawio)*
+*draw.io 소스: [`dp2_candidates.drawio`](../../diagrams/dp2_candidates.drawio)*
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 

@@ -24,7 +24,7 @@ def save(fig, name, w, h):
 
 def req_usecase():
     import cairosvg
-    src = open(os.path.join(HERE, "..", "..", "diagrams", "req_usecase_mcr.svg"),
+    src = open(os.path.join(HERE, "..", "..", "..", "diagrams", "req_usecase_mcr.svg"),
                encoding="utf-8").read()
     # cairosvg does not glyph-fall-back to Hangul fonts; force NanumGothic.
     src = re.sub(r'font-family="[^"]*"', 'font-family="NanumGothic"', src)

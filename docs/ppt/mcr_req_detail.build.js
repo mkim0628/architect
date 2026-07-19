@@ -1,10 +1,10 @@
-// Regenerate: NODE_PATH="$(npm root -g)" node docs/mcr_req_detail.build.js
+// Regenerate: NODE_PATH="$(npm root -g)" node docs/ppt/mcr_req_detail.build.js
 // 요구사항 분석 상세 2장 (참조 덱 GW9 p30·p32 방식을 MCR에 적용):
 //   A. 요구사항 수집 경위 → 목표(QA) 정의 — 누구와·언제·어떤 문헌으로 무엇을 목표했나
 //   B. 시나리오 기반 핵심 요소 → QA 도출 — 정량 효과(재사용·압축·검색 등)로 필요 기능·목표 도출
-// 내용 출처: docs/00_requirements_analysis.md · 00_qa_derivation.md · 00_qa_definitions.md
+// 내용 출처: docs/md/00_requirements_analysis.md · 00_qa_derivation.md · 00_qa_definitions.md
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 
 const pptx = A.newDeck();
 const OUT = process.argv[2] || path.join(__dirname, "mcr_req_detail.pptx");
