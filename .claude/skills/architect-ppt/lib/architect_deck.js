@@ -264,10 +264,18 @@ function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTE
       bulletList(s, { x: x + 0.05, y: iy, w: w - 0.1, h: slotH, items: textItems, fontSize: 11 });
       return;
     }
-    const textH = Math.max(0.45, slotH * textFrac);
+    // optional per-item subhead (소제목) — bold navy line above the body text
+    const subH = it.subtitle ? 0.26 : 0;
+    const textH = Math.max(0.45, slotH * textFrac) + subH;
     const imgY = iy + textH + 0.05;
     const imgH = slotH - textH - 0.05;
-    bulletList(s, { x: x + 0.05, y: iy, w: w - 0.1, h: textH, items: textItems, fontSize: 11 });
+    if (it.subtitle) {
+      s.addText(it.subtitle, {
+        x: x + 0.05, y: iy, w: w - 0.1, h: subH, margin: 0,
+        bold: true, color: COLORS.navy, fontFace: FONT.head, fontSize: 12, valign: "middle",
+      });
+    }
+    bulletList(s, { x: x + 0.05, y: iy + subH, w: w - 0.1, h: textH - subH, items: textItems, fontSize: 11 });
     if (it.image) {
       s.addImage({ path: it.image, x, y: imgY, w, h: imgH, sizing: { type: "contain", w, h: imgH } });
     } else {
@@ -278,7 +286,8 @@ function itemColumn(s, { x, w, header, headerColor = "green", items, top = CONTE
 
 /**
  * Multi-column content page (used by 과제 배경 / 과제 필요성 / 과제 범위).
- *   cols: [{ header, headerColor?, items: [{text, image?}] }]
+ *   cols: [{ header, headerColor?, items: [{text, image?, subtitle?}] }]
+ *   item.subtitle renders as a bold navy 소제목 line above the body text.
  * Column count is cols.length — 배경/범위 = 3, 필요성 = 2. Each column
  * conventionally holds 2 items, each with its own matching image.
  */

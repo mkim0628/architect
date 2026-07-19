@@ -33,17 +33,23 @@ A.pageColumns(pptx, {
 A.pageColumns(pptx, {
   title: "과제 배경 (2/2)", page: 2, band: "navy",
   cols: [
-    { header: "④ 성능은 런타임이 실현한다", items: [
-      { text: "HW는 능력만 제공 — 데이터 배치·이동·연산 위치의 '결정'이 성능을 만들며, 이종 tier·근접연산 등장으로 결정 공간 폭발 → 결정 계층(런타임)의 비중 급증", image: img("bg_decision.png") },
-      { text: "같은 HW에서 런타임만으로 처리량 2–4×(vLLM SOSP'23)·100×(FlexGen ICML'23) 격차 — HW 스펙은 상한일 뿐, 도달 성능은 런타임이 결정", image: img("bg_gap_evidence.png") },
+    { header: "④ 런타임 스택의 중요도", items: [
+      { subtitle: "AI 씬의 승부처 = 실행 계층(런타임)",
+        text: "배치·이동·스케줄링을 결정하는 실행 계층 — 업계 전체가 자체 런타임(TensorRT-LLM·ONNX Runtime·vLLM·SGLang)에 투자, CUDA 해자도 실리콘 아닌 SW 스택", image: img("bg_stack_runtime.png") },
+      { subtitle: "같은 HW, 런타임만으로 갈린 성능",
+        text: "런타임만으로 처리량 2–4×(vLLM SOSP'23)·100×(FlexGen ICML'23) 격차 — HW 스펙은 상한일 뿐, 도달 성능은 런타임이 결정", image: img("bg_gap_evidence.png") },
     ]},
     { header: "⑤ 그런데 현 런타임은 연산기 중심", items: [
-      { text: "GPU 중심 설계: '연산=GPU, KV=HBM' 단일 메모리 가정 — 메모리는 GPU 부속물, PIM/PNM 표현 자리 없고 HBM 초과 시 성능 급락", image: img("nec_missing.png") },
-      { text: "KV를 밖으로 내리는 계층(LMCache 등)도 CPU RAM·SSD 등 commodity 저장소의 수동 백엔드 — 디바이스 특성 인지 배치·근접 연산 없음", image: img("nec_kvlayer.png") },
+      { subtitle: "GPU 중심 설계 — 단일 메모리 가정",
+        text: "'연산=GPU, KV=HBM' 가정 — 메모리는 GPU 부속물, PIM/PNM 표현 자리 없고 HBM 초과 시 성능 급락", image: img("nec_missing.png") },
+      { subtitle: "KV 계층의 등장, 그러나 수동 백엔드",
+        text: "KV를 밖으로 내리는 계층(LMCache 등)도 CPU RAM·SSD 등 commodity 저장소의 수동 백엔드 — 디바이스 특성 인지 배치·근접 연산 없음", image: img("nec_kvlayer.png") },
     ]},
     { header: "⑥ 자사 제품군의 런타임 개발 필요", items: [
-      { text: "자사 포트폴리오를 1급 자원으로 — 데이터 배치·이동·압축·재사용과 연산 배치를 SLO 기준 조율하는 MCR(Memory-Centric Runtime)", image: img("nec_arch.png") },
-      { text: "자사 제품군의 레퍼런스 SW 스택이자, GPU HBM 단일 tier 대비 개선을 정량 입증하는 E2E 증명 수단", image: img("nec_e2e.png") },
+      { subtitle: "메모리를 1급 자원으로 — MCR",
+        text: "자사 포트폴리오를 1급 자원으로 — 데이터 배치·이동·압축·재사용과 연산 배치를 SLO 기준 조율하는 MCR(Memory-Centric Runtime)", image: img("nec_arch.png") },
+      { subtitle: "레퍼런스 스택 · E2E 정량 증명",
+        text: "자사 제품군의 레퍼런스 SW 스택이자, GPU HBM 단일 tier 대비 개선을 정량 입증하는 E2E 증명 수단", image: img("nec_e2e.png") },
     ]},
   ],
 });

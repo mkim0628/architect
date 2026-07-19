@@ -261,6 +261,35 @@ def ag_context():
              fontsize=6.8,style="italic",color="#7F7F7F",ha="left",va="top")
     save(fig,"ag_context.png",6.6,2.6)
 
+# 17b. AI serving stack — the runtime layer is where the industry invests
+# (real, representative members: vLLM · SGLang · TensorRT-LLM · ONNX Runtime)
+def bg_stack_runtime():
+    fig, ax = plt.subplots(); blank(ax); ax.set_ylim(0, 4.75)
+    ax.text(0.4, 4.5, "AI serving stack — performance is realized in the runtime",
+            fontsize=11.5, color=INK, fontweight="bold")
+    box(ax, 0.4, 3.35, 9.2, 0.72,
+        "Applications / Models — LLM apps · PyTorch · HF",
+        ICE, NAVYL, tc=NAVY, fs=9.5)
+    arrow(ax, 5, 3.30, 5, 3.02)
+    ax.add_patch(FancyBboxPatch((0.4, 1.45), 9.2, 1.5,
+        boxstyle="round,pad=0.01,rounding_size=0.06",
+        linewidth=2.8, edgecolor=YELLOW, facecolor=NAVY))
+    ax.text(5, 2.62, "AI Inference Runtime — every vendor builds one",
+            color="white", ha="center", fontsize=10, fontweight="bold")
+    chips = [("vLLM", "open source"), ("SGLang", "open source"),
+             ("TensorRT-LLM", "NVIDIA"), ("ONNX Runtime", "Microsoft")]
+    cw = 2.08
+    for i, (name, org) in enumerate(chips):
+        cx = 0.62 + i * (cw + 0.24)
+        box(ax, cx, 1.86, cw, 0.6, name, WHITE, ICE, tc=NAVY, fs=8)
+        ax.text(cx + cw / 2, 1.74, org, ha="center", va="center",
+                fontsize=7.5, color=ICE)
+    arrow(ax, 5, 1.40, 5, 1.12)
+    box(ax, 0.4, 0.28, 9.2, 0.72,
+        "Hardware — GPU · Memory tiers (HBM · DRAM · CXL · Flash)",
+        LGRAY, GRAY, tc=INK, fs=9.5)
+    save(fig, "bg_stack_runtime.png", 6.6, 3.0)
+
 # 18. Naive DRAM->SSD offloading — bandwidth cliff and throughput collapse
 def bg_offload():
     fig,(a1,a2) = plt.subplots(1,2)
