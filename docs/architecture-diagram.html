@@ -1,0 +1,332 @@
+<title>주문 시나리오 아키텍처 구조도</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --panel: #ffffff;
+    --ink: #1a1e28;
+    --ink-soft: #5a6473;
+    --line: #d9dee8;
+    --node-fill: #ffffff;
+    --node-stroke: #cbd2de;
+    --grid: #e7ebf2;
+    --sync: #3b6ef5;
+    --event: #e0922f;
+    --external: #12a594;
+    --tier-client: #7c5cff;
+    --tier-gate: #3b6ef5;
+    --tier-svc: #17a35b;
+    --tier-data: #8a94a6;
+    --tier-ext: #12a594;
+    --badge-ink: #ffffff;
+    --shadow: 0 1px 2px rgba(20,30,50,.06), 0 6px 20px rgba(20,30,50,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1117;
+      --panel: #161b24;
+      --ink: #e7ebf3;
+      --ink-soft: #97a1b2;
+      --line: #29313f;
+      --node-fill: #1b2230;
+      --node-stroke: #313b4d;
+      --grid: #1a212c;
+      --sync: #6a97ff;
+      --event: #f0ad4e;
+      --external: #2bd0bd;
+      --tier-client: #a48bff;
+      --tier-gate: #6a97ff;
+      --tier-svc: #35c47a;
+      --tier-data: #9aa5b8;
+      --tier-ext: #2bd0bd;
+      --badge-ink: #0e1117;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#f4f6fa; --panel:#fff; --ink:#1a1e28; --ink-soft:#5a6473; --line:#d9dee8;
+    --node-fill:#fff; --node-stroke:#cbd2de; --grid:#e7ebf2;
+    --sync:#3b6ef5; --event:#e0922f; --external:#12a594;
+    --tier-client:#7c5cff; --tier-gate:#3b6ef5; --tier-svc:#17a35b; --tier-data:#8a94a6; --tier-ext:#12a594;
+    --badge-ink:#fff; --shadow:0 1px 2px rgba(20,30,50,.06),0 6px 20px rgba(20,30,50,.06);
+  }
+  :root[data-theme="dark"] {
+    --bg:#0e1117; --panel:#161b24; --ink:#e7ebf3; --ink-soft:#97a1b2; --line:#29313f;
+    --node-fill:#1b2230; --node-stroke:#313b4d; --grid:#1a212c;
+    --sync:#6a97ff; --event:#f0ad4e; --external:#2bd0bd;
+    --tier-client:#a48bff; --tier-gate:#6a97ff; --tier-svc:#35c47a; --tier-data:#9aa5b8; --tier-ext:#2bd0bd;
+    --badge-ink:#0e1117; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  header { margin-bottom: 20px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--sync); font-weight: 700; margin: 0 0 6px;
+  }
+  h1 { font-size: clamp(22px, 3vw, 30px); margin: 0 0 8px; letter-spacing: -.01em; text-wrap: balance; }
+  .lede { margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 62ch; line-height: 1.55; }
+
+  .layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  .stage {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 8px; overflow-x: auto;
+  }
+  svg.diagram { width: 100%; height: auto; display: block; min-width: 720px; }
+
+  .side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 16px; }
+  .card h2 { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 12px; font-weight: 700; }
+
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--line); background: var(--node-fill); color: var(--ink);
+    padding: 8px 12px; border-radius: 9px; transition: .15s;
+  }
+  button:hover { border-color: var(--sync); color: var(--sync); }
+  button.primary { background: var(--sync); border-color: var(--sync); color: #fff; }
+  button.primary:hover { filter: brightness(1.06); color:#fff; }
+  button:focus-visible { outline: 2px solid var(--sync); outline-offset: 2px; }
+
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  ol.steps li {
+    display: flex; gap: 10px; align-items: flex-start; padding: 8px 8px; border-radius: 9px;
+    cursor: pointer; transition: background .15s; border: 1px solid transparent;
+  }
+  ol.steps li:hover { background: color-mix(in srgb, var(--sync) 8%, transparent); }
+  ol.steps li.active { background: color-mix(in srgb, var(--sync) 14%, transparent); border-color: color-mix(in srgb, var(--sync) 35%, transparent); }
+  .stepnum {
+    flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 12px; font-weight: 700; color: var(--badge-ink); background: var(--sync); margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stepnum.event { background: var(--event); }
+  .stepnum.external { background: var(--external); }
+  .steptxt { font-size: 13px; line-height: 1.4; }
+  .steptxt b { display: block; font-weight: 600; }
+  .steptxt span { color: var(--ink-soft); font-size: 12px; }
+
+  .legend { display: flex; flex-direction: column; gap: 9px; }
+  .legrow { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-soft); }
+  .swatch { width: 26px; height: 0; border-top: 3px solid var(--sync); border-radius: 2px; }
+  .swatch.event { border-top-style: dashed; border-top-color: var(--event); }
+  .swatch.external { border-top-color: var(--external); }
+  .dot { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+
+  /* svg element styling */
+  .node rect { fill: var(--node-fill); stroke: var(--node-stroke); stroke-width: 1.5; transition: opacity .2s, stroke .2s; }
+  .node .title { fill: var(--ink); font-weight: 650; font-size: 15px; }
+  .node .sub { fill: var(--ink-soft); font-size: 11.5px; }
+  .node .stripe { transition: opacity .2s; }
+  .edge path { fill: none; stroke-width: 2.2; transition: opacity .2s, stroke-width .2s; }
+  .edge.sync path { stroke: var(--sync); }
+  .edge.event path { stroke: var(--event); stroke-dasharray: 7 5; }
+  .edge.external path { stroke: var(--external); }
+  .edge .badge circle { transition: opacity .2s; }
+  .edge .badge text { fill: var(--badge-ink); font-size: 12px; font-weight: 700; }
+  .tierlabel { fill: var(--ink-soft); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .dim { opacity: .12 !important; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Architecture · Request Flow</p>
+    <h1>주문 시나리오 아키텍처 구조도</h1>
+    <p class="lede">이커머스 "상품 주문" 요청이 컴포넌트를 어떻게 통과하는지 보여주는 예시입니다.
+      화살표는 <b>요청 방향</b>(호출하는 쪽 → 호출받는 쪽)이고, 번호는 실행 순서예요.
+      오른쪽에서 단계를 누르면 해당 경로만 강조됩니다.</p>
+  </header>
+
+  <div class="layout">
+    <div class="stage">
+      <svg class="diagram" id="svg" viewBox="0 0 1280 860" role="img" aria-label="주문 시나리오 요청 흐름 구조도">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+        <g id="tiers"></g>
+        <g id="edges"></g>
+        <g id="nodes"></g>
+      </svg>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <div class="controls">
+          <button class="primary" id="play">▶ 순서대로 재생</button>
+          <button id="reset">전체 보기</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>요청 흐름 (Scenario)</h2>
+        <ol class="steps" id="steplist"></ol>
+      </div>
+
+      <div class="card">
+        <h2>범례</h2>
+        <div class="legend">
+          <div class="legrow"><span class="swatch"></span> 동기 요청 (REST/gRPC)</div>
+          <div class="legrow"><span class="swatch event"></span> 비동기 이벤트 (메시지큐)</div>
+          <div class="legrow"><span class="swatch external"></span> 외부 시스템 호출</div>
+          <div class="legrow" style="margin-top:4px"><span class="dot" style="background:var(--tier-client)"></span> 클라이언트</div>
+          <div class="legrow"><span class="dot" style="background:var(--tier-gate)"></span> 게이트웨이</div>
+          <div class="legrow"><span class="dot" style="background:var(--tier-svc)"></span> 서비스</div>
+          <div class="legrow"><span class="dot" style="background:var(--tier-data)"></span> 데이터 저장소</div>
+          <div class="legrow"><span class="dot" style="background:var(--tier-ext)"></span> 외부</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const W = 168, H = 62;
+
+const nodes = {
+  client:  { x:640,  y:70,  t:"사용자",        s:"웹 · 모바일",     tier:"client" },
+  gateway: { x:640,  y:200, t:"API Gateway",   s:"라우팅 · 인증",   tier:"gate" },
+  auth:    { x:150,  y:370, t:"Auth Service",  s:"토큰 검증",       tier:"svc" },
+  order:   { x:395,  y:370, t:"Order Service", s:"주문 오케스트레이션", tier:"svc" },
+  product: { x:640,  y:370, t:"Product Service", s:"재고 · 상품",   tier:"svc" },
+  payment: { x:885,  y:370, t:"Payment Service", s:"결제 처리",     tier:"svc" },
+  notif:   { x:1130, y:370, t:"Notification",  s:"알림 발송",       tier:"svc" },
+  redis:   { x:220,  y:570, t:"Redis",         s:"캐시 · 재고락",   tier:"data" },
+  orderdb: { x:430,  y:570, t:"Order DB",      s:"주문 저장",       tier:"data" },
+  kafka:   { x:790,  y:570, t:"Kafka",         s:"이벤트 버스",     tier:"data" },
+  pg:      { x:885,  y:750, t:"외부 PG",        s:"결제대행사",      tier:"ext" },
+  sms:     { x:1130, y:750, t:"SMS · Email",   s:"알림 채널",       tier:"ext" },
+};
+
+const edges = [
+  { n:1,  from:"client",  to:"gateway", type:"sync",     b:"주문 요청",   d:"HTTPS POST /orders" },
+  { n:2,  from:"gateway", to:"auth",    type:"sync",     b:"토큰 검증",   d:"JWT 유효성 확인" },
+  { n:3,  from:"gateway", to:"order",   type:"sync",     b:"주문 라우팅", d:"인증 통과 후 전달" },
+  { n:4,  from:"order",   to:"product", type:"sync",     b:"재고 확인",   d:"주문 가능 여부 조회", curve:"up" },
+  { n:5,  from:"order",   to:"redis",   type:"sync",     b:"캐시 · 락",   d:"재고 선점 락 획득" },
+  { n:6,  from:"order",   to:"payment", type:"sync",     b:"결제 요청",   d:"결제 승인 요청", curve:"up" },
+  { n:7,  from:"payment", to:"pg",      type:"external", b:"결제 승인",   d:"외부 PG 결제 요청" },
+  { n:8,  from:"order",   to:"orderdb", type:"sync",     b:"주문 저장",   d:"주문 레코드 커밋" },
+  { n:9,  from:"order",   to:"kafka",   type:"event",    b:"이벤트 발행", d:"OrderCreated 발행" },
+  { n:10, from:"kafka",   to:"notif",   type:"event",    b:"이벤트 구독", d:"주문완료 이벤트 수신" },
+  { n:11, from:"notif",   to:"sms",     type:"external", b:"알림 발송",   d:"SMS · 이메일 전송" },
+];
+
+const tiers = [
+  { y:70,  label:"클라이언트" },
+  { y:200, label:"엣지 / 게이트웨이" },
+  { y:370, label:"애플리케이션 서비스" },
+  { y:570, label:"데이터 · 메시징" },
+  { y:750, label:"외부 시스템" },
+];
+
+const el = (tag, attrs={}) => { const e = document.createElementNS(NS, tag); for(const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+const tierColor = t => getComputedStyle(document.documentElement).getPropertyValue('--tier-'+t);
+
+// border intersection point of a node rect toward (tx,ty)
+function border(n, tx, ty){
+  const dx = tx - n.x, dy = ty - n.y, hw = W/2+2, hh = H/2+2;
+  if(dx===0 && dy===0) return [n.x, n.y];
+  const sx = dx ? hw/Math.abs(dx) : Infinity, sy = dy ? hh/Math.abs(dy) : Infinity;
+  const s = Math.min(sx, sy);
+  return [n.x + dx*s, n.y + dy*s];
+}
+
+// tier bands + labels
+const gTiers = document.getElementById('tiers');
+tiers.forEach(t=>{
+  gTiers.appendChild(el('text', { x:24, y:t.y-38, class:'tierlabel' })).textContent = t.label;
+  const ln = el('line', { x1:20, y1:t.y-30, x2:1260, y2:t.y-30, stroke:'var(--grid)', 'stroke-width':1 });
+  gTiers.appendChild(ln);
+});
+
+// edges
+const gEdges = document.getElementById('edges');
+const edgeEls = {};
+edges.forEach(e=>{
+  const a = nodes[e.from], b = nodes[e.to];
+  let [x1,y1] = border(a, b.x, b.y);
+  let [x2,y2] = border(b, a.x, a.y);
+  let mx, my, dPath;
+  if(e.curve==="up"){
+    const cx=(x1+x2)/2, cy=Math.min(y1,y2)-95;
+    dPath = `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+    mx = .25*x1 + .5*cx + .25*x2; my = .25*y1 + .5*cy + .25*y2;
+    // recompute borders toward control for nicer exit
+  } else {
+    dPath = `M ${x1} ${y1} L ${x2} ${y2}`;
+    mx=(x1+x2)/2; my=(y1+y2)/2;
+  }
+  const g = el('g', { class:'edge '+e.type, 'data-step':e.n });
+  g.appendChild(el('path', { d:dPath, 'marker-end':'url(#arrow)' }));
+  const badge = el('g', { class:'badge' });
+  const col = e.type==='event' ? 'var(--event)' : e.type==='external' ? 'var(--external)' : 'var(--sync)';
+  badge.appendChild(el('circle', { cx:mx, cy:my, r:13, fill:col }));
+  const tx = el('text', { x:mx, y:my, 'text-anchor':'middle', 'dominant-baseline':'central' });
+  tx.textContent = e.n; badge.appendChild(tx);
+  g.appendChild(badge);
+  gEdges.appendChild(g);
+  edgeEls[e.n] = g;
+});
+
+// nodes
+const gNodes = document.getElementById('nodes');
+Object.values(nodes).forEach(n=>{
+  const g = el('g', { class:'node' });
+  g.appendChild(el('rect', { x:n.x-W/2, y:n.y-H/2, width:W, height:H, rx:11 }));
+  g.appendChild(el('rect', { x:n.x-W/2, y:n.y-H/2, width:5, height:H, rx:2.5, class:'stripe', fill:tierColor(n.tier) }));
+  const t = el('text', { x:n.x-W/2+18, y:n.y-4, class:'title' }); t.textContent = n.t;
+  const s = el('text', { x:n.x-W/2+18, y:n.y+16, class:'sub' }); s.textContent = n.s;
+  g.appendChild(t); g.appendChild(s);
+  gNodes.appendChild(g);
+});
+
+// step list
+const list = document.getElementById('steplist');
+edges.forEach(e=>{
+  const li = document.createElement('li');
+  li.dataset.step = e.n;
+  li.innerHTML = `<span class="stepnum ${e.type}">${e.n}</span>
+    <span class="steptxt"><b>${e.b}</b><span>${nodes[e.from].t} → ${nodes[e.to].t} · ${e.d}</span></span>`;
+  li.addEventListener('click', ()=> toggle(e.n));
+  list.appendChild(li);
+});
+
+let active = null, playTimer = null;
+function highlight(n){
+  edges.forEach(e=>{
+    const on = (n===null) || (e.n===n);
+    edgeEls[e.n].classList.toggle('dim', !on);
+  });
+  [...list.children].forEach(li=> li.classList.toggle('active', n!==null && +li.dataset.step===n));
+}
+function toggle(n){ stopPlay(); active = (active===n)? null : n; highlight(active); }
+function reset(){ stopPlay(); active=null; highlight(null); }
+function stopPlay(){ if(playTimer){ clearInterval(playTimer); playTimer=null; document.getElementById('play').textContent='▶ 순서대로 재생'; } }
+
+document.getElementById('reset').addEventListener('click', reset);
+document.getElementById('play').addEventListener('click', ()=>{
+  if(playTimer){ stopPlay(); highlight(null); return; }
+  document.getElementById('play').textContent='⏸ 정지';
+  let i = 0;
+  highlight(edges[i].n);
+  playTimer = setInterval(()=>{
+    i++;
+    if(i>=edges.length){ stopPlay(); highlight(null); return; }
+    highlight(edges[i].n);
+  }, 1000);
+});
+</script>
