@@ -98,8 +98,8 @@
 
   <ellipse class="uc" cx="675" cy="463" rx="112" ry="30"/>
   <text class="ucnum" x="675" y="450">UC-08</text>
-  <text class="uctext" x="675" y="464">메모리 압박 대응</text>
-  <text class="ucsub" x="675" y="479">(압축/강등/축출 선택)</text>
+  <text class="uctext" x="675" y="464">KV 공간 확보</text>
+  <text class="ucsub" x="675" y="479">(KV 풀 포화 시 압축/강등/축출 선택)</text>
 
   <!-- ===== associations (solid) ===== -->
   <line class="assoc" x1="150" y1="170" x2="288" y2="122"/>

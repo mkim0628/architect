@@ -47,7 +47,7 @@
         <mxCell id="uc06" value="UC-06&#10;KV tier 배치·승격·강등" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
           <mxGeometry x="563" y="303" width="224" height="54" as="geometry"/>
         </mxCell>
-        <mxCell id="uc08" value="UC-08&#10;메모리 압박 대응&#10;(압축/강등/축출 선택)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
+        <mxCell id="uc08" value="UC-08&#10;KV 공간 확보 — KV 풀 포화 시&#10;압축/강등/축출 선택" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5E6C8;strokeColor=#7A5C2E;fontSize=12;fontColor=#1F2A44;" vertex="1" parent="1">
           <mxGeometry x="563" y="433" width="224" height="60" as="geometry"/>
         </mxCell>
 

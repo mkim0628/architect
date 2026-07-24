@@ -1,37 +1,64 @@
-# MCR QA 정의 및 별점 평가 기준 (v1.0)
+# MCR QA 정의 및 별점 평가 기준 (v1.1)
 
 `02_design_points_dp1_dp2.md` §0의 잠정 QA 정의를 분리·승격한 문서.
 모든 DP/후보구조 평가는 본 문서의 정량 bin을 기준으로 별점을 매긴다.
 (잠정 — MCR 공식 QA 확정 시 본 문서를 개정하고 기존 평가표를 재평가한다.)
 
-## QA 요약표 (우선순위 순)
+## QA 요약표 (우선순위 순 — v1.1 전면 재번호: 번호 = 우선순위)
 
 | QA | Refinement | 시나리오 | 중요도 | 난이도 | 우선순위 |
 |---|---|---|---|---|---|
-| **Performance** (QA1. 추론 성능) | prefill·decode 2단 성능 — baseline 대비 **TTFT 단축 배율 · throughput 배율** (목표 1 → TTFT, 목표 2·3 → throughput) | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 두 지표를 잰다: ① **TTFT 단축 배율** — prefill 축, KV 재사용(목표 1)을 반영 (평균 기준 판정 · p99 분포 병행) ② **throughput 배율** — decode 축, 압축·tier 확장의 batch 확대(목표 2)와 KV 인지 스케줄링(목표 3)을 반영 (iso-latency: TPOT p99 ≤ baseline 운영점 비교 · 곡선 병행). baseline = GPU HBM 단일 tier 구성(순증분 분리 측정) + **축별 ablation**(재사용 off / 압축 off / KV-blind 스케줄링)으로 목표별 순기여 분리 보고. [측정: TTFT·throughput **모두 ≥ 2×** → ★★★] | H | H | 1 |
-| **Accuracy** (QA2. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | M | 2 |
-| **Resource Efficiency** (QA3. 메모리 효율) | 유효 KV 용량 (원본 환산 동시 수용량) | QA2 품질 bound를 지키는 조건에서 Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을 산출하고 물리 HBM 용량 대비 배율을 구한다. baseline = HBM 단일 tier·비압축(정의상 1.0× — HBM당 수용 컨텍스트가 비용 결정). [측정: 유효 KV 용량 ≥ 3× → ★★★] | H | H | 3 |
-| **Modifiability** (QA4. 확장성·진화성) | 신규 메모리 디바이스·KV 구조 변화 수용 용이성 | (a) 신규 tier(HBM4/CMM-DC/HBF) 추가 시 신규/변경 모듈 수, 코어 변경 LOC 비율(%), 공개 인터페이스 시그니처 변경 건수를 세고 (b) KV 구조 영향 모델 변화(GQA/MQA·MLA·sliding-window·linear attention)의 수용 리드타임을 upstream 공개 시점 기준으로 잰다. baseline = 현행 코드베이스. [측정: 신규 어댑터 모듈 ≤ 1 · 코어 변경 LOC 0 · 시그니처 변경 0건 · 수용 ≤ upstream + 2주 → ★★★] | M | H | 4 |
-| **Adaptability** (QA6. framework 적응성) | 서빙 framework 교체(vLLM → SGLang 등) 수용 비용 | upstream framework를 대안으로 교체하는 실험(설계 단계는 결합부 정적 분석)에서 Memory Engine·정책 계층이 보존되는지, framework 결합 코드가 어댑터 계층에 격리되는지를 잰다. baseline = 현 framework(vLLM) 결합 구조 — 교체 비용이 곧 종속 위험의 크기. [측정: framework 결합 코드가 어댑터 계층에 격리(코어 변경 0) · 전환 ≤ 3인월 → ★★★] | M | H | 5 |
-| **Maintainability** (QA5. 유지보수성 — 개발·운영 비용) | 초기 구축 + 지속 유지보수 비용 | 대표 워크로드 E2E 벤치 완주까지의 초기 구축 인월(person-month)과, upstream 추종(rebase)·회귀 검증을 포함한 연간 유지보수 FTE를 산정한다. baseline = DP1 후보별 비용 모델(02 실측 표현). [측정: 초기 ≤ 6 인월 · 유지 ≤ 0.5 FTE → ★★★] | M | M | 6 |
+| **Performance — Latency** (QA1. TTFT, prefill 성능) | baseline 대비 **TTFT 단축 배율** — 목표 1(KV 재사용)의 판정 지표 | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)·복원 vs 재계산 판단의 효과 축. **평균 기준 판정 · p99 분포 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = GPU HBM 단일 tier 구성(순증분 분리 측정), ablation: 재사용 off 대비 순기여. [측정: TTFT 단축 배율 **≥ 2×** → ★★★] | H | H | 1 |
+| **Performance — Throughput** (QA2. throughput, decode 성능) | baseline 대비 **throughput 배율** — 목표 2(압축·tier 확장)·목표 3(KV 인지 스케줄링)의 판정 지표 | 동일 조건에서 생성 처리량(tokens/s·req/s)을 **iso-latency**(TPOT p99 ≤ baseline 운영점)로 잰다 — 압축·tier 확장의 batch 확대(목표 2)와 KV 인지 스케줄링의 이득 전환(목표 3)의 효과 축. throughput–latency 곡선 병행 보고. baseline = QA1과 동일, ablation: 압축 off / KV-blind 스케줄링 대비 순기여. [측정: throughput 배율 **≥ 2×** → ★★★] | H | H | 2 |
+| **Accuracy** (QA3. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | H (v1.1 M→H) | 3 |
+| **Resource Efficiency** (QA4. 메모리 효율) | 유효 KV 용량 (원본 환산 동시 수용량) | QA3 품질 bound를 지키는 조건에서 Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을 산출하고 물리 HBM 용량 대비 배율을 구한다. baseline = HBM 단일 tier·비압축(정의상 1.0× — HBM당 수용 컨텍스트가 비용 결정). [측정: 유효 KV 용량 ≥ 3× → ★★★] | H | H | 4 |
+| **Modifiability** (QA5. 확장성·진화성) | KV 구조 변화·신규 tier 수용 용이성 — framework 결합 격리를 코어/모듈 지표로 포괄(v1.1 Adaptability 흡수) | (a) 신규 tier 추가(1단계 commodity 조합 변경 + 로드맵 디바이스[HBM4/CMM-DC/HBF] 파라미터 대입 — 2단계 수용 사전 검증) 시 신규/변경 모듈 수, 코어 변경 LOC 비율(%), 공개 인터페이스 시그니처 변경 건수를 세고 (b) KV 구조 영향 모델 변화(GQA/MQA·MLA·sliding-window·linear attention)의 수용 리드타임을 upstream 공개 시점 기준으로 잰다. baseline = 현행 코드베이스. [측정: 신규 어댑터 모듈 ≤ 1 · 코어 변경 LOC 0 · 시그니처 변경 0건 · 수용 ≤ upstream + 2주 → ★★★] | M | H | 5 |
+| **Maintainability** (QA6. 유지보수성 — 개발·운영 비용) | 초기 구축 + 지속 유지보수 비용 | 대표 워크로드 E2E 벤치 완주까지의 초기 구축 인월(person-month)과, upstream 추종(rebase)·회귀 검증을 포함한 연간 유지보수 FTE를 산정한다. baseline = DP1 후보별 비용 모델(02 실측 표현). [측정: 초기 ≤ 6 인월 · 유지 ≤ 0.5 FTE → ★★★] | M | M | 6 |
 
 **중요도·난이도·우선순위 규칙**
 
 - **중요도** (H/M/L): 해당 QA 미달이 MCR의 존재 가치·평가 결론에 주는 타격 크기.
 - **난이도** (H/M/L): 상위 bin(★★★) 도달에 필요한 설계·구현·검증의 어려움.
 - **우선순위 산정**: ① **중요도** 우선 ② 동률이면 성능 사슬 내 **역할** —
-  최종 목표 > 그 유효성의 전제(gate) > 수단. QA1(처리율, 목표) >
-  QA2(품질 bound — bound 위반 시 성능·용량 수치 무효인 gate) > QA3(유효 KV
-  용량, 수단) ③ 그 외 동률은 **난이도** (QA4·QA6 M/H > QA5 M/M) ④ 남는
-  동률은 과제 본질 축 우선 — QA4(타겟 메모리·모델 수용)가 QA6(framework
-  교체 헤지)에 우선(C).
-- **QA 번호 ↔ 우선순위**: v0.7에서 QA2·QA3 번호를 우선순위에 맞춰
-  교환하여(전 문서 일괄 치환) QA1–QA4는 **번호 = 우선순위**다. 예외:
-  QA5(Maintainability, 우선순위 6)·QA6(Adaptability, 우선순위 5) — QA6이
-  후발 신설이라 번호가 우선순위와 어긋나며, 참조 안정성을 위해 유지한다
-  (교환이 필요하면 QA2·QA3과 동일하게 전 문서 일괄 치환으로 수행).
+  최종 목표 > 그 유효성의 전제(gate) > 수단. H/H 4건이 이 규칙으로 갈린다:
+  QA1·QA2(목표 — 동률 순번은 목표 번호 순, 판정 영향 없음) > QA3(품질
+  bound — 위반 시 성능·용량 수치 무효인 gate) > QA4(유효 KV 용량, 수단)
+  ③ 그 외 동률은 **난이도** (QA5 M/H > QA6 M/M). **역할이 난이도에 앞서는
+  이유**: 난이도는 "달성이 어려운가", 우선순위는 "아키텍처가 무엇을 먼저
+  보장해야 하는가"의 축 — gate가 무너지면 수단 지표의 수치 자체가 무효가
+  되므로 검증 의존성 순서가 난이도에 앞선다(C).
+- **QA1·QA2의 쌍 결합**: 구 QA1(단일 Performance)의 "TTFT·throughput 모두
+  2×" AND 조건은 두 QA의 개별 별점으로 계승된다 — 종합 판정에서 **두 QA
+  모두 ★★★이어야 구 ★★★와 동치**. 한쪽만 최적화한 설계(TTFT만 좋고
+  throughput 희생, 또는 반대)는 다른 쪽 QA의 별점 하락으로 드러난다.
+- **QA 번호 ↔ 우선순위**: v1.1 전면 재번호로 **전 QA가 번호 = 우선순위**다
+  (구번호 매핑은 개정 이력 v1.1 참조 — 기존 DP 평가표는 구번호 기준이므로
+  매핑 표로 읽고, 차기 DP 문서 개정에서 일괄 치환한다).
 
 **개정 이력**
+- v1.1: **QA 체계 검수 반영 — 분할·재번호·재판정.**
+  ① **Performance를 2개 QA로 분할**: QA1 TTFT(prefill, 목표 1) ·
+  QA2 throughput(decode, 목표 2·3). 단일 QA 내 2지표 AND는 축별 판정·DP
+  별점 기여를 흐린다는 검수 의견 반영 — bin(각 ≥2×)·측정 조건은 분할 전과
+  동일, AND 조건은 "두 QA 모두 ★★★" 요건으로 계승
+  ② **Accuracy 난이도 M→H 재판정**: 목표 재정의로 비접두 재사용(선택
+  재계산)·요청별 차등 압축·축출(스케줄링)이 모두 품질에 영향을 주는 **3중
+  노출** 구조가 되어 요청별 bound 집행이 세 메커니즘의 통합 품질 추적을
+  요구하고, C-03(training-free)으로 재학습 기반 회복 수단이 배제됨 —
+  문헌 재현(M) 수준을 넘는 설계 부담(H). 이로써 H그룹 4건이 모두 H/H
+  동률이 되어 우선순위는 역할 규칙만으로 결정
+  ③ **Adaptability(구 QA6) 미선정 전환**: 중요도 M→L 재판정(1단계는 단일
+  framework 위 실증이 목적 — 교체 리스크 노출 시점은 2단계/상용화) +
+  측정축이 Modifiability의 코어/모듈 경계 지표와 중복(코어 변경 LOC·
+  시그니처 건수가 framework 결합 격리를 대리 측정) + 어댑터 경계는 DP1
+  결정 변수로 흡수. 요구사항 분석 v1.1 Utility Tree QA-10(미선정) 참조
+  ④ **전면 재번호 (번호 = 우선순위)** — 구→신 매핑:
+  구 QA1(Performance) → **신 QA1(TTFT) + 신 QA2(throughput)** /
+  구 QA2(Accuracy) → **신 QA3** / 구 QA3(Resource Efficiency) → **신 QA4** /
+  구 QA4(Modifiability) → **신 QA5** / 구 QA5(Maintainability) → **신 QA6** /
+  구 QA6(Adaptability) → **미선정**(신 QA5가 대리 측정).
+  **주의: 기존 DP1–DP8 평가표는 구번호 기준** — 위 매핑으로 읽고 차기 DP
+  문서 개정에서 일괄 치환
 - v1.0: **과제 목표 재정의(배경 v5 — MCR 1단계) 반영.** ① QA1 시나리오에서
   **retrieval(SSD-PIM 근접 가속, ADR-001) 축 제거** — 근접연산 오프로드가
   2단계(MCR 완성)로 이관됨에 따라 TTFT 축 근거를 KV 재사용 문헌(CacheBlend·
@@ -147,110 +174,139 @@ ablation**(v1.0) — 목표 3축의 순기여를 분리 보고: (a) 재사용 of
 off (c) KV-blind 스케줄링(locality 무시 라우팅 + naive eviction)의 세 구성
 대비 증분을 각각 측정 — 합산 배율만으로는 어느 목표가 달성됐는지 판정할 수
 없기 때문(C). 대표 워크로드 = long-context RAG · multiturn · agent memory
-(과제 범위 3.2-3). 절대 SLO(MLPerf TTFT 450 ms 등)는 QA1의 측정 조건이
-아니라 **참고 앵커**다 — 상용화 단계의 goodput@SLO 승격(아래 QA1 주) 및
+(과제 범위 3.2-3). 절대 SLO(MLPerf TTFT 450 ms 등)는 QA1·QA2의 측정
+조건이 아니라 **참고 앵커**다 — 상용화 단계의 goodput@SLO 승격(QA2 주) 및
 DP7의 TTFT 예산 논의에서 참조한다.
 
 ---
 
-## QA1. 추론 성능 (baseline 대비 TTFT · throughput)
+## QA1. TTFT — prefill 성능 (baseline 대비 단축 배율)
 
-- **중요도: H** — MCR의 존재 목적이 "추론을 더 빠르게(prefill) · 더 많이
-  (decode) 처리하는 것"이며, 과제의 최종 판정 지표. 이 QA 미달이면
-  나머지 QA가 모두 우수해도 무의미(C).
-- **난이도: H** — TTFT 2×는 KV 재사용 hit rate에, throughput 2×는 tier
-  확장·압축의 batch 확대와 KV 인지 스케줄링의 이득 전환에 각각 의존하며,
-  두 축을 **동시에** 달성해야 한다. decode wait 70–85%(A) 병목을 실제로
-  해소해야 함. 재사용 이득은 cache-hit·워크로드 의존(B)이 커서 대표
-  워크로드 전반에서 bin을 지키기 어려움.
-- **우선순위: 1** — 최종 목표 지표(과제 판정 기준)이므로 최우선
-  (규칙은 문서 상단 참조).
+(v1.1 — 구 QA1 "추론 성능"의 TTFT 축을 독립 QA로 분리. **목표 1(KV
+재사용성 제고 → 지연시간 개선)의 판정 지표.**)
+
+- **중요도: H** — "추론을 더 빠르게 시작한다"는 목표 1의 최종 판정 지표.
+  장문 컨텍스트의 매 요청 전체 re-prefill(R-03·04)이 지연의 지배 요인이며,
+  TTFT는 사용자가 체감하는 첫 지표다. 미달이면 목표 1 실패(C).
+- **난이도: H** — 2×는 KV 재사용 hit rate에 의존하고, 재사용 이득은
+  cache-hit·워크로드 의존(B)이 커서 대표 워크로드 3종 전반에서 bin을
+  지키기 어렵다. 비접두 재사용은 품질(선택 재계산율)과의 트레이드오프,
+  하위 tier 복원은 "복원 vs 재계산" 비용 판단 구조를 요구.
+- **우선순위: 1** — 최종 목표 지표. QA2(throughput)와 목표 동률이며 순번은
+  목표 번호 순(판정 영향 없음, 규칙은 문서 상단 참조).
 - **평가 시나리오**: 동일 HW·동일 실행 구성에서 GPU HBM 단일 tier
-  baseline과 MCR을 대표 워크로드(long-context RAG · multiturn · agent memory)로
-  E2E 구동한다. (retrieval 자체는 외부 컴포넌트로 양쪽 동일 적용 — 그
-  가속은 2단계 이관, v1.0.) 추론의 두 단계를 각각 재는 2지표로 판정한다:
-  **① TTFT 단축 배율 (prefill 축)** · **② throughput 배율 (decode 축)**.
-  목표 3축의 순기여는 표준 측정 조건 ③의 ablation으로 분리 보고한다.
-  [측정: TTFT · throughput **모두 baseline 대비 ≥ 2×** → ★★★]
+  baseline과 MCR을 대표 워크로드(long-context RAG · multiturn · agent
+  memory)로 E2E 구동하고 첫 토큰까지의 시간을 잰다. (retrieval 자체는 외부
+  컴포넌트로 양쪽 동일 적용 — 그 가속은 2단계 이관, v1.0.)
+  [측정: TTFT 단축 배율 **≥ 2×** → ★★★]
 
-- **정의 — 왜 2지표인가**: 추론은 **prefill(첫 토큰까지)** 과
-  **decode(토큰 생성 지속)** 의 두 단계로 나뉘고, 과제 목표 3축의 최적화가
-  두 단계에 대응한다. **TTFT**(Time To First Token)는 prefill 성능 —
-  **KV 재사용**(재계산 회피, 목표 1)이 직접 줄이는 지표다.
-  **throughput**(생성 tokens/s 또는 req/s)은 decode 성능 — **압축·tier
-  확장**(목표 2)이 batch를 키우고 **KV 인지 스케줄링**(목표 3)이 그 이득을
-  시스템 처리량으로 전환해 끌어올리는 지표다. 하나의 합성 지표로 뭉치면
-  어느 단계의 개선인지 흐려지므로 **두 축을 분리 측정**한다.
+- **정의**: baseline 대비 TTFT(Time To First Token) 단축 배율(= baseline
+  TTFT ÷ MCR TTFT) — prefill 성능. **KV 재사용**(prefix·비접두 재계산
+  회피)과 **복원 vs 재계산 판단**의 효과가 나타나는 축.
 - **측정**:
-  - **① TTFT** — baseline 대비 단축 배율(= baseline TTFT ÷ MCR TTFT).
-    **워크로드 평균 기준 판정, p99 분포 병행 보고**: 재사용 hit/miss
+  - **워크로드 평균 기준 판정, p99 분포 병행 보고**: 재사용 hit/miss
     이질성 때문에 꼬리(p99)는 cache-miss cold 요청이 지배하므로, 평균이
-    재사용·retrieval의 실효 이득을, p99가 cold-path 개선을 각각 드러낸다.
-  - **② throughput** — 생성 처리량의 baseline 대비 배율, **iso-latency
-    비교**: TPOT p99가 baseline과 같거나 좋은 운영점에서 배율을 판정하고
-    (vLLM SOSP'23 "at the same level of latency" 방법론(B)),
-    throughput–latency 곡선을 병행 보고한다(지연을 팔아 처리량을 산
-    구성을 배제 + 배율이 체리피킹이 아님을 곡선으로 입증).
+    재사용의 실효 이득을, p99가 cold-path 개선을 각각 드러낸다.
   - **Baseline 정의 (필수)**: 동일 HW·동일 실행 구성에서 **GPU HBM 단일
-    tier만 사용하는 구성**. 선정 이유: KV 최적 운용 없이 현행 표준 서빙
-    스택이 달성 가능한 최선이므로, **재사용 + 압축 + tier 배치 + KV 인지
-    스케줄링 조율의 순증분**이 분리 측정된다. P/D 분리 여부는 전제하지
-    않는다 — 실험 변수로 두되 baseline과 MCR 양쪽에 동일하게 적용해 그
-    효과를 상쇄시킨다. 보조 지표: decode wait 비중 (자체 실측 70–85%(A)가
-    개선 대상), cache hit rate(재사용 축의 중간 지표).
+    tier만 사용하는 구성** — KV 최적 운용 없이 현행 표준 서빙 스택이 달성
+    가능한 최선이므로 순증분이 분리 측정된다. P/D 분리 여부는 전제하지
+    않는다(실험 변수 — 양쪽 동일 적용). QA2와 동일 baseline 공유.
+  - **ablation**: 재사용 off 구성 대비 증분으로 목표 1의 순기여를 분리
+    (표준 측정 조건 ③). 보조 지표: cache hit rate(재사용 축의 중간 지표).
 
-> **주 — 왜 goodput@SLO가 아닌가 (v0.8~0.9)**: 절대 SLO(MLPerf TTFT 450 ms ·
-> TPOT 200 ms)는 벤치마크 시나리오에 고정된 제약이라, GPU 종류·규모가
-> 비확정인 연구 테스트베드에서는 구성이 약하면 어떤 처리율에서도 미달
-> (goodput = 0)로 지표가 퇴화한다. 실서빙 SLA가 없는 연구 과제 성격상
-> baseline 대비 **배율** 지표가 문헌(vLLM·KIVI·CacheBlend)과의 비교성도
-> 높다. throughput은 iso-latency로 판정해 "지연을 팔아 처리량을 산" 퇴화
-> 구성을 배제한다(vLLM 방법론(B) — v0.8의 임의 지연 가드 1.5×를 대체).
-> 상용화 단계(실서빙 SLO 계약 확정 시)에는 goodput@SLO(DistServe (B))로
-> 승격한다.
-
-| 별점 | 기준 (baseline 대비, TTFT 단축 배율 · throughput 배율 — **둘 다** 충족) |
+| 별점 | 기준 (baseline 대비 TTFT 단축 배율) |
 |---|---|
-| ★★★ | **TTFT ≥ 2× 그리고 throughput ≥ 2×** |
-| ★★☆ | 두 지표 모두 ≥ 1.5×, 단 한쪽이라도 2× 미달 |
-| ★☆☆ | 어느 한 지표라도 < 1.5× |
+| ★★★ | **≥ 2×** |
+| ★★☆ | 1.5× – 2× |
+| ★☆☆ | < 1.5× |
 
-**bin 근거 (각 축 2×)** — 두 지표를 각 단계의 문헌이 독립적으로 뒷받침한다:
+**bin 근거 (≥ 2×)**:
+[CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444)가
+RAG KV 재사용+선택 재계산(비접두 재사용)으로 **TTFT를 2.2–3.3× 단축**(B,
+품질 저하 F1/Rouge-L 0.01–0.03)했고, [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)의
+prefix 재사용도 prefill 재계산을 없애 첫 토큰 지연을 줄인다(B).
+prefix·비접두 재사용을 결합하고 복원 vs 재계산을 비용 기준으로 판단하는
+MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구한다(C). 1.5×는
+단일 기법 부분 적용 수준의 도달선으로 ★★☆(C).
+(v1.0: retrieval 가속(SmartANNS·ADR-001) 축은 2단계 이관으로 근거에서
+제외 — CacheBlend 하단만으로 2×가 성립하므로 bin 수치는 불변.)
 
-- **① TTFT ≥ 2× (prefill 축 — KV 재사용, 목표 1)**:
-  [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444)가
-  RAG KV 재사용+선택 재계산(비접두 재사용)으로 **TTFT를 2.2–3.3× 단축**(B,
-  품질 저하 F1/Rouge-L 0.01–0.03)했고, [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)의
-  prefix 재사용도 prefill 재계산을 없애 첫 토큰 지연을 줄인다(B).
-  prefix·비접두 재사용을 결합하고 복원 vs 재계산을 비용 기준으로 판단하는
-  MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구한다(C).
-  (v1.0: retrieval 가속(SmartANNS·ADR-001) 축은 2단계 이관으로 근거에서
-  제외 — CacheBlend 하단만으로 2×가 성립하므로 bin 수치는 불변.)
-- **② throughput ≥ 2× (decode 축 — 압축·tier 확장[목표 2] + KV 인지
-  스케줄링[목표 3])**:
-  [KIVI](https://arxiv.org/html/2402.02750v2) 2-bit 양자화가 batch 4×로
-  **처리율 2.35–3.47×**(B), [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)의
-  메모리 관리만으로 동일 GPU **처리량 2–4×**(B). tier 확장이 KV 가용
-  용량을 키워 batch를 더 확대하고, KV 인지 스케줄링(locality 라우팅·압박 시
-  압축/강등/축출 선택)이 그 이득을 시스템 처리량으로 전환하므로,
-  압축·paging 단독 하단인 **2×**를 결합 시스템의 하한으로 요구한다(C).
-- 두 지표를 **AND로 묶는** 이유: TTFT만 좋고 throughput이 나쁘면(또는 그
-  반대) 한 단계만 최적화한 것 — MCR의 가치는 prefill·decode 양쪽 개선의
-  결합이므로 둘 다 2×를 요구한다(C). 각 축의 이득은 cache-hit·워크로드
-  의존(B)이라 대표 워크로드 3종 전반에서 충족을 요구한다. *주의:
-  DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구성을
-  양쪽에 동일하게 두는 본 QA의 bin 근거가 아니다.*
+## QA2. throughput — decode 성능 (baseline 대비 배율)
 
-## QA2. 응답 품질 (품질 저하 bound)
+(v1.1 — 구 QA1 "추론 성능"의 throughput 축을 독립 QA로 분리. **목표
+2(정확도 유지 압축 → 메모리 병목 해소)·목표 3(KV 인지 스케줄링)의 판정
+지표.** QA1과 쌍 — 종합 판정에서 두 QA 모두 ★★★이어야 구 QA1 ★★★와 동치.)
 
-- **중요도: H** — QA1·QA3의 전제 조건: 품질 bound를 위반하면 goodput·유효 KV
-  용량 수치 자체가 무효(QA3는 "QA2 품질 bound를 지키는 조건에서만 인정").
-  서비스 품질 저하는 사용자에게 직접 노출되는 리스크(C).
-- **난이도: M** — near-lossless 압축 자체는 문헌으로 입증된 기법의 재현
-  (KVQuant 3-bit ΔPPL < 0.1(B), KIVI 2-bit ≤ 2%p(B)). 단 **요청별** bound
-  집행(★★★ 조건)은 압축 대상 선택·차등 집행 설계가 필요해 추가 부담.
-- **우선순위: 2** — 중요도 H 그룹 내 **전제(gate)** — 성능·용량 수치의
-  유효 조건이므로 수단 지표(QA3)에 앞선다 (v0.5에서 상향).
+- **중요도: H** — "더 많이 생성한다"는 목표 2·3의 최종 판정 지표. decode는
+  매 토큰 누적 KV 전체를 읽는 memory-bandwidth-bound 연산으로 decode 대기가
+  E2E latency의 70–85%(A) — 이 병목의 해소 여부가 여기서 판정된다(C).
+- **난이도: H** — 2×는 압축·tier 확장의 batch 확대(목표 2)와 KV 인지
+  스케줄링의 이득 전환(목표 3)에 의존하며, **iso-latency 조건**(지연을 팔지
+  않고) 아래에서 달성해야 한다. 스케줄링이 KV-blind면 재사용·압축의 이득이
+  시스템 처리량으로 전환되지 않으므로 세 메커니즘의 조율이 필요.
+- **우선순위: 2** — 최종 목표 지표. QA1과 목표 동률, 순번은 목표 번호 순.
+- **평가 시나리오**: QA1과 동일 구성에서 생성 처리량(tokens/s 또는 req/s)의
+  baseline 대비 배율을 잰다.
+  [측정: throughput 배율 **≥ 2×** (iso-latency 판정) → ★★★]
+
+- **정의**: baseline 대비 생성 처리량 배율 — decode 성능. **압축·tier
+  확장**(목표 2)이 KV 가용 용량을 키워 batch를 확대하고, **KV 인지
+  스케줄링**(목표 3 — locality 라우팅·KV 공간 확보[압축/강등/축출 선택])이
+  그 이득을 시스템 처리량으로 전환하는 축.
+- **측정**:
+  - **iso-latency 비교**: TPOT p99가 baseline과 같거나 좋은 운영점에서
+    배율을 판정하고(vLLM SOSP'23 "at the same level of latency"
+    방법론(B)), throughput–latency 곡선을 병행 보고한다(지연을 팔아
+    처리량을 산 구성을 배제 + 배율이 체리피킹이 아님을 곡선으로 입증).
+  - **Baseline**: QA1과 동일(GPU HBM 단일 tier, P/D 실험 변수 동일 적용).
+  - **ablation**: 압축 off / KV-blind 스케줄링 구성 대비 증분으로 목표
+    2·3의 순기여를 각각 분리(표준 측정 조건 ③). 보조 지표: decode wait
+    비중(자체 실측 70–85%(A)가 개선 대상), batch 크기 분포.
+
+> **주 — 왜 goodput@SLO가 아닌가 (v0.8~0.9, QA1·QA2 공통)**: 절대
+> SLO(MLPerf TTFT 450 ms · TPOT 200 ms)는 벤치마크 시나리오에 고정된
+> 제약이라, GPU 종류·규모가 비확정인 연구 테스트베드에서는 구성이 약하면
+> 어떤 처리율에서도 미달(goodput = 0)로 지표가 퇴화한다. 실서빙 SLA가 없는
+> 연구 과제 성격상 baseline 대비 **배율** 지표가 문헌(vLLM·KIVI·CacheBlend)
+> 과의 비교성도 높다. 상용화 단계(실서빙 SLO 계약 확정 시)에는
+> goodput@SLO(DistServe (B))로 승격한다.
+
+| 별점 | 기준 (baseline 대비 throughput 배율, iso-latency 판정) |
+|---|---|
+| ★★★ | **≥ 2×** |
+| ★★☆ | 1.5× – 2× |
+| ★☆☆ | < 1.5× (또는 iso-latency 조건 미충족) |
+
+**bin 근거 (≥ 2×)**:
+[KIVI](https://arxiv.org/html/2402.02750v2) 2-bit 양자화가 batch 4×로
+**처리율 2.35–3.47×**(B), [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)의
+메모리 관리만으로 동일 GPU **처리량 2–4×**(B). tier 확장이 KV 가용 용량을
+키워 batch를 더 확대하고, KV 인지 스케줄링이 그 이득을 시스템 처리량으로
+전환하므로, 압축·paging 단독 하단인 **2×**를 결합 시스템의 하한으로
+요구한다(C). 1.5×는 단독 기법 도달선으로 ★★☆(v0.8 결정 계승). *주의:
+DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구성을 양쪽에
+동일하게 두는 본 QA의 bin 근거가 아니다.*
+
+## QA3. 응답 품질 (품질 저하 bound)
+
+(v1.1 — 구 QA2에서 재번호. 목표 2의 "LLM 정확도 유지" 조건의 판정 지표.)
+
+- **중요도: H** — QA1·QA2·QA4의 전제 조건: 품질 bound를 위반하면
+  TTFT·throughput·유효 KV 용량 수치 자체가 무효(QA4는 "QA3 품질 bound를
+  지키는 조건에서만 인정"). 목표 2가 "정확도를 유지한 채"를 목표 문장에
+  명시하므로 gate가 곧 과제 정의의 일부. 서비스 품질 저하는 사용자에게
+  직접 노출되는 리스크(C).
+- **난이도: H** (v1.1 M→H 재판정) — near-lossless 압축 단독은 문헌 재현
+  수준(KVQuant 3-bit ΔPPL < 0.1(B), KIVI 2-bit ≤ 2%p(B))이나, 목표 재정의로
+  품질 영향원이 **3중**이 되었다: ① 요청별 차등 **압축**(수준 선택이
+  요청마다 다름) ② **비접두 재사용**(선택 재계산율과 품질의 트레이드오프 —
+  CacheBlend 0.01–0.03(B)) ③ 스케줄링의 **축출/강등 선택**(어떤 KV를
+  버리는가가 품질에 영향). 요청별 bound 집행(★★★ 조건)은 세 메커니즘의
+  품질 영향을 통합 추적하는 구조를 요구하고, C-03(training-free)으로 재학습
+  기반 회복 수단이 배제되어 런타임 계층에서만 bound를 지켜야 한다(C).
+- **우선순위: 3** — 중요도 H 그룹 내 **전제(gate)** — 성능·용량 수치의
+  유효 조건이므로 목표 지표(QA1·QA2) 다음, 수단 지표(QA4) 앞
+  (역할 규칙, 문서 상단 참조).
 - **평가 시나리오**: 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로
   활성화한 상태에서 long-context 벤치마크(LongBench 등)를 수행하고,
   baseline(동일 모델·동일 벤치의 비압축 FP16 KV·비재사용 — 품질의 이론적
@@ -258,8 +314,8 @@ DP7의 TTFT 예산 논의에서 참조한다.
   측정하며, bound의 집행 단위(요청별 vs 전역)를 판정한다.
   [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★]
 
-- **정의**: 압축·재사용으로 인한 품질 저하의 상한 보장 — QA1·QA3 수치의
-  유효 전제(gate).
+- **정의**: 압축·재사용(및 축출 선택)으로 인한 품질 저하의 상한 보장 —
+  QA1·QA2·QA4 수치의 유효 전제(gate).
 - **측정**: **주지표 ΔF1(%p)** — long-context 벤치마크(LongBench 등)의
   F1-score를 baseline(비압축 FP16 KV·비재사용) 대비 차감. F1 채택 이유:
   LongBench의 QA 태스크군(HotpotQA·2WikiMQA 등) 공식 지표가 F1이며,
@@ -311,24 +367,26 @@ DP7의 TTFT 예산 논의에서 참조한다.
 - 집행 단위 조건: K>V sensitivity(B) — 압축 대상 선택이 품질을 좌우하므로
   요청별 차등 집행 가능 여부가 bound 보장성을 가름(C).
 
-## QA3. 메모리 효율 (유효 KV 용량)
+## QA4. 메모리 효율 (유효 KV 용량)
+
+(v1.1 — 구 QA3에서 재번호. 목표 2의 "메모리 병목 해소"의 정량 지표.)
 
 - **중요도: H** — HBM이 희소 자원이며 "HBM 한 장당 서빙 가능한 컨텍스트"가
-  비용 구조를 결정. QA1(처리율) 달성의 직접 수단이자 이종 tier 도입의
+  비용 구조를 결정. QA2(throughput) 달성의 직접 수단이자 이종 tier 도입의
   존재 이유(1.5× 미만이면 압축 단독 대비 열위)(C).
 - **난이도: H** — 압축 단독 1.5×는 문헌으로 입증(KIVI(B))되어 있으나, 상위 bin
-  3×는 tier 오프로딩과 압축을 QA2 품질 bound 안에서 결합해야 도달 가능하며
+  3×는 tier 오프로딩과 압축을 QA3 품질 bound 안에서 결합해야 도달 가능하며
   tier 활용률·압축률 분포 관리가 필요.
-- **우선순위: 3** — 중요도 H 그룹 내 **수단 지표** — 목표(QA1)와 그 유효
-  전제(QA2 gate) 다음 (v0.5에서 응답 품질과 우선순위 교환, v0.7에서 번호도 교환).
-- **평가 시나리오**: QA2 품질 bound를 지키는 설정에서
+- **우선순위: 4** — 중요도 H 그룹 내 **수단 지표** — 목표(QA1·QA2)와 그
+  유효 전제(QA3 gate) 다음 (역할 규칙, 문서 상단 참조).
+- **평가 시나리오**: QA3 품질 bound를 지키는 설정에서
   Σ_tier(tier 용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을
   산출하고, 물리 HBM 용량 대비 배율을 구한다(= 동시 수용 가능한 컨텍스트 토큰
   수의 배율). 보조로 tier 활용률·압축률 분포를 함께 기록한다.
   [측정: 유효 KV 용량 ≥ 3× → ★★★]
 
 - **정의**: **원본(비압축) 환산**으로 시스템이 동시에 수용할 수 있는 KV 총량의,
-  물리 HBM 용량 대비 배율 (QA2 품질 bound를 지키는 조건에서만 인정).
+  물리 HBM 용량 대비 배율 (QA3 품질 bound를 지키는 조건에서만 인정).
   압축 n×는 같은 물리 공간에 원본 환산 n×의 KV를 담으므로 이 값을 **키운다**
   (저장된 압축 바이트가 아니라 "몇 토큰어치를 서빙할 수 있나"의 지표).
   등가 표현: **동시 수용 가능한 컨텍스트 토큰 수의 배율**.
@@ -347,15 +405,20 @@ DP7의 TTFT 예산 논의에서 참조한다.
 **tier 오프로딩과 압축을 함께 쓰는 MCR은 3×를 상위 bin**으로 요구. 1.5× 미만은
 압축 단독 대비 열위 — 이종 tier 도입의 존재 이유 미달(C).
 
-## QA4. 확장성·진화성
+## QA5. 확장성·진화성 (Modifiability)
 
-- **중요도: M** — 초기 가치 실증(QA1–3)에는 직결되지 않으나, 메모리 디바이스
-  로드맵(HBM4/CMM-DC/HBF)과 모델 구조 변화(MLA·linear attention 등) 속도를 감안하면
-  중장기 유지 비용과 생존성을 좌우(C).
+(v1.1 — 구 QA4에서 재번호. **구 QA6 Adaptability의 관심사(framework 결합
+격리)를 코어/모듈 경계 지표로 대리 측정** — 하단 각주 참조.)
+
+- **중요도: M** — 초기 가치 실증(QA1–4)에는 직결되지 않으나, 모델 구조
+  변화(MLA·linear attention 등)와 메모리 디바이스 로드맵(HBM4/CMM-DC/HBF —
+  2단계 수용 대비) 속도를 감안하면 중장기 유지 비용과 생존성을 좌우(C).
+  특히 본 과제의 전 기법(재사용·압축·배치)이 KV cache를 전제하므로 **KV
+  구조 변화는 과제 본질에 대한 변화**다.
 - **난이도: H** — 코어/모듈 경계와 공개 인터페이스(KV Locator, CompressionOp)는
   되돌리기 어려운 초기 설계 결정이며, MLA(KV 정의 변경)·linear attention(고정 크기 상태로 KV 대체)처럼
   KV 구조 자체가 바뀌는 변화까지 "코어 수정 0"으로 수용하기는 어려움.
-- **우선순위: 4** — M/H. 중요도 M 그룹 중 난이도가 높아 선순위.
+- **우선순위: 5** — M/H. 중요도 M 그룹 중 난이도가 높아 선순위.
 - **평가 시나리오**: (a) 신규 메모리 tier 1종 추가 실험(1단계는 commodity
   조합 변경으로 검증하되, 로드맵 디바이스[HBM4/CMM-DC/HBF] 파라미터를
   대입하는 사전 검증 포함 — **2단계 자사 디바이스 수용의 접속점 확인**,
@@ -396,57 +459,30 @@ DP7의 TTFT 예산 논의에서 참조한다.
 > 확장 적용한다 — 독립 framework의 최대 리스크(02 §DP1 후보2 단점)를 평가에서
 > 놓치지 않기 위함.
 
-## QA6. framework 적응성 (Adaptability) — v0.5 신설
+> **각주 — framework 적응성(구 QA6 Adaptability)의 처리 (v1.1 미선정
+> 전환)**: 서빙 framework 교체(vLLM → SGLang 등) 적응성은 v0.5~v1.0에서
+> 독립 QA(구 QA6, M/H)였으나 v1.1 재평가로 미선정 전환했다 — ① 관심사
+> (변화 수용)·측정축(코어 변경 LOC·시그니처 건수·전환 공수)이 본
+> QA5와 중복: **framework 결합 코드가 어댑터 계층에 격리되어 있는지는 본
+> QA의 "코어 변경 LOC 0 · 시그니처 변경 0건" 지표가 대리 측정**한다(결합이
+> 코어에 새면 그 지표가 즉시 악화) ② 1단계는 단일 framework 위 실증이
+> 목적이라 교체 리스크의 노출 시점이 2단계/상용화(중요도 M→L) ③ 어댑터
+> 경계 자체는 DP1(framework 실행 구조)의 결정 변수로 흡수. 구 bin(결합
+> 코드 ≤ 10% · 전환 ≤ 3인월)은 DP1 평가의 참고 기준으로 보존하고, upstream
+> 방향 전환이 현실화되거나 2단계 진입 시 독립 QA로 재평가한다. (요구사항
+> 분석 v1.1 Utility Tree QA-10 미선정 사유와 동일 논거.)
 
-- **중요도: M** — 현재 vLLM이 기본 선택이지만 **고정이 아니다** — SGLang 등
-  대안 framework가 부상 중이며(B), upstream의 방향 전환·정체 시 교체가
-  현실적 선택지다. 교체 비용이 통제되지 않으면 framework 종속이 과제 산출물
-  (레퍼런스 스택)의 수명을 좌우한다(C). 단 과제 성패의 직접 판정 지표는
-  아니므로 M.
-- **난이도: H** — framework 결합부(스케줄러 훅, KV 캐시 인터페이스, 커널
-  호출 경계)를 어댑터 계층으로 격리하는 것은 초기 구조 결정이며, framework
-  마다 확장점의 형태가 달라(vLLM connector/plugin vs SGLang의 구조) 경계
-  설계가 어렵다.
-- **우선순위: 5** — M/H. QA4와 동률이나 과제 본질 축(타겟 메모리·모델
-  수용)이 리스크 헤지 축(framework 교체)에 우선하므로 QA4 다음.
-- **평가 시나리오**: upstream framework를 vLLM에서 대안(SGLang 등)으로
-  교체한다고 가정하고(설계 단계에서는 결합부 정적 분석, 구현 단계에서는
-  파일럿 포팅) Memory Engine·정책 계층이 보존되는지를 잰다.
-  baseline = 현 framework(vLLM) 결합 구조 — 교체 비용이 곧 종속 위험의 크기.
-  [측정: framework 결합 코드의 어댑터 격리(코어 변경 0) · 전환 ≤ 3인월 → ★★★]
+## QA6. 유지보수성 (Maintainability — 개발·운영 비용)
 
-- **정의**: 서빙 framework 교체(vLLM → SGLang 등) 시 MCR 고유 자산
-  (Memory Engine, 배치·압축·재사용 정책)을 보존하는 능력.
-- **측정**: ① **framework 결합 코드 비율(%)** = (framework API에 직접
-  의존하는 LOC) ÷ (MCR 전체 LOC) — 정적 분석으로 산출 ② 교체 시
-  **코어(Memory Engine·정책·공개 인터페이스) 변경 LOC** ③ **전환
-  공수(인월)** — 파일럿 포팅 또는 견적.
-
-| 별점 | 기준 |
-|---|---|
-| ★★★ | framework 결합 코드가 **어댑터 계층에 격리**(결합 코드 ≤ 전체의 10%) · 교체 시 **코어 변경 0** · 전환 **≤ 3인월** |
-| ★★☆ | 교체 시 코어 변경 ≤ 전체의 **40%** · 전환 ≤ 1분기 |
-| ★☆☆ | 사실상 전면 재작성(> 40%) 또는 전환 > 1분기 |
-
-**bin 근거**: 40%는 사내 기준(A, QA4와 동일 계승). 10%/3인월은 어댑터
-(ports-and-adapters) 패턴이 성립할 때 결합부가 인터페이스 구현 계층에
-국한된다는 구조 논증(C) + QA5의 plugin형 초기 구축 "수 인월"(A)에서 포팅은
-그 절반 이하라는 추정(C). 대안 framework의 실재는 SGLang(RadixAttention,
-vLLM 대비 동급 이상 처리율 보고)(B)로 뒷받침. F 평가 시 결합부 정적 분석
-결과를 근거로 제시할 것.
-
-## QA5. 유지보수성 (Maintainability — 개발·운영 비용)
-
-(v0.5에서 Affordability → Maintainability로 개칭 — ISO/IEC 25010 표준
-품질속성 어휘로 정렬. 정의·bin은 동일.)
+(v1.1 — 구 QA5에서 재번호. v0.5에서 Affordability → Maintainability로
+개칭 — ISO/IEC 25010 표준 품질속성 어휘로 정렬. 정의·bin은 동일.)
 
 - **중요도: M** — 프로젝트 지속 가능성(추종·유지 인력)을 좌우하나, 과제 성패의
   판정 지표는 아님. DP1(플랫폼 전략) 선택에 따라 수십 인월 단위로 갈리므로
   구조 결정 시 반드시 함께 평가(C).
 - **난이도: M** — plugin 경계를 유지하면 관리 가능함이 02 실측 표현(A)으로
   뒷받침됨. 비용 산정 자체는 표준적 방법(인월·FTE 추정)으로 수행 가능.
-- **우선순위: 6** — M/M. 중요도 M 그룹 중 난이도가 낮아 최후순위
-  (v0.5에서 QA6 신설로 한 단계 하향).
+- **우선순위: 6** — M/M. 중요도 M 그룹 중 난이도가 낮아 최후순위.
 - **평가 시나리오**: 대표 워크로드 E2E 벤치 완주까지의 초기 구축
   인월(person-month)과, upstream 추종(rebase/2주 릴리스 주기)·회귀 검증을
   포함한 연간 유지보수 FTE를 산정한다.
@@ -474,8 +510,8 @@ fork/독립 유지의 하한으로 설정.
 - [MLCommons — Llama 2 70B MLPerf Inference Benchmark](https://mlcommons.org/2024/03/mlperf-llama2-70b/) (Server TTFT 2s / TPOT 200ms)
 - [NVIDIA — MLPerf Inference v5.0](https://developer.nvidia.com/blog/nvidia-blackwell-delivers-massive-performance-leaps-in-mlperf-inference-v5-0/) (Interactive TTFT 450ms / TPOT 40ms)
 - [DistServe: Disaggregating Prefill and Decoding for Goodput-optimized LLM Serving (OSDI'24)](https://arxiv.org/pdf/2401.09670) · [해설 블로그](https://haoailab.com/blogs/distserve/) (goodput/SLO attainment 90% 정의, 250wpm — 상용화 단계 승격용 참고)
-- [CacheBlend: Fast Large Language Model Serving for RAG with Cached Knowledge Fusion (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) (RAG KV 재사용 — TTFT 2.2–3.3× 단축, 처리율 2.8–5×, 품질 저하 0.01–0.03 — QA1 2× bin 근거)
-- [SmartANNS: Efficient Billion-Scale ANN Search with SmartSSDs (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) (SSD ANN I/O 병목 ~67%, 협력 인덱싱 QPS 최대 10.7× — QA1 retrieval 축·ADR-001 근거)
+- [CacheBlend: Fast Large Language Model Serving for RAG with Cached Knowledge Fusion (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) (RAG KV 재사용 — TTFT 2.2–3.3× 단축, 처리율 2.8–5×, 품질 저하 0.01–0.03 — QA1(TTFT) 2× bin 근거)
+- [SmartANNS: Efficient Billion-Scale ANN Search with SmartSSDs (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) (SSD ANN I/O 병목 ~67%, 협력 인덱싱 QPS 최대 10.7× — v1.1부터 2단계[근접연산 오프로드]·ADR-001 참고)
 - [KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache](https://arxiv.org/html/2402.02750v2) (2.6× 메모리, batch 4×, 처리율 2.35–3.47×, LongBench 저하 ≤2%p)
 - [KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization (NeurIPS'24)](https://arxiv.org/html/2401.18079v4) (3-bit ΔPPL < 0.1, Wikitext-2·C4)
 - [vLLM RELEASE.md](https://github.com/vllm-project/vllm/blob/main/RELEASE.md) (2주 릴리스 케이던스)
@@ -483,7 +519,7 @@ fork/독립 유지의 하한으로 설정.
 - [SnapKV: LLM Knows What You are Looking for Before Generation (NeurIPS'24)](https://arxiv.org/abs/2404.14469) (프롬프트 KV 92% 압축에서 negligible 저하)
 - [MLCommons — MLPerf Inference v5.0](https://mlcommons.org/2025/04/llm-inference-v5/) (closed division 정확도 기준 = 참조의 99%)
 - [Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention (ICML'20)](https://arxiv.org/abs/2006.16236) (linear attention — KV cache의 고정 크기 상태 대체 원리)
-- [MiniMax-01: Scaling Foundation Models with Lightning Attention](https://arxiv.org/abs/2501.08313) (linear attention 계열의 실전 배치 사례 — QA4 모델 변화 축 근거)
+- [MiniMax-01: Scaling Foundation Models with Lightning Attention](https://arxiv.org/abs/2501.08313) (linear attention 계열의 실전 배치 사례 — QA5 모델 변화 축 근거)
 - [LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding (ACL'24)](https://arxiv.org/abs/2308.14508) (QA 태스크군 지표 = F1)
-- [SGLang: Efficient Execution of Structured Language Model Programs (NeurIPS'24)](https://arxiv.org/abs/2312.07104) (대안 serving framework — QA6 근거)
+- [SGLang: Efficient Execution of Structured Language Model Programs (NeurIPS'24)](https://arxiv.org/abs/2312.07104) (QA1 prefix 재사용 근거 · 대안 serving framework — 구 QA6[미선정 전환]·DP1 참고)
 - 사내: Architect 과제 원본 덱 QA-01 (40% 기준), MCR 자체 P/D 분리 벤치 실측 (decode wait 70–85%)
