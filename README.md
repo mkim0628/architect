@@ -1,6 +1,10 @@
-# MCR — Memory-Centric Runtime 아키텍처 설계
+# MCR 1단계 — KV 캐시 최적 운용 AI 런타임 아키텍처 설계
 
-PIM/PNM/CXL 이종 메모리 시스템 위에서 LLM 추론을 가속하는 런타임(MCR)의 아키텍처 설계 문서 저장소. Architect 과정 설계과제 산출물.
+LLM 추론에서 KV 캐시를 1급 관리 대상으로 최적 운용(재사용·압축·KV 인지 스케줄링)하는 AI 런타임의 아키텍처 설계 문서 저장소. Architect 과정 설계과제 산출물.
+
+**목표 3축**: ① KV 재사용성 제고 → 지연시간(TTFT) 개선 ② LLM 정확도를 유지한 KV 압축 → 메모리 병목 해소 → 지연·처리량 개선 ③ KV 캐시 인지형 동적 스케줄링 → 처리량 개선.
+
+**로드맵**: 본 과제는 MCR(Memory-Centric Runtime)의 **1단계** — commodity tier(HBM·DRAM·SSD)에서 KV 운용 정책·구조를 입증한다. 자사 memory-centric 디바이스(PIM/PNM·CXL·HBF) 1급 통합과 근접연산 오프로드는 **2단계(MCR 완성)** 진화 경로 — 1단계의 tier 추상화 인터페이스가 그 접속점이다. 상세: [docs/mcr_background_scope.md](docs/mcr_background_scope.md) (v5).
 
 ## 문서
 

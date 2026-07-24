@@ -4,6 +4,7 @@
       .sys { fill: none; stroke: #444444; stroke-width: 1.5; }
       .uc { fill: #F5E6C8; stroke: #7A5C2E; stroke-width: 1.3; }
       .uctext { font-size: 12.5px; fill: #1F2A44; text-anchor: middle; }
+      .ucsub { font-size: 11px; fill: #1F2A44; text-anchor: middle; }
       .ucnum { font-size: 10px; fill: #7A5C2E; text-anchor: middle; }
       .actor { stroke: #1F2A44; stroke-width: 1.6; fill: none; }
       .actorlabel { font-size: 12.5px; fill: #1F2A44; text-anchor: middle; font-weight: bold; }
@@ -19,7 +20,7 @@
 
   <!-- system boundary -->
   <rect class="sys" x="255" y="42" width="560" height="672"/>
-  <text class="title" x="535" y="68">MCR (Memory-Centric Runtime)</text>
+  <text class="title" x="535" y="68">MCR 1단계 — KV 캐시 최적 운용 AI 런타임</text>
 
   <!-- ===== actors (left, primary) ===== -->
   <!-- LLM 응용 클라이언트 -->
@@ -44,18 +45,19 @@
   <text class="actorlabel" x="120" y="592">운영자 (SRE)</text>
 
   <!-- ===== actors (right, secondary) ===== -->
-  <!-- 메모리 tier 디바이스 -->
+  <!-- 메모리 tier -->
   <g class="actor">
-    <circle cx="955" cy="230" r="13"/>
-    <line x1="955" y1="243" x2="955" y2="276"/>
-    <line x1="935" y1="254" x2="975" y2="254"/>
-    <line x1="955" y1="276" x2="939" y2="302"/>
-    <line x1="955" y1="276" x2="971" y2="302"/>
+    <circle cx="955" cy="270" r="13"/>
+    <line x1="955" y1="283" x2="955" y2="316"/>
+    <line x1="935" y1="294" x2="975" y2="294"/>
+    <line x1="955" y1="316" x2="939" y2="342"/>
+    <line x1="955" y1="316" x2="971" y2="342"/>
   </g>
-  <text class="actorlabel" x="955" y="322">메모리 tier 디바이스</text>
-  <text class="ucnum" x="955" y="338">(HBM · CXL · HBF · SSD-PIM)</text>
+  <text class="actorlabel" x="955" y="362">메모리 tier</text>
+  <text class="ucnum" x="955" y="378">(HBM · DRAM · SSD)</text>
+  <text class="ucnum" x="955" y="392">(2단계: 자사 디바이스 plug-in)</text>
 
-  <!-- ===== use cases: column A (serving, cx=400) ===== -->
+  <!-- ===== use cases: column A (serving/scheduling, cx=400) ===== -->
   <ellipse class="uc" cx="400" cy="120" rx="112" ry="27"/>
   <text class="ucnum" x="400" y="112">UC-01</text>
   <text class="uctext" x="400" y="128">long-context RAG 요청 서빙</text>
@@ -69,37 +71,35 @@
   <text class="uctext" x="400" y="288">agent memory 영속·복원</text>
 
   <ellipse class="uc" cx="400" cy="430" rx="112" ry="27"/>
-  <text class="ucnum" x="400" y="422">UC-08</text>
-  <text class="uctext" x="400" y="436">요청별 SLO 정책 적용</text>
+  <text class="ucnum" x="400" y="422">UC-07</text>
+  <text class="uctext" x="400" y="436">KV 인지 admission·라우팅</text>
 
   <ellipse class="uc" cx="400" cy="560" rx="112" ry="27"/>
-  <text class="ucnum" x="400" y="552">UC-10</text>
-  <text class="uctext" x="400" y="568">신규 tier 등록 (plug-in)</text>
+  <text class="ucnum" x="400" y="552">UC-09</text>
+  <text class="uctext" x="400" y="568">P/D 분리 스케줄링·KV 전송</text>
 
   <ellipse class="uc" cx="400" cy="650" rx="112" ry="27"/>
-  <text class="ucnum" x="400" y="642">UC-11</text>
-  <text class="uctext" x="400" y="658">모니터링·P/D 자동 조정</text>
+  <text class="ucnum" x="400" y="642">UC-10</text>
+  <text class="uctext" x="400" y="658">KV telemetry·P/D 자동 조정</text>
 
-  <!-- ===== use cases: column B (memory ops, cx=675) ===== -->
-  <ellipse class="uc" cx="675" cy="120" rx="112" ry="27"/>
-  <text class="ucnum" x="675" y="112">UC-06</text>
-  <text class="uctext" x="675" y="128">KV 재사용 판정·복원</text>
+  <!-- ===== use cases: column B (KV ops, cx=675) ===== -->
+  <ellipse class="uc" cx="675" cy="123" rx="112" ry="30"/>
+  <text class="ucnum" x="675" y="110">UC-04</text>
+  <text class="uctext" x="675" y="124">KV 재사용 판정·복원</text>
+  <text class="ucsub" x="675" y="139">(복원 vs 재계산)</text>
 
-  <ellipse class="uc" cx="675" cy="220" rx="112" ry="27"/>
-  <text class="ucnum" x="675" y="212">UC-04</text>
-  <text class="uctext" x="675" y="228">KV tier 배치·승격·강등</text>
+  <ellipse class="uc" cx="675" cy="230" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="222">UC-05</text>
+  <text class="uctext" x="675" y="238">KV 압축·복원 (요청별 차등)</text>
 
-  <ellipse class="uc" cx="675" cy="320" rx="112" ry="27"/>
-  <text class="ucnum" x="675" y="312">UC-05</text>
-  <text class="uctext" x="675" y="328">KV 압축·복원</text>
+  <ellipse class="uc" cx="675" cy="330" rx="112" ry="27"/>
+  <text class="ucnum" x="675" y="322">UC-06</text>
+  <text class="uctext" x="675" y="338">KV tier 배치·승격·강등</text>
 
-  <ellipse class="uc" cx="675" cy="430" rx="112" ry="27"/>
-  <text class="ucnum" x="675" y="422">UC-07</text>
-  <text class="uctext" x="675" y="436">P/D 분리 스케줄링·KV 전송</text>
-
-  <ellipse class="uc" cx="675" cy="530" rx="112" ry="27"/>
-  <text class="ucnum" x="675" y="522">UC-09</text>
-  <text class="uctext" x="675" y="538">근접연산 오프로드 실행</text>
+  <ellipse class="uc" cx="675" cy="463" rx="112" ry="30"/>
+  <text class="ucnum" x="675" y="450">UC-08</text>
+  <text class="uctext" x="675" y="464">메모리 압박 대응</text>
+  <text class="ucsub" x="675" y="479">(압축/강등/축출 선택)</text>
 
   <!-- ===== associations (solid) ===== -->
   <line class="assoc" x1="150" y1="170" x2="288" y2="122"/>
@@ -108,27 +108,30 @@
   <line class="assoc" x1="150" y1="520" x2="290" y2="444"/>
   <line class="assoc" x1="152" y1="535" x2="288" y2="558"/>
   <line class="assoc" x1="148" y1="548" x2="288" y2="643"/>
-  <line class="assoc" x1="152" y1="540" x2="565" y2="445"/>
-  <line class="assoc" x1="787" y1="228" x2="924" y2="248"/>
-  <line class="assoc" x1="785" y1="518" x2="926" y2="300"/>
-  <line class="assoc" x1="925" y1="270" x2="787" y2="310"/>
+  <line class="assoc" x1="787" y1="322" x2="924" y2="290"/>
 
   <!-- ===== include / extend (dashed) ===== -->
-  <line class="dep" x1="512" y1="120" x2="561" y2="120" marker-end="url(#openArrow)"/>
+  <!-- UC-01 → UC-04 -->
+  <line class="dep" x1="512" y1="120" x2="558" y2="121" marker-end="url(#openArrow)"/>
   <text class="stereo" x="536" y="110">&#171;include&#187;</text>
 
-  <line class="dep" x1="505" y1="212" x2="575" y2="142" marker-end="url(#openArrow)"/>
-  <text class="stereo" x="558" y="192">&#171;include&#187;</text>
+  <!-- UC-02 → UC-04 -->
+  <line class="dep" x1="505" y1="192" x2="573" y2="146" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="558" y="182">&#171;include&#187;</text>
 
-  <line class="dep" x1="675" y1="293" x2="675" y2="249" marker-end="url(#openArrow)"/>
-  <text class="stereo" x="723" y="274">&#171;extend&#187;</text>
+  <!-- UC-05 → UC-06 (extend: 강등 시 압축 병행) -->
+  <line class="dep" x1="675" y1="257" x2="675" y2="299" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="723" y="282">&#171;extend&#187;</text>
 
-  <line class="dep" x1="620" y1="507" x2="474" y2="146" marker-end="url(#openArrow)"/>
-  <text class="stereo" x="520" y="352">&#171;extend&#187;</text>
+  <!-- UC-08 → UC-05 -->
+  <line class="dep" x1="655" y1="434" x2="668" y2="261" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="628" y="352">&#171;include&#187;</text>
 
-  <path class="dep" d="M 592,512 C 520,430 520,430 592,332" fill="none" marker-end="url(#openArrow)"/>
-  <text class="stereo" x="527" y="428">&#171;extend&#187;</text>
+  <!-- UC-08 → UC-06 -->
+  <line class="dep" x1="675" y1="433" x2="675" y2="361" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="723" y="402">&#171;include&#187;</text>
 
-  <line class="dep" x1="500" y1="638" x2="596" y2="460" marker-end="url(#openArrow)"/>
-  <text class="stereo" x="512" y="565">&#171;include&#187;</text>
+  <!-- UC-10 → UC-09 -->
+  <line class="dep" x1="424" y1="622" x2="408" y2="591" marker-end="url(#openArrow)"/>
+  <text class="stereo" x="472" y="612">&#171;include&#187;</text>
 </svg>

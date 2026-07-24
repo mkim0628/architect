@@ -1,5 +1,10 @@
-# 요구사항 → QA 도출 과정 상세 (v0.5)
+# 요구사항 → QA 도출 과정 상세 (v0.6)
 
+(v0.6: 과제 목표 재정의(배경 v5 — MCR 1단계) 반영 — §2.1 QA1 체인에서
+retrieval(SSD-PIM·SmartANNS·R-09) 축을 제거하고 2단계 이관을 명시. TTFT
+축 근거를 CacheBlend·SGLang만으로 재구성(2× bin 불변), throughput 축에
+KV 인지 스케줄링(목표 3) 편입, 축별 ablation 조항 반영. VOC 매핑에서
+R-07·R-09를 2단계 배정으로 재귀속, R-24(목표 재정의) 추가.)
 (v0.5: QA 정의 v0.8의 QA1 지표 개정 반영 — §2.1을 goodput@SLO에서 baseline
 대비 throughput 배율(지연 가드·곡선 병행)로 재작성, ★★★ 2× 근거를 축별
 문헌(CacheBlend·SGLang·vLLM·SmartANNS)으로 교체, retrieval(SSD-PIM 가속)
@@ -53,26 +58,28 @@ SEI 계열 표준 방법론을 따른다:
 ### 2.1 QA1. Performance — baseline 대비 TTFT(prefill) · throughput(decode)
 
 1. **VOC**: R-01 (MCR 개발팀): 컨텍스트 길이 폭증으로 **KV cache 크기가 HBM
-   용량을 넘어선다** — 타겟 메모리로 이 병목이 풀리는지가 효용성 입증의 핵심.
-   R-07 (메모리 사업부): **E2E 관점의 제품 가치 확인** — 고객 신뢰의 근거.
-   **R-09 (메모리 사업부): PIM/PNM 연산의 효용성을 E2E에서 테스트** —
-   long-context RAG에서 retrieval(유사도 검색)은 TTFT 임계 경로에 있고
-   ([ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md)), SSD 기반 ANN은 I/O가
-   실행 시간의 ~67%(B, SmartANNS)라 **근접연산(SSD-PIM) 검색 가속이 E2E
-   성능 경로에 직접 기여**한다 — KV 관리만 하는 일반 런타임과의 차별 축.
-   R-11 (임원): baseline 대비 **E2E 정량 입증** 요구.
+   용량을 넘어선다** — KV 최적 운용으로 이 병목이 풀리는지가 효용성 입증의
+   핵심. R-11 (임원): baseline 대비 **E2E 정량 입증** 요구.
+   **R-24 (과제 발주 — 목표 재정의)**: 재사용(→지연)·압축(→지연·처리량)·
+   KV 인지 스케줄링(→처리량)의 3축 개선을 명시 지시.
+   (v0.6: R-07(제품 가치)·R-09(PIM/PNM 근접연산 — retrieval 가속)는
+   **2단계(MCR 완성) 배정**으로 본 체인에서 제외 — 요구사항 분석 v1.0
+   부록 A 참조. retrieval은 외부 컴포넌트로 양쪽 동일 적용.)
    보조 배경(수집 방법의 자체 실측): decode 대기가 E2E latency의
    70–85%(A) — decode는 매 토큰 누적 KV 전체를 읽는 memory-bandwidth-bound
    연산이라 메모리 개선이 곧 성능 개선으로 이어질 여지가 크다.
 2. **품질 문장**: "추론을 더 빠르게 시작하고(prefill) 더 많이
-   생성한다(decode) — retrieval을 포함한 E2E 경로에서."
+   생성한다(decode) — E2E 경로에서, 목표 3축 각각의 기여를 분리 입증하며."
 3. **지표 선택 — 왜 TTFT · throughput 2지표인가**:
    추론은 **prefill(첫 토큰까지)** 과 **decode(토큰 생성 지속)** 두 단계로
-   나뉘고 MCR의 최적화가 각 단계에 1:1로 대응한다. **TTFT = prefill 축**:
-   KV 재사용(재계산 회피)과 retrieval 가속(RAG 검색 단축)이 직접 줄이는
-   지표. **throughput = decode 축**: 이종 tier 확장·압축이 batch를 키워
+   나뉘고 목표 3축의 최적화가 두 단계에 대응한다. **TTFT = prefill 축**:
+   KV 재사용(재계산 회피, 목표 1)이 직접 줄이는 지표.
+   **throughput = decode 축**: 압축·tier 확장(목표 2)이 batch를 키우고
+   KV 인지 스케줄링(목표 3)이 그 이득을 시스템 처리량으로 전환해
    끌어올리는 지표. 하나의 합성 지표(goodput 등)로 뭉치면 어느 단계의
-   개선인지 흐려지므로 두 축을 분리한다.
+   개선인지 흐려지므로 두 축을 분리하고, 목표별 순기여는 **축별
+   ablation**(재사용 off / 압축 off / KV-blind 스케줄링)으로 분리
+   보고한다(QA 정의 v1.0 표준 측정 조건 ③).
    *goodput@SLO를 안 쓰는 이유*: 절대 SLO(MLPerf TTFT 450 ms 등)는 벤치마크
    시나리오에 고정된 제약이라 GPU 종류·규모가 비확정인 연구 테스트베드에서
    취약하다(구성이 약하면 goodput = 0으로 퇴화). baseline 대비 **배율**이
@@ -89,19 +96,20 @@ SEI 계열 표준 방법론을 따른다:
    P/D 분리는 전제하지 않는다 — 실험 변수로 두되 양쪽에 동일 적용해 효과를
    상쇄시킨다.
 5. **bin(각 축 ≥ 2×)의 근거 — 두 단계를 각 단계 문헌이 독립 뒷받침**:
-   **① TTFT ≥ 2× (prefill 축)**:
+   **① TTFT ≥ 2× (prefill 축 — 목표 1)**:
    [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444)가
-   RAG KV 재사용+선택 재계산으로 **TTFT 2.2–3.3× 단축**(B, 품질 저하
-   0.01–0.03), [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)이
-   prefix 재계산 제거로 첫 토큰 지연 단축(B), retrieval 구간은
-   [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf)가
-   협력 인덱싱으로 **QPS 최대 10.7×**(B, SSD-PIM 검색 가속 ADR-001). 재사용
-   +검색 결합에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구(C).
-   **② throughput ≥ 2× (decode 축)**:
+   RAG KV 재사용+선택 재계산(비접두 재사용)으로 **TTFT 2.2–3.3× 단축**(B,
+   품질 저하 0.01–0.03), [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)이
+   prefix 재계산 제거로 첫 토큰 지연 단축(B). prefix·비접두 재사용을
+   결합하는 MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구(C).
+   (v0.6: retrieval 축(SmartANNS 10.7×)은 2단계 이관으로 근거에서 제외 —
+   CacheBlend 하단만으로 2×가 성립하므로 bin 수치 불변.)
+   **② throughput ≥ 2× (decode 축 — 목표 2·3)**:
    [KIVI](https://arxiv.org/html/2402.02750v2) 2-bit가 batch 4×로 **처리율
    2.35–3.47×**(B), [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)이
-   메모리 관리만으로 동일 GPU **처리량 2–4×**(B). 이종 tier 확장이 batch를
-   더 키우므로 압축·paging 단독 하단 **2×**를 요구(C).
+   메모리 관리만으로 동일 GPU **처리량 2–4×**(B). tier 확장이 batch를
+   더 키우고 KV 인지 스케줄링이 이득을 시스템 처리량으로 전환하므로
+   압축·paging 단독 하단 **2×**를 요구(C).
    **두 지표를 AND로 묶는 이유**: TTFT만 좋고 throughput이 나쁘면(또는 반대)
    한 단계만 최적화한 것 — MCR의 가치는 prefill·decode 결합이므로 둘 다
    2×를 요구한다(C). 구 단일-throughput 기준의 1.5× 지연 가드는 근거 없는
@@ -273,7 +281,7 @@ SEI 계열 표준 방법론을 따른다:
 
 | QA | 중요도 판정 | 난이도 판정 | 우선순위 |
 |---|---|---|---|
-| QA1 Performance | **H** — 과제 최종 판정 지표. 미달 시 나머지가 우수해도 무의미 | **H** — TTFT 2×(재사용·retrieval)와 throughput 2×(tier·압축)를 **동시** 달성해야 함 | 1 (목표) |
+| QA1 Performance | **H** — 과제 최종 판정 지표. 미달 시 나머지가 우수해도 무의미 | **H** — TTFT 2×(재사용)와 throughput 2×(압축·tier·KV 인지 스케줄링)를 **동시** 달성해야 함 | 1 (목표) |
 | QA2 Accuracy | **H** — QA1·QA3의 전제(gate): bound 위반 시 성능·용량 수치 무효 | **M** — near-lossless가 문헌으로 입증된 선의 재현; 단 요청별 집행은 설계 부담 | 2 (gate — 목표 다음, 수단 앞) |
 | QA3 Resource Efficiency | **H** — HBM당 컨텍스트가 비용 구조 결정, 이종 tier의 존재 이유 | **H** — 압축 단독(1.5×, 문헌 입증)을 넘어 품질 bound 안에서 tier 결합으로 3× | 3 (수단) |
 | QA4 Modifiability | **M** — 초기 가치 실증엔 비직결, 중장기 생존성 좌우 | **H** — 코어/모듈 경계는 되돌리기 어려운 초기 결정; MLA·linear attention 수용은 어려움 | 4 |
@@ -308,6 +316,7 @@ SEI 계열 표준 방법론을 따른다:
 - [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) —
   RAG KV 재사용+선택 재계산: TTFT 2.2–3.3× 단축, 처리율 2.8–5× (QA1 2× bin 근거)
 - [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) —
-  SSD ANN I/O 병목 ~67%, near-storage 협력 인덱싱 QPS 최대 10.7× (QA1 retrieval 축)
+  SSD ANN I/O 병목 ~67%, near-storage 협력 인덱싱 QPS 최대 10.7×
+  (v0.6: 2단계[근접연산 오프로드] 참고로 강등)
 - 기존 앵커(DistServe·MLPerf·KIVI·KVQuant·vLLM SOSP'23·FlexGen·vLLM RELEASE.md)는
   [00_qa_definitions.md](00_qa_definitions.md) §출처 참조

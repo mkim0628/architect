@@ -5,7 +5,7 @@
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
 
-        <mxCell id="mcr" value="MCR&#10;Memory-Centric Runtime&#10;Orchestration · Inference Engine · Memory Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2A44;strokeColor=#0F1830;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="mcr" value="MCR 1단계&#10;KV 캐시 최적 운용 AI 런타임&#10;Orchestration · Inference Engine · Memory Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1F2A44;strokeColor=#0F1830;fontColor=#FFFFFF;fontSize=14;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="420" y="270" width="280" height="140" as="geometry"/>
         </mxCell>
 
@@ -15,7 +15,7 @@
         <mxCell id="ops" value="운영자 (SRE)&#10;(정책 설정 · 실험 구성 운용)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="50" y="528" width="220" height="72" as="geometry"/>
         </mxCell>
-        <mxCell id="dev" value="메모리 tier 디바이스&#10;(HBM · CXL · HBF · SSD-PIM)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="dev" value="메모리 tier&#10;(HBM · DRAM · SSD)&#10;(2단계: 자사 디바이스 plug-in)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#666666;fontColor=#1F2A44;fontSize=12;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="850" y="304" width="220" height="72" as="geometry"/>
         </mxCell>
 
@@ -23,8 +23,8 @@
         <mxCell id="f2" value="응답 (생성 토큰)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="client"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="f3" value="SLO 정책 · tier 등록 · 실험 구성" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="ops" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
         <mxCell id="f4" value="telemetry · 벤치 리포트" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="ops"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="f5" value="KV 배치·이동 · 근접연산 오프로드" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="dev"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="f6" value="데이터 · 연산 결과 · 상태" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="dev" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f5" value="KV 배치·이동 (offload·승격·강등 · 압축 KV 저장)" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="mcr" target="dev"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="f6" value="데이터(KV) · 상태" style="endArrow=classic;html=1;strokeColor=#555555;fontSize=10;fontColor=#333333;" edge="1" parent="1" source="dev" target="mcr"><mxGeometry relative="1" as="geometry"/></mxCell>
       </root>
     </mxGraphModel>
   </diagram>
