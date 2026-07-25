@@ -23,6 +23,11 @@ Architecture Driver. 하류 문서: [00_qa_definitions.md](00_qa_definitions.md)
 추가하고 본 분석을 재수행한다.
 
 **개정 이력**
+- v1.3: **등급 변별 rubric 반영(QA 정의 v1.3)** — "전 QA H/H" 변별력 부재
+  검수 반영. Utility Tree QA-01·QA-04 난이도 H→M(각각 "경로 2/3 문헌
+  재현" / "pruning 확정으로 도달선 문헌화"), QA-04 중요도는 **목표 2 공동
+  판정 지표(기전 입증)** 근거로 H 유지, 목표 간 난이도 서열 비적용 규칙
+  신설. H/H는 QA-02·QA-03 2건으로 정돈 — 우선순위 1–6·bin 불변
 - v1.2: **압축 기법 방향 확정(중요도 기반 토큰 pruning 중심) + QA4 근거
   재기술.** ① FR-03을 **중요도 기반 토큰 eviction(pruning)을 주 기법**,
   양자화를 조합 옵션으로 재기술 — pruning은 토큰 수 자체를 줄여 용량과
@@ -252,10 +257,10 @@ QA-10 행·미선정 사유 참조).
 
 | 번호 | QA | Refinement | Scenario [측정] | 중요도 | 난이도 | 우선순위 | 선정 |
 |---|---|---|---|---|---|---|---|
-| QA-01 | Performance — Latency (TTFT) | prefill 성능 — baseline 대비 **TTFT 단축 배율** (목표 1: KV 재사용) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)과 복원 vs 재계산 판단의 효과가 나타나는 축. [측정: **TTFT 단축 배율 ≥ 2×** → ★★★. **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = 동일 HW·**GPU HBM 단일 tier** 구성 — 순증분 분리 측정. ablation: 재사용 off 대비 순기여 분리. P/D 분리는 실험 변수(양쪽 동일 적용)] | H | H | 1 | **O** |
+| QA-01 | Performance — Latency (TTFT) | prefill 성능 — baseline 대비 **TTFT 단축 배율** (목표 1: KV 재사용) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)과 복원 vs 재계산 판단의 효과가 나타나는 축. [측정: **TTFT 단축 배율 ≥ 2×** → ★★★. **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = 동일 HW·**GPU HBM 단일 tier** 구성 — 순증분 분리 측정. ablation: 재사용 off 대비 순기여 분리. P/D 분리는 실험 변수(양쪽 동일 적용)] | H | M (v1.3 H→M — 경로 2/3 문헌 재현, 신규는 agent memory 축 국한) | 1 | **O** |
 | QA-02 | Performance — Throughput | decode 성능 — baseline 대비 **throughput 배율** (목표 2: 압축·tier 확장 / 목표 3: KV 인지 스케줄링) | 동일 조건에서 생성 처리량(tokens/s 또는 req/s)을 잰다 — 압축·tier 확장이 batch를 키우고(목표 2) KV 인지 스케줄링이 그 이득을 시스템 처리량으로 전환(목표 3)하는 축. [측정: **throughput 배율 ≥ 2×** → ★★★. **iso-latency 판정**(TPOT p99 ≤ baseline 운영점)·throughput–latency 곡선 병행 — 지연을 팔아 처리량을 산 구성 배제. baseline = QA-01과 동일. ablation: 압축 off / KV-blind 스케줄링 대비 순기여 분리] | H | H | 2 | **O** |
 | QA-03 | Accuracy | 압축·재사용 품질 저하 bound — QA-01·02·04 수치의 유효 전제(gate) | 압축(중요도 기반 토큰 pruning 주 기법 · 양자화 조합)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)를 수행한다. [측정: **baseline 대비 F1-score 차이(ΔF1, %p)**. baseline = 동일 모델·동일 벤치의 **비압축(FP16 KV)·비재사용** 구성 — 품질의 이론적 상한이므로 저하량이 곧 압축·재사용의 비용. 보조 지표: ΔPPL(Wikitext-2, 선행 신호). bound 집행 단위(요청별/전역)도 판정] | H | H (v1.1 M→H — 비접두 재사용·차등 압축·축출의 3중 품질 노출 + C-03 training-free) | 3 | **O** |
-| QA-04 | Resource Efficiency | 유효 KV 용량 (원본 환산 동시 수용량) | QA-03 품질 bound를 지키는 조건에서 시스템이 동시 수용하는 KV 총량을 원본 환산으로 잰다. [측정: **유효 KV 용량 ÷ 물리 HBM 용량 배율** — Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 산출. baseline = **HBM 단일 tier·비압축**(정의상 1.0×) — HBM이 희소 자원이라 "HBM 한 장당 수용 컨텍스트"가 비용 구조를 결정하기 때문] | H | H | 4 | **O** |
+| QA-04 | Resource Efficiency | 유효 KV 용량 (원본 환산 동시 수용량) | QA-03 품질 bound를 지키는 조건에서 시스템이 동시 수용하는 KV 총량을 원본 환산으로 잰다. [측정: **유효 KV 용량 ÷ 물리 HBM 용량 배율** — Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 산출. baseline = **HBM 단일 tier·비압축**(정의상 1.0×) — HBM이 희소 자원이라 "HBM 한 장당 수용 컨텍스트"가 비용 구조를 결정하기 때문] | H (목표 2 공동 판정 — 기전 입증) | M (v1.3 H→M — pruning 확정으로 도달선 문헌화) | 4 | **O** |
 | QA-05 | Modifiability (확장성·진화성) | KV 구조 변화·신규 tier 수용성 — framework 결합 격리를 코어/모듈 경계 지표로 포괄 (v1.1 Adaptability 흡수) | KV 구조 영향 모델 변화(GQA/MQA · MLA · linear attention 계열)와 신규 tier 1종 추가(1단계 commodity 조합 변경 — 2단계 자사 디바이스[HBM4/CMM-DC/HBF] 수용의 사전 검증)를 수용하는 실험을 수행한다. [측정: (i) 신규/변경 **모듈 수** (ii) **코어 변경 LOC 비율(%)** — 코어 = 골격 + 공개 인터페이스(KV Locator·CompressionOp) (iii) 인터페이스 **시그니처 변경 건수** (iv) 모델 변화 수용 **리드타임**(upstream 공개일 기준). baseline = 현행 코드베이스. framework 결합 코드의 어댑터 격리는 (ii)·(iii)이 대리 측정] | M | H | 5 | **O** |
 | QA-06 | Maintainability | 개발·운영 비용 (지속 유지 가능성) | 초기 구축부터 지속 유지까지의 비용을 산정한다. [측정: **초기 구축 공수(인월**, 대표 워크로드 E2E 벤치 완주 기준**)과 연간 유지보수 FTE**(upstream 추종·회귀 검증 포함). baseline = DP1 후보별 비용 모델(02 문서 실측 표현: plugin형 수 인월 vs 독립형 수십 인월+) — 구조 선택이 비용을 한 자릿수 이상 가르기 때문] | M | M | 6 | **O** |
 | QA-07 | Availability | 영속 KV 자산의 유실 복구 | 노드 장애로 영속 KV(agent memory 등) 일부가 유실될 때 재계산(re-prefill)으로 세션을 복구한다. [측정: KV 유실 시 세션 손실 건수와 복구 비용(재계산으로 인한 goodput 저하) — baseline = 무장애 운전] | M | M | 7 | |
@@ -264,19 +269,21 @@ QA-10 행·미선정 사유 참조).
 | QA-10 | Adaptability | 서빙 framework 교체 적응성 (vLLM → SGLang 등) | upstream framework를 교체할 때 Memory Engine·정책 계층이 보존되고 framework 결합부만 교체된다. [측정: 교체 시 **변경 코드 비율(%)과 전환 공수(인월)**. baseline = 현 framework(vLLM) 결합 구조] | L (v1.1 M→L — 1단계는 단일 framework 위 실증이 목적, 교체 리스크 노출 시점은 2단계/상용화) | H | 10 | (v1.0까지 선정 → v1.1 미선정 전환) |
 | QA-11 | Scalability | 클러스터 수평 확장 | 노드 추가 시 goodput이 선형에 가깝게 확장된다. [측정: N노드 goodput ÷ (N × 단일 노드 goodput) — baseline = 단일 노드] | L | H | 11 | |
 
-**우선순위 판정 메모** (v1.1 재검수): 중요도 H 4건은 **모두 난이도 H로
-동률** — 순서는 역할 규칙으로만 갈린다: QA-01·02는 최종 **목표**(목표
-1 / 목표 2·3 — 동률 순번은 목표 번호 순, 판정 영향 없음), **QA-03
-Accuracy는 그 수치의 유효 전제(gate)** — 아무리 빨라도 품질이 baseline과
-크게 다르면 그 성능은 무효 — QA-04 Resource Efficiency는 목표 달성의
-**수단**. 따라서 목표(1·2) > gate(3) > 수단(4). **난이도가 아니라 역할이
-동률을 가르는 이유**: 난이도는 "달성이 어려운가"의 축이고 우선순위는
-"아키텍처가 무엇을 먼저 보장해야 하는가"의 축 — gate가 무너지면 수단
-지표의 수치 자체가 무효가 되므로 검증 의존성 순서가 난이도에 앞선다(C).
-(v1.0의 "Accuracy H/M vs Resource Efficiency H/H" 역전 논란은 Accuracy
-난이도 재판정[M→H, 사유는 행 내 표기]으로 해소 — 동률이 되어 역할 규칙만
-남는다.) 중요도 M 2건은 난이도로 Modifiability(M/H) >
-Maintainability(M/M).
+**우선순위 판정 메모** (v1.3 rubric 재검수): 등급은 **세부 기준 rubric**
+(중요도 I1 목표 직결성·I2 파급 범위·I3 VOC 대체 불가성 / 난이도 D1 신규
+설계·D2 동시 충족 폭·D3 회복·가역성, 각 0/1/2점 — H ≥ 5 · M 2–4)으로
+채점한다 — 채점표·근거는 [00_qa_definitions.md](00_qa_definitions.md)
+v1.3이 단일 출처. 결과: **H/H는 QA-02(중요도 최고 6점 — 두 목표 공동
+판정)·QA-03(난이도 최고 6점 — 요청별 bound 집행 문헌 공백 +
+training-free) 2건뿐**이고, QA-01·QA-04는 H/M(중요하지만 도달 경로의
+2/3가 문헌에 있음), QA-05는 M/H(덜 급하지만 불가역 초기 결정)로 갈린다.
+순서는 중요도 H그룹 4건을 역할 규칙(목표[QA-01·02] > gate[QA-03] >
+수단[QA-04])으로 가른다 — QA-04의 중요도 H는 "수단이라서"가 아니라
+**목표 2의 공동 판정 지표(기전 입증 — 유효 용량 미달 시 처리량이 올라도
+'병목을 풀었다'는 인과 불성립 = 목표 2 실패)이기 때문**. **목표
+간(QA-01↔QA-02)에는 난이도 서열을 적용하지 않는다** — 종합 판정이 AND
+조건이라 목표 간 서열은 무결정력, 순번은 목표 번호 순(C). 중요도 M
+2건은 난이도로 Modifiability(M/H) > Maintainability(M/M).
 
 **미선정 사유** (전건 기록):
 
