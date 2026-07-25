@@ -110,7 +110,7 @@ gapRow(y1, 1, "재사용 공백 — prefix 일치·일회성 버퍼에 갇힘 (�
 rowArrow(y1);
 goalRow(y1, 1, "KV 재사용성 제고 → 지연시간(TTFT) 개선",
   "prefix + 비접두(chunk) 재사용 · 세션/사용자 영속화 · 복원 vs 재계산 비용 판단 (FR-02)",
-  "TTFT ≥ 2× (QA1) — CacheBlend 2.2–3.3×(B) 앵커");
+  "TTFT ≥ 2× (QA3) — CacheBlend 2.2–3.3×(B) 앵커");
 
 const y2 = y1 + ROW_H + GAP;
 gapRow(y2, 2, "압축 공백 — 중요도 판정이 정적·전역 일률 (줄이기의 부재)",
@@ -118,8 +118,8 @@ gapRow(y2, 2, "압축 공백 — 중요도 판정이 정적·전역 일률 (줄�
   "용량·대역폭 이중 병목 지속, 품질 리스크 통제 불가 (R-01·02·06)");
 rowArrow(y2);
 goalRow(y2, 2, "정확도 유지 KV 압축(pruning) → 메모리 병목 해소 → 지연·처리량 개선",
-  "품질 bound(ΔF1 ≤ 1%p, QA3 gate) 안에서 중요도 기반 토큰 pruning을 요청별 차등 적용(양자화는 조합) — training-free(C-03) (FR-03·04)",
-  "유효 KV 용량 ≥ 3× (QA4) · throughput ≥ 2× (QA2)");
+  "품질 bound(ΔF1 ≤ 1%p, QA2 gate) 안에서 중요도 기반 토큰 pruning을 요청별 차등 적용(양자화는 조합) — training-free(C-03) (FR-03·04)",
+  "유효 KV 용량 ≥ 3× (QA4) · throughput ≥ 2× (QA1)");
 
 const y3 = y2 + ROW_H + GAP;
 gapRow(y3, 3, "스케줄링 공백 — 스케줄러가 KV를 모른다, KV-blind (잘 두고 고르기의 부재)",
@@ -128,7 +128,7 @@ gapRow(y3, 3, "스케줄링 공백 — 스케줄러가 KV를 모른다, KV-blind
 rowArrow(y3);
 goalRow(y3, 3, "KV 캐시 인지형 동적 스케줄링 → 처리량 개선",
   "cache-hit/locality 인지 admission·라우팅 + KV 공간 확보(압축/강등/축출 최적 선택) — 요청별 SLO 차등 (FR-05)",
-  "throughput ≥ 2× (QA2) — 축별 ablation으로 순기여 분리");
+  "throughput ≥ 2× (QA1) — 축별 ablation으로 순기여 분리");
 
 // ── 하단 종합 바 ─────────────────────────────────────────────────────
 const sy = A.CONTENT_BOTTOM - SYNTH_H;
