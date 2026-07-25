@@ -1,4 +1,4 @@
-# MCR QA 정의 및 별점 평가 기준 (v1.3)
+# MCR QA 정의 및 별점 평가 기준 (v1.2)
 
 `02_design_points_dp1_dp2.md` §0의 잠정 QA 정의를 분리·승격한 문서.
 모든 DP/후보구조 평가는 본 문서의 정량 bin을 기준으로 별점을 매긴다.
@@ -8,7 +8,7 @@
 
 | QA | Refinement | 시나리오 | 중요도 | 난이도 | 우선순위 |
 |---|---|---|---|---|---|
-| **Performance — Latency** (QA1. TTFT, prefill 성능) | **이중 기준선 TTFT 단축 배율** — 목표 1(KV 재사용)의 판정 지표. 주 기준선 = **CacheBlend**(채택 후 수정·확장할 SOTA), 보조 = 무재사용 구성 | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)·영속화·복원 vs 재계산 판단의 효과 축. **평균 기준 판정 · p99 분포 병행**(꼬리는 cache-miss cold 요청이 지배). 주 baseline = **vLLM + CacheBlend 공개 구현**(수정·확장의 순기여 판정), 보조 baseline = 무재사용(GPU HBM 단일 tier — 효용 확인·문헌 비교). [측정: **CacheBlend 대비 ≥ 1.3× 그리고 무재사용 대비 ≥ 2×** → ★★★] | H | H | 1 |
+| **Performance — Latency** (QA1. TTFT, prefill 성능) | baseline 대비 **TTFT 단축 배율** — 목표 1(KV 재사용)의 판정 지표 | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)·복원 vs 재계산 판단의 효과 축. **평균 기준 판정 · p99 분포 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = GPU HBM 단일 tier 구성(순증분 분리 측정), ablation: 재사용 off 대비 순기여. [측정: TTFT 단축 배율 **≥ 2×** → ★★★] | H | H | 1 |
 | **Performance — Throughput** (QA2. throughput, decode 성능) | baseline 대비 **throughput 배율** — 목표 2(압축·tier 확장)·목표 3(KV 인지 스케줄링)의 판정 지표 | 동일 조건에서 생성 처리량(tokens/s·req/s)을 **iso-latency**(TPOT p99 ≤ baseline 운영점)로 잰다 — 압축·tier 확장의 batch 확대(목표 2)와 KV 인지 스케줄링의 이득 전환(목표 3)의 효과 축. throughput–latency 곡선 병행 보고. baseline = QA1과 동일, ablation: 압축 off / KV-blind 스케줄링 대비 순기여. [측정: throughput 배율 **≥ 2×** → ★★★] | H | H | 2 |
 | **Accuracy** (QA3. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(중요도 기반 토큰 pruning 주 기법 · 양자화 조합)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | H (v1.1 M→H) | 3 |
 | **Resource Efficiency** (QA4. 메모리 효율) | 유효 KV 용량 (원본 환산 동시 수용량) | QA3 품질 bound를 지키는 조건에서 Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을 산출하고 물리 HBM 용량 대비 배율을 구한다. baseline = HBM 단일 tier·비압축(정의상 1.0× — HBM당 수용 컨텍스트가 비용 결정). [측정: 유효 KV 용량 ≥ 3× → ★★★] | H | H | 4 |
@@ -36,17 +36,6 @@
   매핑 표로 읽고, 차기 DP 문서 개정에서 일괄 치환한다).
 
 **개정 이력**
-- v1.3: **QA1(TTFT) baseline을 CacheBlend로 재정의 — 이중 기준선 구조.**
-  목표 1의 실행 기반을 **CacheBlend(LMCache 계열) 채택 후 수정·확장**으로
-  확정함에 따라, QA1의 주 판정 기준선을 무재사용 구성에서 **vLLM +
-  CacheBlend(공개 구현, 동일 HW·동일 구성)**로 교체 — 채택할 SOTA를
-  그대로 쓰는 것과 구분되는 **수정·확장의 순기여**를 판정하기 위함.
-  무재사용 구성(GPU HBM 단일 tier·재사용 off)은 **보조 기준선**으로
-  유지(효용 확인 ≥2×·문헌 비교·QA2와의 정합·ablation 하한). ★★★ =
-  **CacheBlend 대비 평균 TTFT ≥ 1.3× 그리고 무재사용 대비 ≥ 2×**.
-  1.3×는 CacheBlend 잔여 TTFT의 주성분(선택 재계산 10–15%(B)·복원 I/O·
-  커버리지 밖 요청의 full prefill)에 대한 회수 논증(C, **잠정 — 파일럿
-  실측 후 재캘리브레이션**). QA2 baseline은 불변(무재사용 단일 기준선)
 - v1.2: **압축 기법 방향 확정(중요도 기반 토큰 pruning 중심, 요구사항 분석
   v1.2) 반영 + QA4 중요도 근거 재기술.** ① QA2(throughput) bin 근거의 1차
   앵커를 양자화(KIVI)에서 **pruning 문헌(H2O·SnapKV)**으로 교체 — pruning은
@@ -178,7 +167,7 @@
 | KV pruning 성능 — **throughput**(decode, 주 기법) | 프롬프트 KV 92% 축소로 16k 입력 **생성 속도 3.6× · 메모리 효율 8.2×** | [SnapKV (NeurIPS'24)](https://arxiv.org/abs/2404.14469) |
 | KV pruning 처리량 (offloading baseline 대비) | KV 예산 20%(H2O)로 처리량 **3×(vs FlexGen) ~ 최대 29×(vs DeepSpeed·Accelerate)** — 참고 상한 | [H2O (NeurIPS'23)](https://arxiv.org/abs/2306.14048) |
 | KV 압축 용량·처리율 (양자화 — 조합 옵션) | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, **처리율 2.35–3.47×** | [KIVI](https://arxiv.org/html/2402.02750v2) |
-| KV 재사용 — **TTFT**(prefill) · **QA1 주 기준선**(v1.3 — 채택 후 수정·확장할 SOTA) | RAG KV 재사용 + 선택 재계산(HKVD 10–15%): **TTFT 2.2–3.3× 단축**(부수 처리율 2.8–5×), 품질 저하 F1/Rouge-L 0.01–0.03 | [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) |
+| KV 재사용 — **TTFT**(prefill) | RAG KV 재사용 + 선택 재계산(HKVD 10–15%): **TTFT 2.2–3.3× 단축**(부수 처리율 2.8–5×), 품질 저하 F1/Rouge-L 0.01–0.03 | [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) |
 | prefix 재사용 — **TTFT**(prefill) | RadixAttention cross-request 재사용 — prefill 재계산 제거로 첫 토큰 지연 단축, prefix 공유 워크로드 처리율 최대 6.4× | [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) |
 | near-storage 검색 — retrieval (**2단계 참고**, v1.0) | SSD 기반 ANN에서 I/O가 실행 시간 ~67% → host CPU + SSD 협력 인덱싱으로 **QPS 최대 10.7×** — 2단계(근접연산 오프로드) 편입 시 RAG TTFT 임계 경로 단축 근거 | [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) · [ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md) |
 | paging — **throughput**(decode) | PagedAttention KV 관리만으로 동일 GPU **처리량 2–4×** | [vLLM (SOSP'23)](https://arxiv.org/abs/2309.06180) |
@@ -194,8 +183,7 @@
 | LongBench 표본 규모 | QA 태스크당 **200 샘플**(MultiFieldQA 150) — F1 평균의 표본 오차 산정 기초 | [LongBench (ACL'24)](https://arxiv.org/html/2308.14508v1) |
 
 **MCR 표준 측정 조건**(별도 명시 없으면 이 조건으로 측정, v1.0): ①
-**TTFT** — 동일 부하에서 **이중 기준선**(주: vLLM+CacheBlend / 보조:
-무재사용 — v1.3, QA1 참조) 대비 단축 배율, 워크로드 **평균 기준
+**TTFT** — 동일 부하에서 baseline 대비 단축 배율, 워크로드 **평균 기준
 판정 · p99 분포 병행 보고** (재사용 hit/miss 이질성 때문에 꼬리는 cold
 요청이 지배 — 평균이 재사용 효과를, p99가 cold-path 개선을 각각 보인다)
 ② **throughput** — **iso-latency 비교**: TPOT p99가 baseline과 같거나
@@ -211,74 +199,56 @@ DP7의 TTFT 예산 논의에서 참조한다.
 
 ---
 
-## QA1. TTFT — prefill 성능 (이중 기준선 단축 배율)
+## QA1. TTFT — prefill 성능 (baseline 대비 단축 배율)
 
 (v1.1 — 구 QA1 "추론 성능"의 TTFT 축을 독립 QA로 분리. **목표 1(KV
-재사용성 제고 → 지연시간 개선)의 판정 지표.** v1.3 — 목표 1의 실행 기반을
-**CacheBlend 채택 후 수정·확장**으로 확정함에 따라 주 판정 기준선을
-CacheBlend로 교체.)
+재사용성 제고 → 지연시간 개선)의 판정 지표.**)
 
 - **중요도: H** — "추론을 더 빠르게 시작한다"는 목표 1의 최종 판정 지표.
   장문 컨텍스트의 매 요청 전체 re-prefill(R-03·04)이 지연의 지배 요인이며,
   TTFT는 사용자가 체감하는 첫 지표다. 미달이면 목표 1 실패(C).
-- **난이도: H** — 주 기준선이 SOTA(CacheBlend)인 만큼 "채택만으로 얻는
-  이득"은 0으로 정규화된다 — 별점은 **수정·확장의 순기여**(비접두 재사용
-  범위 확장, 세션·사용자 영속화, 복원 vs 재계산 판단)로만 올라간다.
-  재사용 이득은 cache-hit·워크로드 의존(B)이 커서 대표 워크로드 3종
-  전반에서 bin을 지키기 어렵고, 비접두 재사용은 품질(선택 재계산율)과의
-  트레이드오프를 요구.
+- **난이도: H** — 2×는 KV 재사용 hit rate에 의존하고, 재사용 이득은
+  cache-hit·워크로드 의존(B)이 커서 대표 워크로드 3종 전반에서 bin을
+  지키기 어렵다. 비접두 재사용은 품질(선택 재계산율)과의 트레이드오프,
+  하위 tier 복원은 "복원 vs 재계산" 비용 판단 구조를 요구.
 - **우선순위: 1** — 최종 목표 지표. QA2(throughput)와 목표 동률이며 순번은
   목표 번호 순(판정 영향 없음, 규칙은 문서 상단 참조).
-- **평가 시나리오**: 동일 HW·동일 실행 구성에서 두 기준선과 MCR을 대표
-  워크로드(long-context RAG · multiturn · agent memory)로 E2E 구동하고
-  첫 토큰까지의 시간을 잰다. (retrieval 자체는 외부 컴포넌트로 전 구성
-  동일 적용 — 그 가속은 2단계 이관, v1.0.)
-  [측정: **CacheBlend 대비 ≥ 1.3× 그리고 무재사용 대비 ≥ 2×** → ★★★]
+- **평가 시나리오**: 동일 HW·동일 실행 구성에서 GPU HBM 단일 tier
+  baseline과 MCR을 대표 워크로드(long-context RAG · multiturn · agent
+  memory)로 E2E 구동하고 첫 토큰까지의 시간을 잰다. (retrieval 자체는 외부
+  컴포넌트로 양쪽 동일 적용 — 그 가속은 2단계 이관, v1.0.)
+  [측정: TTFT 단축 배율 **≥ 2×** → ★★★]
 
-- **정의**: 기준선 대비 TTFT(Time To First Token) 단축 배율(= baseline
+- **정의**: baseline 대비 TTFT(Time To First Token) 단축 배율(= baseline
   TTFT ÷ MCR TTFT) — prefill 성능. **KV 재사용**(prefix·비접두 재계산
-  회피)·**영속화**·**복원 vs 재계산 판단**의 효과가 나타나는 축.
-- **측정 — 이중 기준선 (v1.3)**:
-  - **주 기준선 = vLLM + CacheBlend(공개 구현, 동일 HW·동일 구성)**:
-    목표 1은 CacheBlend를 채택해 수정·확장하는 것이므로, 채택 자체의
-    이득(무재사용 대비 2.2–3.3×(B))과 구분되는 **수정·확장의 순기여**를
-    이 기준선이 판정한다. 연구 기여의 입증 축.
-  - **보조 기준선 = 무재사용 구성(GPU HBM 단일 tier·재사용 off)**: 효용성
-    확인(≥2×)·문헌 비교·QA2 baseline과의 정합·ablation 하한. E2E 종합
-    보고에는 두 배율을 병행 기재한다.
+  회피)과 **복원 vs 재계산 판단**의 효과가 나타나는 축.
+- **측정**:
   - **워크로드 평균 기준 판정, p99 분포 병행 보고**: 재사용 hit/miss
     이질성 때문에 꼬리(p99)는 cache-miss cold 요청이 지배하므로, 평균이
     재사용의 실효 이득을, p99가 cold-path 개선을 각각 드러낸다.
-  - P/D 분리 여부는 전제하지 않는다(실험 변수 — 전 구성 동일 적용).
-  - 보조 지표: cache hit rate·재사용 커버리지(전체 요청 중 재사용 적용
-    비율 — CacheBlend 대비 확대분), 선택 재계산율, 복원 vs 재계산 판단
-    적중률.
+  - **Baseline 정의 (필수)**: 동일 HW·동일 실행 구성에서 **GPU HBM 단일
+    tier만 사용하는 구성** — KV 최적 운용 없이 현행 표준 서빙 스택이 달성
+    가능한 최선이므로 순증분이 분리 측정된다. P/D 분리 여부는 전제하지
+    않는다(실험 변수 — 양쪽 동일 적용). QA2와 동일 baseline 공유.
+  - **ablation**: 재사용 off 구성 대비 증분으로 목표 1의 순기여를 분리
+    (표준 측정 조건 ③). 보조 지표: cache hit rate(재사용 축의 중간 지표).
 
-| 별점 | 기준 (평균 TTFT 단축 배율 — 두 조건 모두) |
+| 별점 | 기준 (baseline 대비 TTFT 단축 배율) |
 |---|---|
-| ★★★ | **CacheBlend 대비 ≥ 1.3×** 그리고 무재사용 대비 ≥ 2× |
-| ★★☆ | CacheBlend 대비 1.1× – 1.3× (무재사용 대비 ≥ 2× 충족 시) |
-| ★☆☆ | CacheBlend 대비 < 1.1× (수정의 순기여가 측정 오차 수준 — 미입증) 또는 무재사용 대비 < 2× |
+| ★★★ | **≥ 2×** |
+| ★★☆ | 1.5× – 2× |
+| ★☆☆ | < 1.5× |
 
-**bin 근거 (v1.3)**:
-- **무재사용 대비 ≥ 2× (보조 조건)**: [CacheBlend (EuroSys'25 Best
-  Paper)](https://arxiv.org/abs/2405.16444)가 RAG KV 재사용+선택
-  재계산으로 **TTFT 2.2–3.3× 단축**(B) — 채택 기반이 이미 이 선을
-  달성하므로 2×는 효용성의 하한 확인 조건(C, 구 ★★★ bin 계승).
-- **CacheBlend 대비 ≥ 1.3× (주 조건)** — 잔여 비용 회수 논증(C):
-  CacheBlend 적용 후 잔여 TTFT의 주성분은 ① **선택 재계산**(HKVD
-  10–15%(B)) ② **KV 복원 I/O**(로딩-재계산 중첩이 불완전한 구간 — 하위
-  tier일수록 노출) ③ **커버리지 밖 요청의 full prefill**(RAG chunk 외
-  multiturn·agent 세션 KV — CacheBlend 적용 범위 밖). MCR의 수정 지렛대가
-  셋에 각각 대응한다 — ① 요청별 품질 예산 기반 재계산율 조정 ② 복원 vs
-  재계산 비용 판단·tier 배치 ③ 세션·사용자 영속화로 커버리지 확대.
-  워크로드 평균에서 잔여분의 1/4~1/3 회수를 보수 하한으로 두면 ≈1.3×(C).
-  **잠정 bin — 파일럿 실측(CacheBlend 재현 + 잔여 TTFT 분해) 후
-  재캘리브레이션한다.** 1.1×는 run-to-run 편차(수 %)를 넘는 최소 유의
-  개선 선(C).
-- prefix 재사용의 보조 근거: [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)
-  — prefix 재계산 제거로 첫 토큰 지연 단축(B).
-(v1.0: retrieval 가속(SmartANNS·ADR-001) 축은 2단계 이관으로 근거에서 제외.)
+**bin 근거 (≥ 2×)**:
+[CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444)가
+RAG KV 재사용+선택 재계산(비접두 재사용)으로 **TTFT를 2.2–3.3× 단축**(B,
+품질 저하 F1/Rouge-L 0.01–0.03)했고, [SGLang RadixAttention](https://arxiv.org/abs/2312.07104)의
+prefix 재사용도 prefill 재계산을 없애 첫 토큰 지연을 줄인다(B).
+prefix·비접두 재사용을 결합하고 복원 vs 재계산을 비용 기준으로 판단하는
+MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구한다(C). 1.5×는
+단일 기법 부분 적용 수준의 도달선으로 ★★☆(C).
+(v1.0: retrieval 가속(SmartANNS·ADR-001) 축은 2단계 이관으로 근거에서
+제외 — CacheBlend 하단만으로 2×가 성립하므로 bin 수치는 불변.)
 
 ## QA2. throughput — decode 성능 (baseline 대비 배율)
 

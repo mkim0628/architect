@@ -109,8 +109,8 @@ gapRow(y1, 1, "재사용 공백 — prefix 일치·일회성 버퍼에 갇힘 (�
   "수십 k 토큰을 매 요청 전체 re-prefill — TTFT 지배 (R-03·04·05)");
 rowArrow(y1);
 goalRow(y1, 1, "KV 재사용성 제고 → 지연시간(TTFT) 개선",
-  "SOTA(CacheBlend) 채택 후 수정·확장 — 비접두 재사용 확장 · 세션/사용자 영속화 · 복원 vs 재계산 비용 판단 (FR-02)",
-  "CacheBlend 대비 TTFT ≥ 1.3×(잠정) · 무재사용 대비 ≥ 2× (QA1)");
+  "prefix + 비접두(chunk) 재사용 · 세션/사용자 영속화 · 복원 vs 재계산 비용 판단 (FR-02)",
+  "TTFT ≥ 2× (QA1) — CacheBlend 2.2–3.3×(B) 앵커");
 
 const y2 = y1 + ROW_H + GAP;
 gapRow(y2, 2, "압축 공백 — 중요도 판정이 정적·전역 일률 (줄이기의 부재)",

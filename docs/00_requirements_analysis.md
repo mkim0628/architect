@@ -23,11 +23,6 @@ Architecture Driver. 하류 문서: [00_qa_definitions.md](00_qa_definitions.md)
 추가하고 본 분석을 재수행한다.
 
 **개정 이력**
-- v1.3: **목표 1 실행 기반 확정(CacheBlend 채택 후 수정·확장) — QA-01
-  이중 기준선.** FR-02에 실행 기반(vLLM + CacheBlend[LMCache 계열] 채택 후
-  수정·확장 — DP1의 사전 입력) 명시, Utility Tree QA-01 [측정]을 이중
-  기준선(주: CacheBlend 대비 ≥1.3×[잠정, 잔여 비용 회수 논증(C)] / 보조:
-  무재사용 대비 ≥2×)으로 갱신 (QA 정의 v1.3과 정합)
 - v1.2: **압축 기법 방향 확정(중요도 기반 토큰 pruning 중심) + QA4 근거
   재기술.** ① FR-03을 **중요도 기반 토큰 eviction(pruning)을 주 기법**,
   양자화를 조합 옵션으로 재기술 — pruning은 토큰 수 자체를 줄여 용량과
@@ -152,7 +147,7 @@ MCAS가 구축하려는 시스템 환경은 실장(實裝) 전이라 MCR의 실�
 | 번호 | 태그 | 설명 | 출처 |
 |---|---|---|---|
 | FR-01 | 워크로드 서빙 | 대표 워크로드(**long-context RAG · multiturn · agent memory**)의 추론 요청을 admission → context 조립 → 배칭 → 실행 → 응답으로 E2E 처리할 수 있어야 한다. (retrieval 자체는 외부 컴포넌트 — 그 가속은 2단계) | R-03·R-04·R-08·R-11 |
-| FR-02 (구 FR-04) | KV 재사용 | KV를 **세션·사용자 단위로 영속화**하고, **prefix를 넘어 비접두(chunk) 재사용**까지 지원하며, hit 시 **복원 vs 재계산을 비용(전송 시간 대 re-prefill 시간) 기준으로 판단**해 재사용할 수 있어야 한다. — **목표 1의 본체**. 실행 기반(v1.3): **vLLM + CacheBlend(LMCache 계열)를 채택 후 수정·확장** — DP1(실행 스택 소싱)의 사전 입력이며, QA-01 판정의 주 기준선 | R-03·R-04·R-05·R-24 |
+| FR-02 (구 FR-04) | KV 재사용 | KV를 **세션·사용자 단위로 영속화**하고, **prefix를 넘어 비접두(chunk) 재사용**까지 지원하며, hit 시 **복원 vs 재계산을 비용(전송 시간 대 re-prefill 시간) 기준으로 판단**해 재사용할 수 있어야 한다. — **목표 1의 본체** | R-03·R-04·R-05·R-24 |
 | FR-03 | KV 압축 (pruning 중심) | **중요도 기반 토큰 eviction(pruning)을 주 기법**으로 KV cache에 적용·해제하고(양자화는 조합 옵션, 자체 알고리즘 개발 포함), **요청별 품질 예산에 따라 압축 수준(pruning 예산)을 차등** 적용할 수 있어야 한다. pruning은 토큰 수 자체를 줄여 **용량과 대역폭(매 토큰 읽기량)·attention 연산량에 동시 작용**한다. — **목표 2의 본체** (v1.2: 재사용 대상 KV의 pruning 정책은 §5 신규 쟁점 참조) | R-02·R-06·R-16·R-24 |
 | FR-04 (구 FR-02) | KV tier 배치 | KV cache를 GPU HBM 밖 **메모리 tier**(DRAM·SSD 등 — 1단계 commodity)에 두고, tier 특성(대역폭·지연·용량)을 인지해 **배치·이동(승격/강등)** 할 수 있어야 한다. — 재사용(영속)·압축의 저장 기반. tier는 Tier Topology Model 파라미터로 추상화하며 이 인터페이스가 2단계 자사 디바이스의 접속점 | R-02·R-17 |
 | FR-05 (구 FR-06 확장) | KV 인지 스케줄링 | **cache-hit/locality를 인지한 admission·라우팅**, 메모리 압박 시 **압축/강등/축출의 선택**, **요청별 SLO·품질 예산 기반 차등 조율**을 수행할 수 있어야 한다. — **목표 3의 본체**. 스케줄링이 KV를 모르면 재사용·압축의 이득이 시스템 성능으로 전환되지 않는다 | R-16·R-24 |
@@ -257,7 +252,7 @@ QA-10 행·미선정 사유 참조).
 
 | 번호 | QA | Refinement | Scenario [측정] | 중요도 | 난이도 | 우선순위 | 선정 |
 |---|---|---|---|---|---|---|---|
-| QA-01 | Performance — Latency (TTFT) | prefill 성능 — **이중 기준선 TTFT 단축 배율** (목표 1: KV 재사용 — CacheBlend 채택 후 수정·확장) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)·영속화·복원 vs 재계산 판단의 효과가 나타나는 축. [측정(v1.3): **CacheBlend 대비 ≥ 1.3× 그리고 무재사용 대비 ≥ 2×** → ★★★. 주 baseline = **vLLM + CacheBlend 공개 구현**(채택할 SOTA — 수정·확장의 순기여 판정), 보조 baseline = 무재사용 GPU HBM 단일 tier(효용 확인·문헌 비교·QA-02와 정합). **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). 1.3×는 잔여 비용 회수 논증(C)·잠정 — 파일럿 실측 후 재캘리브레이션. P/D 분리는 실험 변수(전 구성 동일 적용)] | H | H | 1 | **O** |
+| QA-01 | Performance — Latency (TTFT) | prefill 성능 — baseline 대비 **TTFT 단축 배율** (목표 1: KV 재사용) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)과 복원 vs 재계산 판단의 효과가 나타나는 축. [측정: **TTFT 단축 배율 ≥ 2×** → ★★★. **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = 동일 HW·**GPU HBM 단일 tier** 구성 — 순증분 분리 측정. ablation: 재사용 off 대비 순기여 분리. P/D 분리는 실험 변수(양쪽 동일 적용)] | H | H | 1 | **O** |
 | QA-02 | Performance — Throughput | decode 성능 — baseline 대비 **throughput 배율** (목표 2: 압축·tier 확장 / 목표 3: KV 인지 스케줄링) | 동일 조건에서 생성 처리량(tokens/s 또는 req/s)을 잰다 — 압축·tier 확장이 batch를 키우고(목표 2) KV 인지 스케줄링이 그 이득을 시스템 처리량으로 전환(목표 3)하는 축. [측정: **throughput 배율 ≥ 2×** → ★★★. **iso-latency 판정**(TPOT p99 ≤ baseline 운영점)·throughput–latency 곡선 병행 — 지연을 팔아 처리량을 산 구성 배제. baseline = QA-01과 동일. ablation: 압축 off / KV-blind 스케줄링 대비 순기여 분리] | H | H | 2 | **O** |
 | QA-03 | Accuracy | 압축·재사용 품질 저하 bound — QA-01·02·04 수치의 유효 전제(gate) | 압축(중요도 기반 토큰 pruning 주 기법 · 양자화 조합)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)를 수행한다. [측정: **baseline 대비 F1-score 차이(ΔF1, %p)**. baseline = 동일 모델·동일 벤치의 **비압축(FP16 KV)·비재사용** 구성 — 품질의 이론적 상한이므로 저하량이 곧 압축·재사용의 비용. 보조 지표: ΔPPL(Wikitext-2, 선행 신호). bound 집행 단위(요청별/전역)도 판정] | H | H (v1.1 M→H — 비접두 재사용·차등 압축·축출의 3중 품질 노출 + C-03 training-free) | 3 | **O** |
 | QA-04 | Resource Efficiency | 유효 KV 용량 (원본 환산 동시 수용량) | QA-03 품질 bound를 지키는 조건에서 시스템이 동시 수용하는 KV 총량을 원본 환산으로 잰다. [측정: **유효 KV 용량 ÷ 물리 HBM 용량 배율** — Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 산출. baseline = **HBM 단일 tier·비압축**(정의상 1.0×) — HBM이 희소 자원이라 "HBM 한 장당 수용 컨텍스트"가 비용 구조를 결정하기 때문] | H | H | 4 | **O** |
