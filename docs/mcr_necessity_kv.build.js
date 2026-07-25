@@ -113,12 +113,12 @@ goalRow(y1, 1, "KV 재사용성 제고 → 지연시간(TTFT) 개선",
   "TTFT ≥ 2× (QA1) — CacheBlend 2.2–3.3×(B) 앵커");
 
 const y2 = y1 + ROW_H + GAP;
-gapRow(y2, 2, "압축 공백 — 정적·일률 적용, 품질과 피드백 없음 (줄이기의 부재)",
-  "2-bit 양자화·token eviction은 입증됐으나 전역 고정 설정 — 요청별 품질 예산·차등 집행·품질 피드백 루프 부재",
+gapRow(y2, 2, "압축 공백 — 중요도 판정이 정적·전역 일률 (줄이기의 부재)",
+  "중요도 기반 토큰 pruning(H2O·SnapKV)은 입증됐으나 고정 예산·고정 휴리스틱 — 요청별 품질 예산·차등 집행, 재사용과의 조율(쿼리 의존 중요도) 부재",
   "용량·대역폭 이중 병목 지속, 품질 리스크 통제 불가 (R-01·02·06)");
 rowArrow(y2);
-goalRow(y2, 2, "정확도 유지 KV 압축 → 메모리 병목 해소 → 지연·처리량 개선",
-  "품질 bound(ΔF1 ≤ 1%p, QA3 gate) 안에서 요청별 차등 압축 — training-free(C-03) (FR-03·04)",
+goalRow(y2, 2, "정확도 유지 KV 압축(pruning) → 메모리 병목 해소 → 지연·처리량 개선",
+  "품질 bound(ΔF1 ≤ 1%p, QA3 gate) 안에서 중요도 기반 토큰 pruning을 요청별 차등 적용(양자화는 조합) — training-free(C-03) (FR-03·04)",
   "유효 KV 용량 ≥ 3× (QA4) · throughput ≥ 2× (QA2)");
 
 const y3 = y2 + ROW_H + GAP;

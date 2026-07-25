@@ -1,4 +1,4 @@
-# MCR QA 정의 및 별점 평가 기준 (v1.1)
+# MCR QA 정의 및 별점 평가 기준 (v1.2)
 
 `02_design_points_dp1_dp2.md` §0의 잠정 QA 정의를 분리·승격한 문서.
 모든 DP/후보구조 평가는 본 문서의 정량 bin을 기준으로 별점을 매긴다.
@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | **Performance — Latency** (QA1. TTFT, prefill 성능) | baseline 대비 **TTFT 단축 배율** — 목표 1(KV 재사용)의 판정 지표 | 대표 워크로드(long-context RAG · multiturn · agent memory)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)·복원 vs 재계산 판단의 효과 축. **평균 기준 판정 · p99 분포 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = GPU HBM 단일 tier 구성(순증분 분리 측정), ablation: 재사용 off 대비 순기여. [측정: TTFT 단축 배율 **≥ 2×** → ★★★] | H | H | 1 |
 | **Performance — Throughput** (QA2. throughput, decode 성능) | baseline 대비 **throughput 배율** — 목표 2(압축·tier 확장)·목표 3(KV 인지 스케줄링)의 판정 지표 | 동일 조건에서 생성 처리량(tokens/s·req/s)을 **iso-latency**(TPOT p99 ≤ baseline 운영점)로 잰다 — 압축·tier 확장의 batch 확대(목표 2)와 KV 인지 스케줄링의 이득 전환(목표 3)의 효과 축. throughput–latency 곡선 병행 보고. baseline = QA1과 동일, ablation: 압축 off / KV-blind 스케줄링 대비 순기여. [측정: throughput 배율 **≥ 2×** → ★★★] | H | H | 2 |
-| **Accuracy** (QA3. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | H (v1.1 M→H) | 3 |
+| **Accuracy** (QA3. 응답 품질) | 압축·재사용 품질 저하 상한(bound) — 성능·용량 수치의 유효 전제(gate) | 압축(중요도 기반 토큰 pruning 주 기법 · 양자화 조합)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)에서 baseline(비압축 FP16 KV·비재사용 — 품질의 이론적 상한) 대비 F1-score 차이(ΔF1)를 측정하고, bound 집행 단위(요청별 vs 전역)를 판정한다. 보조: ΔPPL(Wikitext-2). [측정: ΔF1 ≤ 1%p · 요청별 bound 집행 → ★★★] | H | H (v1.1 M→H) | 3 |
 | **Resource Efficiency** (QA4. 메모리 효율) | 유효 KV 용량 (원본 환산 동시 수용량) | QA3 품질 bound를 지키는 조건에서 Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 원본 환산 유효 KV 용량을 산출하고 물리 HBM 용량 대비 배율을 구한다. baseline = HBM 단일 tier·비압축(정의상 1.0× — HBM당 수용 컨텍스트가 비용 결정). [측정: 유효 KV 용량 ≥ 3× → ★★★] | H | H | 4 |
 | **Modifiability** (QA5. 확장성·진화성) | KV 구조 변화·신규 tier 수용 용이성 — framework 결합 격리를 코어/모듈 지표로 포괄(v1.1 Adaptability 흡수) | (a) 신규 tier 추가(1단계 commodity 조합 변경 + 로드맵 디바이스[HBM4/CMM-DC/HBF] 파라미터 대입 — 2단계 수용 사전 검증) 시 신규/변경 모듈 수, 코어 변경 LOC 비율(%), 공개 인터페이스 시그니처 변경 건수를 세고 (b) KV 구조 영향 모델 변화(GQA/MQA·MLA·sliding-window·linear attention)의 수용 리드타임을 upstream 공개 시점 기준으로 잰다. baseline = 현행 코드베이스. [측정: 신규 어댑터 모듈 ≤ 1 · 코어 변경 LOC 0 · 시그니처 변경 0건 · 수용 ≤ upstream + 2주 → ★★★] | M | H | 5 |
 | **Maintainability** (QA6. 유지보수성 — 개발·운영 비용) | 초기 구축 + 지속 유지보수 비용 | 대표 워크로드 E2E 벤치 완주까지의 초기 구축 인월(person-month)과, upstream 추종(rebase)·회귀 검증을 포함한 연간 유지보수 FTE를 산정한다. baseline = DP1 후보별 비용 모델(02 실측 표현). [측정: 초기 ≤ 6 인월 · 유지 ≤ 0.5 FTE → ★★★] | M | M | 6 |
@@ -36,6 +36,23 @@
   매핑 표로 읽고, 차기 DP 문서 개정에서 일괄 치환한다).
 
 **개정 이력**
+- v1.2: **압축 기법 방향 확정(중요도 기반 토큰 pruning 중심, 요구사항 분석
+  v1.2) 반영 + QA4 중요도 근거 재기술.** ① QA2(throughput) bin 근거의 1차
+  앵커를 양자화(KIVI)에서 **pruning 문헌(H2O·SnapKV)**으로 교체 — pruning은
+  토큰 수 자체를 줄여 용량(batch)과 매 토큰 읽기량(대역폭)에 동시
+  작용하므로 decode 축에 더 직접적. KIVI는 양자화 조합 시 참고로 유지, bin
+  수치(≥2×)는 불변 ② QA3 시나리오·측정의 압축 표기를 "중요도 기반 토큰
+  pruning(주) · 양자화(조합)"로 재정렬 — ΔF1 bound 근거는 이미
+  H2O·SnapKV를 포함하므로 bound 불변. **pruning×재사용 충돌**(쿼리 의존
+  중요도 vs 미래 쿼리용 영속화 — 요구사항 v1.2 신규 쟁점)을 요청별 집행
+  조건의 근거에 추가 ③ **QA4 중요도 근거를 3근거로 재기술** — (i) 수용
+  가능성: 장문 컨텍스트·다세션 admit 여부는 rate(throughput)가 아닌 용량이
+  결정 (ii) 재사용 경로: 영속 KV 보관량 → cache hit rate → QA1(TTFT)
+  (iii) 비용·검증: HBM당 수용 컨텍스트가 비용 구조 결정 + MCAS 시뮬레이션
+  대조 수치(R-02). "QA2의 수단" 단일 서술을 **QA1·QA2의 공유 상류**로 교정
+  — QA2가 QA4의 superset이 아님을 명시(대역폭 포화 시 용량↑≠처리량↑,
+  스케줄링 개선만으로도 처리량↑ 가능) ④ 앵커 표에 SnapKV·H2O 성능 실측
+  행 추가. 우선순위·bin 전 항목 불변
 - v1.1: **QA 체계 검수 반영 — 분할·재번호·재판정.**
   ① **Performance를 2개 QA로 분할**: QA1 TTFT(prefill, 목표 1) ·
   QA2 throughput(decode, 목표 2·3). 단일 QA 내 2지표 AND는 축별 판정·DP
@@ -147,7 +164,9 @@
 | MLPerf Inference **Interactive** | TTFT p99 ≤ 450 ms · TPOT p99 ≤ 40 ms | [NVIDIA MLPerf v5.0](https://developer.nvidia.com/blog/nvidia-blackwell-delivers-massive-performance-leaps-in-mlperf-inference-v5-0/) |
 | goodput 정의 · SLO attainment | SLO(TTFT·TPOT) 충족률 **≥ 90%** 유지 최대 처리율 | [DistServe (OSDI'24)](https://arxiv.org/pdf/2401.09670), [Hao AI Lab](https://haoailab.com/blogs/distserve/) |
 | TPOT 인지 상한 | 인간 독해 속도 ~250 words/min → TPOT ≈ 50 ms면 체감 충분 | DistServe 상동 |
-| KV 압축 용량·처리율 | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, **처리율 2.35–3.47×** | [KIVI](https://arxiv.org/html/2402.02750v2) |
+| KV pruning 성능 — **throughput**(decode, 주 기법) | 프롬프트 KV 92% 축소로 16k 입력 **생성 속도 3.6× · 메모리 효율 8.2×** | [SnapKV (NeurIPS'24)](https://arxiv.org/abs/2404.14469) |
+| KV pruning 처리량 (offloading baseline 대비) | KV 예산 20%(H2O)로 처리량 **3×(vs FlexGen) ~ 최대 29×(vs DeepSpeed·Accelerate)** — 참고 상한 | [H2O (NeurIPS'23)](https://arxiv.org/abs/2306.14048) |
+| KV 압축 용량·처리율 (양자화 — 조합 옵션) | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, **처리율 2.35–3.47×** | [KIVI](https://arxiv.org/html/2402.02750v2) |
 | KV 재사용 — **TTFT**(prefill) | RAG KV 재사용 + 선택 재계산(HKVD 10–15%): **TTFT 2.2–3.3× 단축**(부수 처리율 2.8–5×), 품질 저하 F1/Rouge-L 0.01–0.03 | [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) |
 | prefix 재사용 — **TTFT**(prefill) | RadixAttention cross-request 재사용 — prefill 재계산 제거로 첫 토큰 지연 단축, prefix 공유 워크로드 처리율 최대 6.4× | [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) |
 | near-storage 검색 — retrieval (**2단계 참고**, v1.0) | SSD 기반 ANN에서 I/O가 실행 시간 ~67% → host CPU + SSD 협력 인덱싱으로 **QPS 최대 10.7×** — 2단계(근접연산 오프로드) 편입 시 RAG TTFT 임계 경로 단축 근거 | [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) · [ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md) |
@@ -249,8 +268,10 @@ MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구한다(C). 
   baseline 대비 배율을 잰다.
   [측정: throughput 배율 **≥ 2×** (iso-latency 판정) → ★★★]
 
-- **정의**: baseline 대비 생성 처리량 배율 — decode 성능. **압축·tier
-  확장**(목표 2)이 KV 가용 용량을 키워 batch를 확대하고, **KV 인지
+- **정의**: baseline 대비 생성 처리량 배율 — decode 성능. **압축(중요도
+  기반 토큰 pruning 주 기법)·tier 확장**(목표 2)이 KV 가용 용량을 키워
+  batch를 확대하고 — pruning은 토큰 수 자체를 줄이므로 **매 토큰 KV
+  읽기량(대역폭)과 attention 연산량까지 동시에 절감**(v1.2) — , **KV 인지
   스케줄링**(목표 3 — locality 라우팅·KV 공간 확보[압축/강등/축출 선택])이
   그 이득을 시스템 처리량으로 전환하는 축.
 - **측정**:
@@ -277,15 +298,21 @@ MCR에 **2×**(CacheBlend 하단 2.2×의 보수 반올림)를 요구한다(C). 
 | ★★☆ | 1.5× – 2× |
 | ★☆☆ | < 1.5× (또는 iso-latency 조건 미충족) |
 
-**bin 근거 (≥ 2×)**:
-[KIVI](https://arxiv.org/html/2402.02750v2) 2-bit 양자화가 batch 4×로
-**처리율 2.35–3.47×**(B), [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)의
-메모리 관리만으로 동일 GPU **처리량 2–4×**(B). tier 확장이 KV 가용 용량을
-키워 batch를 더 확대하고, KV 인지 스케줄링이 그 이득을 시스템 처리량으로
-전환하므로, 압축·paging 단독 하단인 **2×**를 결합 시스템의 하한으로
-요구한다(C). 1.5×는 단독 기법 도달선으로 ★★☆(v0.8 결정 계승). *주의:
-DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구성을 양쪽에
-동일하게 두는 본 QA의 bin 근거가 아니다.*
+**bin 근거 (≥ 2×)** (v1.2 — pruning 1차 앵커로 교체):
+**토큰 pruning(주 기법)**: [SnapKV](https://arxiv.org/abs/2404.14469)가
+프롬프트 KV 92% 축소로 16k 입력에서 **생성 속도 3.6× · 메모리 효율
+8.2×**(B), [H2O (NeurIPS'23)](https://arxiv.org/abs/2306.14048)가 KV 예산
+20%에서 **처리량 3×(vs FlexGen)~최대 29×(vs DeepSpeed·Accelerate)**(B —
+offloading baseline 대비 수치이므로 참고 상한). **paging·양자화(조합
+옵션)**: [vLLM/PagedAttention (SOSP'23)](https://arxiv.org/abs/2309.06180)
+메모리 관리만으로 동일 GPU **처리량 2–4×**(B),
+[KIVI](https://arxiv.org/html/2402.02750v2) 2-bit 양자화 batch 4×로
+**처리율 2.35–3.47×**(B). pruning이 batch 확대(용량)와 토큰당 읽기량
+절감(대역폭)에 동시 작용하고, tier 확장·KV 인지 스케줄링이 이득을 시스템
+처리량으로 전환하므로, 단독 기법 실측 하단인 **2×**를 결합 시스템의
+하한으로 요구한다(C). 1.5×는 단독 기법 도달선으로 ★★☆(v0.8 결정 계승).
+*주의: DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구성을
+양쪽에 동일하게 두는 본 QA의 bin 근거가 아니다.*
 
 ## QA3. 응답 품질 (품질 저하 bound)
 
@@ -307,8 +334,9 @@ DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구�
 - **우선순위: 3** — 중요도 H 그룹 내 **전제(gate)** — 성능·용량 수치의
   유효 조건이므로 목표 지표(QA1·QA2) 다음, 수단 지표(QA4) 앞
   (역할 규칙, 문서 상단 참조).
-- **평가 시나리오**: 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로
-  활성화한 상태에서 long-context 벤치마크(LongBench 등)를 수행하고,
+- **평가 시나리오**: 압축(중요도 기반 토큰 pruning 주 기법 · 양자화
+  조합)·재사용을 실서빙 설정으로 활성화한 상태에서 long-context
+  벤치마크(LongBench 등)를 수행하고,
   baseline(동일 모델·동일 벤치의 비압축 FP16 KV·비재사용 — 품질의 이론적
   상한) 대비 **F1-score 차이(ΔF1, %p)** 와 보조 지표 ΔPPL(Wikitext-2)을
   측정하며, bound의 집행 단위(요청별 vs 전역)를 판정한다.
@@ -365,15 +393,37 @@ DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구�
 - **보조 ΔPPL ≤ 0.1**: KVQuant가 3-bit에서 Wikitext-2·C4 기준 ΔPPL < 0.1을
   LLaMA/Llama-2/-3/Mistral 전반에서 입증(B) — "달성 가능한 near-lossless 선".
 - 집행 단위 조건: K>V sensitivity(B) — 압축 대상 선택이 품질을 좌우하므로
-  요청별 차등 집행 가능 여부가 bound 보장성을 가름(C).
+  요청별 차등 집행 가능 여부가 bound 보장성을 가름(C). **pruning 주 기법
+  채택(v1.2)으로 이 조건이 더 강해진다**: 토큰 중요도는 쿼리
+  의존적(SnapKV는 현재 쿼리 기준 선택(B))인데 재사용 KV는 **미래 쿼리**를
+  위해 영속화되므로, 재사용 대상 KV의 pruning은 요청별 bound를 깨뜨릴 수
+  있다 — 요구사항 분석 v1.2 신규 쟁점(pruning×재사용 충돌, DP2×DP3) 참조.
 
 ## QA4. 메모리 효율 (유효 KV 용량)
 
 (v1.1 — 구 QA3에서 재번호. 목표 2의 "메모리 병목 해소"의 정량 지표.)
 
-- **중요도: H** — HBM이 희소 자원이며 "HBM 한 장당 서빙 가능한 컨텍스트"가
-  비용 구조를 결정. QA2(throughput) 달성의 직접 수단이자 이종 tier 도입의
-  존재 이유(1.5× 미만이면 압축 단독 대비 열위)(C).
+- **중요도: H** (v1.2 — 3근거로 재기술) — 유효 KV 용량은 **QA1·QA2 두 목표
+  지표의 공유 상류**이며, throughput으로 환원되지 않는 독립 가치가 셋 있다:
+  - **① 수용 가능성(capability)**: throughput은 "초당 몇 토큰"의 rate지만,
+    용량은 "**128k 컨텍스트 요청을 admit할 수 있는가 · agent 세션 N개의
+    영속 KV를 보유할 수 있는가**"라는 수용 능력을 결정한다 — 저부하
+    interactive·초장문 워크로드에서는 처리량과 무관하게 용량이 서빙
+    가능/불가능을 가른다(C).
+  - **② 재사용 경로(→QA1)**: 영속 KV는 보관 중 throughput에 기여하지
+    않지만 용량을 점유한다 — **보관 가능한 KV 총량이 cache hit rate를, hit
+    rate가 TTFT(QA1)를 결정**하므로 용량은 목표 1의 상류이기도 하다(C).
+  - **③ 비용·검증 축**: HBM이 희소 자원이며 "HBM 한 장당 서빙 가능한
+    컨텍스트"가 비용 구조를 결정 — 같은 throughput이라도 HBM 사용량이
+    다르면 비용이 다르다. MCAS 팀의 시뮬레이션 예측-실측 대조(R-02)가
+    요구하는 수치가 정확히 이 배율이다(A — VOC 직결).
+
+  이종 tier 도입의 존재 이유이기도 하다(1.5× 미만이면 압축 단독 대비
+  열위)(C). **주 — QA2와의 관계**: "용량↑→batch↑→throughput↑"는 여러 기여
+  경로 중 하나일 뿐 QA2가 본 QA를 포섭하지 않는다 — 대역폭 포화 영역에서는
+  용량을 늘려도 처리량이 오르지 않고(용량 ★★★·처리량 미달 가능), 반대로
+  스케줄링·커널 개선만으로 처리량이 올라도 메모리 병목 해소(목표 2)는
+  입증되지 않는다(처리량 ★★★·용량 미달 가능)(C).
 - **난이도: H** — 압축 단독 1.5×는 문헌으로 입증(KIVI(B))되어 있으나, 상위 bin
   3×는 tier 오프로딩과 압축을 QA3 품질 bound 안에서 결합해야 도달 가능하며
   tier 활용률·압축률 분포 관리가 필요.
@@ -393,6 +443,8 @@ DistServe의 2–7.4×는 colocated → P/D 분리 전환 효과로, 실행 구�
 - **측정**: 유효 KV 용량 ≈ Σ_tier(tier 용량 × 그 tier의 평균 압축률 × KV 가용
   비율) / 물리 HBM 용량. 분모가 HBM인 이유: HBM이 희소 자원이며 "HBM 한 장당
   서빙 가능한 컨텍스트"가 비용 구조를 결정. 보조: tier 활용률, 압축률 분포.
+  (v1.2: pruning 주 기법에서 "압축률" = **토큰 보존률의 역수** — 예산 20%
+  pruning = 5× — 로 동일하게 산입되므로 공식 불변.)
 
 | 별점 | 기준 (유효 KV 용량 배율) |
 |---|---|

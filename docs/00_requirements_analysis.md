@@ -23,6 +23,17 @@ Architecture Driver. 하류 문서: [00_qa_definitions.md](00_qa_definitions.md)
 추가하고 본 분석을 재수행한다.
 
 **개정 이력**
+- v1.2: **압축 기법 방향 확정(중요도 기반 토큰 pruning 중심) + QA4 근거
+  재기술.** ① FR-03을 **중요도 기반 토큰 eviction(pruning)을 주 기법**,
+  양자화를 조합 옵션으로 재기술 — pruning은 토큰 수 자체를 줄여 용량과
+  대역폭(매 토큰 읽기량)에 동시 작용 ② **신규 설계 쟁점 등재: pruning ×
+  재사용 충돌** — 토큰 중요도는 쿼리 의존적(SnapKV)인데 재사용(FR-02)은
+  다음 쿼리를 위한 영속화이므로 두 목표가 같은 KV를 반대로 당김 → §5
+  쟁점 표 신설, DP2·DP3 결합 쟁점으로 차기 DP 문서 개정 시 전개 ③ QA4
+  (Resource Efficiency) 중요도 근거를 3근거(수용 가능성 · 재사용
+  보관량→hit rate→QA1 경로 · HBM당 비용/MCAS 검증[R-02])로 재기술 —
+  "QA2의 수단"만이 아니라 **QA1·QA2의 공유 상류**임을 명시 (QA 정의
+  v1.2와 정합)
 - v1.1: **QA 체계 검수 반영 (4건).** ① UC-08을 "메모리 압박 대응"에서
   **"KV 공간 확보"**로 재기술 — 트리거(KV 풀 포화)·수단(추가 압축/강등/축출
   선택)·결과(preemption 없이 서빙 지속)를 명시 ② **Performance를 2개 QA로
@@ -137,7 +148,7 @@ MCAS가 구축하려는 시스템 환경은 실장(實裝) 전이라 MCR의 실�
 |---|---|---|---|
 | FR-01 | 워크로드 서빙 | 대표 워크로드(**long-context RAG · multiturn · agent memory**)의 추론 요청을 admission → context 조립 → 배칭 → 실행 → 응답으로 E2E 처리할 수 있어야 한다. (retrieval 자체는 외부 컴포넌트 — 그 가속은 2단계) | R-03·R-04·R-08·R-11 |
 | FR-02 (구 FR-04) | KV 재사용 | KV를 **세션·사용자 단위로 영속화**하고, **prefix를 넘어 비접두(chunk) 재사용**까지 지원하며, hit 시 **복원 vs 재계산을 비용(전송 시간 대 re-prefill 시간) 기준으로 판단**해 재사용할 수 있어야 한다. — **목표 1의 본체** | R-03·R-04·R-05·R-24 |
-| FR-03 | KV 압축 | **양자화·토큰 eviction 등 압축 기법**을 KV cache에 적용·해제하고(자체 압축 알고리즘 개발 포함), **요청별 품질 예산에 따라 압축 수준을 차등** 적용할 수 있어야 한다. — **목표 2의 본체** | R-02·R-06·R-16·R-24 |
+| FR-03 | KV 압축 (pruning 중심) | **중요도 기반 토큰 eviction(pruning)을 주 기법**으로 KV cache에 적용·해제하고(양자화는 조합 옵션, 자체 알고리즘 개발 포함), **요청별 품질 예산에 따라 압축 수준(pruning 예산)을 차등** 적용할 수 있어야 한다. pruning은 토큰 수 자체를 줄여 **용량과 대역폭(매 토큰 읽기량)·attention 연산량에 동시 작용**한다. — **목표 2의 본체** (v1.2: 재사용 대상 KV의 pruning 정책은 §5 신규 쟁점 참조) | R-02·R-06·R-16·R-24 |
 | FR-04 (구 FR-02) | KV tier 배치 | KV cache를 GPU HBM 밖 **메모리 tier**(DRAM·SSD 등 — 1단계 commodity)에 두고, tier 특성(대역폭·지연·용량)을 인지해 **배치·이동(승격/강등)** 할 수 있어야 한다. — 재사용(영속)·압축의 저장 기반. tier는 Tier Topology Model 파라미터로 추상화하며 이 인터페이스가 2단계 자사 디바이스의 접속점 | R-02·R-17 |
 | FR-05 (구 FR-06 확장) | KV 인지 스케줄링 | **cache-hit/locality를 인지한 admission·라우팅**, 메모리 압박 시 **압축/강등/축출의 선택**, **요청별 SLO·품질 예산 기반 차등 조율**을 수행할 수 있어야 한다. — **목표 3의 본체**. 스케줄링이 KV를 모르면 재사용·압축의 이득이 시스템 성능으로 전환되지 않는다 | R-16·R-24 |
 | FR-06 (구 FR-05) | P/D 분리 실행 | **prefill/decode 분리** 구성에서 인스턴스 간 KV 전송을 포함해 추론을 실행할 수 있어야 한다. (전제 아닌 실험 변수 — KV 전송·스케줄링의 실험대) | R-11·R-17 |
@@ -243,7 +254,7 @@ QA-10 행·미선정 사유 참조).
 |---|---|---|---|---|---|---|---|
 | QA-01 | Performance — Latency (TTFT) | prefill 성능 — baseline 대비 **TTFT 단축 배율** (목표 1: KV 재사용) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)과 복원 vs 재계산 판단의 효과가 나타나는 축. [측정: **TTFT 단축 배율 ≥ 2×** → ★★★. **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = 동일 HW·**GPU HBM 단일 tier** 구성 — 순증분 분리 측정. ablation: 재사용 off 대비 순기여 분리. P/D 분리는 실험 변수(양쪽 동일 적용)] | H | H | 1 | **O** |
 | QA-02 | Performance — Throughput | decode 성능 — baseline 대비 **throughput 배율** (목표 2: 압축·tier 확장 / 목표 3: KV 인지 스케줄링) | 동일 조건에서 생성 처리량(tokens/s 또는 req/s)을 잰다 — 압축·tier 확장이 batch를 키우고(목표 2) KV 인지 스케줄링이 그 이득을 시스템 처리량으로 전환(목표 3)하는 축. [측정: **throughput 배율 ≥ 2×** → ★★★. **iso-latency 판정**(TPOT p99 ≤ baseline 운영점)·throughput–latency 곡선 병행 — 지연을 팔아 처리량을 산 구성 배제. baseline = QA-01과 동일. ablation: 압축 off / KV-blind 스케줄링 대비 순기여 분리] | H | H | 2 | **O** |
-| QA-03 | Accuracy | 압축·재사용 품질 저하 bound — QA-01·02·04 수치의 유효 전제(gate) | 압축(양자화·토큰 eviction)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)를 수행한다. [측정: **baseline 대비 F1-score 차이(ΔF1, %p)**. baseline = 동일 모델·동일 벤치의 **비압축(FP16 KV)·비재사용** 구성 — 품질의 이론적 상한이므로 저하량이 곧 압축·재사용의 비용. 보조 지표: ΔPPL(Wikitext-2, 선행 신호). bound 집행 단위(요청별/전역)도 판정] | H | H (v1.1 M→H — 비접두 재사용·차등 압축·축출의 3중 품질 노출 + C-03 training-free) | 3 | **O** |
+| QA-03 | Accuracy | 압축·재사용 품질 저하 bound — QA-01·02·04 수치의 유효 전제(gate) | 압축(중요도 기반 토큰 pruning 주 기법 · 양자화 조합)·재사용을 실서빙 설정으로 활성화하고 long-context 벤치마크(LongBench 등)를 수행한다. [측정: **baseline 대비 F1-score 차이(ΔF1, %p)**. baseline = 동일 모델·동일 벤치의 **비압축(FP16 KV)·비재사용** 구성 — 품질의 이론적 상한이므로 저하량이 곧 압축·재사용의 비용. 보조 지표: ΔPPL(Wikitext-2, 선행 신호). bound 집행 단위(요청별/전역)도 판정] | H | H (v1.1 M→H — 비접두 재사용·차등 압축·축출의 3중 품질 노출 + C-03 training-free) | 3 | **O** |
 | QA-04 | Resource Efficiency | 유효 KV 용량 (원본 환산 동시 수용량) | QA-03 품질 bound를 지키는 조건에서 시스템이 동시 수용하는 KV 총량을 원본 환산으로 잰다. [측정: **유효 KV 용량 ÷ 물리 HBM 용량 배율** — Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 산출. baseline = **HBM 단일 tier·비압축**(정의상 1.0×) — HBM이 희소 자원이라 "HBM 한 장당 수용 컨텍스트"가 비용 구조를 결정하기 때문] | H | H | 4 | **O** |
 | QA-05 | Modifiability (확장성·진화성) | KV 구조 변화·신규 tier 수용성 — framework 결합 격리를 코어/모듈 경계 지표로 포괄 (v1.1 Adaptability 흡수) | KV 구조 영향 모델 변화(GQA/MQA · MLA · linear attention 계열)와 신규 tier 1종 추가(1단계 commodity 조합 변경 — 2단계 자사 디바이스[HBM4/CMM-DC/HBF] 수용의 사전 검증)를 수용하는 실험을 수행한다. [측정: (i) 신규/변경 **모듈 수** (ii) **코어 변경 LOC 비율(%)** — 코어 = 골격 + 공개 인터페이스(KV Locator·CompressionOp) (iii) 인터페이스 **시그니처 변경 건수** (iv) 모델 변화 수용 **리드타임**(upstream 공개일 기준). baseline = 현행 코드베이스. framework 결합 코드의 어댑터 격리는 (ii)·(iii)이 대리 측정] | M | H | 5 | **O** |
 | QA-06 | Maintainability | 개발·운영 비용 (지속 유지 가능성) | 초기 구축부터 지속 유지까지의 비용을 산정한다. [측정: **초기 구축 공수(인월**, 대표 워크로드 E2E 벤치 완주 기준**)과 연간 유지보수 FTE**(upstream 추종·회귀 검증 포함). baseline = DP1 후보별 비용 모델(02 문서 실측 표현: plugin형 수 인월 vs 독립형 수십 인월+) — 구조 선택이 비용을 한 자릿수 이상 가르기 때문] | M | M | 6 | **O** |
@@ -323,7 +334,7 @@ Maintainability(M/M).
 |---|---|---|
 | FR-01 워크로드 서빙 | 요청 파이프라인(admission → context 조립 → 세션 배칭)의 control plane 분리 | Request Manager (Request Lifecycle Manager · Multiturn Batcher) |
 | FR-02 KV 재사용 | 재사용 범위(prefix/비접두·세션/사용자)·복원 전략·복원 vs 재계산 판단과 조회 자료구조 | [DP3](03_design_points_dp3_dp5.md) / KV Index |
-| FR-03 KV 압축 | 압축 policy/mechanism 분리, 커널 의존 역전, 요청별 차등 집행 구조 | [DP2](02_design_points_dp1_dp2.md) / Memory Compressor · CompressionOp Kernel |
+| FR-03 KV 압축 (pruning 중심) | 압축 policy/mechanism 분리, 커널 의존 역전, 요청별 차등 집행 구조 + **토큰 중요도 판정의 위치·시점** 결정 | [DP2](02_design_points_dp1_dp2.md) / Memory Compressor · CompressionOp Kernel · 신규 쟁점 표(pruning×재사용) |
 | FR-04 KV tier 배치 | Memory Engine을 연산 엔진과 대등한 독립 패키지로 분리, placement 정책의 위치 결정, tier 추상화(2단계 접속점) | [DP2](02_design_points_dp1_dp2.md)·[DP4](03_design_points_dp3_dp5.md) / Cache Manager · Tier & Lifecycle · Tier Topology Model |
 | FR-05 KV 인지 스케줄링 | 정책의 중앙(스케줄러) vs 자율(엔진) 위치 결정, cache-locality 라우팅과 메모리 압박 대응의 구조 | [DP2](02_design_points_dp1_dp2.md) / Scheduling (KV-aware Router · SLO/QoS Monitor) |
 | FR-06 P/D 분리 실행 | 인스턴스 간 KV 이동 경로·실패모델의 분리 | [DP5](03_design_points_dp3_dp5.md) / KV Transport · Autoscaler(inner) |
@@ -345,7 +356,13 @@ Maintainability(M/M).
 plug-in)이 만든 DP6([04](04_design_points_dp6.md))·DP7·DP8([05](05_design_points_dp7_dp8.md))·
 [ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md)(SSD-PIM retrieval 가속)은
 **2단계(MCR 완성) 설계 자산으로 보존**한다 — 1단계 아키텍처는 DP4의 tier
-추상화가 이들의 접속점을 유지하는지를 QA4로 검증한다.
+추상화가 이들의 접속점을 유지하는지를 QA5로 검증한다.
+
+**신규 설계 쟁점 (v1.2 등재 — 차기 DP 문서 개정 시 전개)**:
+
+| 쟁점 | 내용 | 관련 driver / DP |
+|---|---|---|
+| **pruning × 재사용 충돌** | 토큰 중요도는 **쿼리 의존적**(SnapKV는 현재 쿼리 기준으로 보존 토큰을 선택(B))인데, 재사용(FR-02)은 **아직 오지 않은 다음 쿼리**를 위해 KV를 영속화한다 — 지금 쿼리 기준으로 pruning한 KV를 영속·재사용하면 다음 쿼리가 필요로 하는 토큰이 이미 소거되어 품질 bound(QA3)를 요청별로 보장할 수 없다. 두 목표(1·2)가 같은 KV를 반대 방향으로 당기는 구조적 긴장이며, 조율 계층(관통 문제)의 존재 이유를 구성하는 실례. 후보 방향: (a) 재사용 대상 KV에는 보수적/쿼리 독립(H2O형 누적 attention) pruning만 허용 (b) 원본은 하위 tier 보존 + pruned 파생본만 상위 tier 배치 (c) 재사용 hit 시 소거 토큰 선택 재계산(CacheBlend형) | FR-02·FR-03·QA3 / **DP2(압축 관리 주체) × DP3(재사용 범위·복원 전략) 결합 쟁점** |
 
 산출물: **"MCR 1단계 — KV 캐시 최적 운용 AI 런타임"** (2단계에서 자사
 memory-centric 디바이스 확장으로 MCR 완성)
