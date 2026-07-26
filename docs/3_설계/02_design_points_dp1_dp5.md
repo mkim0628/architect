@@ -12,7 +12,7 @@
 동결한다.
 
 작성 기준: 배경·범위 문서 v5 (**MCR 1단계 = KV 캐시 최적 운용 AI 런타임**),
-요구사항 분석 v1.5, QA 정의 [`00_qa_definitions.md`](00_qa_definitions.md)
+요구사항 분석 v1.5, QA 정의 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md)
 v1.5 (**QA1 throughput · QA2 응답 품질 · QA3 TTFT · QA4 유효 KV 용량 ·
 QA5 확장성·진화성** — 신번호). 평가는 전부 설계 단계 예측 `(F)`,
 근거 등급 A 자체 실측 / B 문헌 / C 구조 논증.
@@ -22,7 +22,7 @@ QA5 확장성·진화성** — 신번호). 평가는 전부 설계 단계 예측
 ## 0. QA 정의 (분리됨)
 
 QA1–QA5의 정의·측정 방법·**별점별 정량 bin과 선정 근거**는
-[`00_qa_definitions.md`](00_qa_definitions.md)가 단일 출처다. 본 문서의 모든
+[`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md)가 단일 출처다. 본 문서의 모든
 평가표 별점은 그 bin 기준으로 해석한다. 구 QA6(Maintainability)의 비용
 bin(초기 ≤6/≤24인월 · 유지 ≤0.5/≤2 FTE)은 미선정 전환(v1.5)과 함께 **DP1의
 비용 모델 판단 기준으로 보존**되어 본 문서 DP1에서만 사용한다.
@@ -113,9 +113,9 @@ offloading connector로 프로덕션에 안착하며(GKE Inference·CoreWeave·C
 
 ### 후보구조 설계도
 
-![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../diagrams/dp1_candidates.svg)
+![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../../diagrams/dp1_candidates.svg)
 
-*draw.io 소스: [`dp1_candidates.drawio`](../diagrams/dp1_candidates.drawio)*
+*draw.io 소스: [`dp1_candidates.drawio`](../../diagrams/dp1_candidates.drawio)*
 
 ### 후보구조 1 — 외부 스택 활용형 (vLLM 생태계 기반)
 
@@ -289,9 +289,9 @@ DP3(복원 전략)·DP4(pruning 집행)·DP5(확보 선택)가 결정한다.
 
 ### 후보구조 설계도
 
-![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../diagrams/dp2_candidates.svg)
+![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../../diagrams/dp2_candidates.svg)
 
-*draw.io 소스: [`dp2_candidates.drawio`](../diagrams/dp2_candidates.drawio)*
+*draw.io 소스: [`dp2_candidates.drawio`](../../diagrams/dp2_candidates.drawio)*
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy)
 
@@ -420,9 +420,9 @@ HKVD 10–15% 재계산으로 TTFT 2.2–3.3×, 품질 저하 0.01–0.03(B)). �
 
 ### 후보구조 설계도
 
-![DP3 후보구조 설계도 — 본체 융합형 vs 경량 선행형](../diagrams/kv_dp3_candidates.svg)
+![DP3 후보구조 설계도 — 본체 융합형 vs 경량 선행형](../../diagrams/kv_dp3_candidates.svg)
 
-*draw.io 소스: [`kv_dp3_candidates.drawio`](../diagrams/kv_dp3_candidates.drawio)*
+*draw.io 소스: [`kv_dp3_candidates.drawio`](../../diagrams/kv_dp3_candidates.drawio)*
 
 ### 후보구조 1 — 본체 융합형 (in-engine, exact)
 
@@ -536,9 +536,9 @@ proxy**(축소 모델/저차원 근사, CPU·보조 스트림)로 선택을 선�
 
 ### 후보구조 설계도
 
-![DP4 후보구조 설계도 — 입장 시 고정 예산·단일 사본형 vs 수명주기 적응·이중 표현형](../diagrams/kv_dp4_candidates.svg)
+![DP4 후보구조 설계도 — 입장 시 고정 예산·단일 사본형 vs 수명주기 적응·이중 표현형](../../diagrams/kv_dp4_candidates.svg)
 
-*draw.io 소스: [`kv_dp4_candidates.drawio`](../diagrams/kv_dp4_candidates.drawio)*
+*draw.io 소스: [`kv_dp4_candidates.drawio`](../../diagrams/kv_dp4_candidates.drawio)*
 
 ### 후보구조 1 — 입장 시 고정 예산·단일 사본형 (eager, 파괴적)
 
@@ -653,9 +653,9 @@ QA3 ↔ QA1 정면 충돌.)
 
 ### 후보구조 설계도
 
-![DP5 후보구조 설계도 — locality 우선형 vs 부하 우선형](../diagrams/kv_dp5_candidates.svg)
+![DP5 후보구조 설계도 — locality 우선형 vs 부하 우선형](../../diagrams/kv_dp5_candidates.svg)
 
-*draw.io 소스: [`kv_dp5_candidates.drawio`](../diagrams/kv_dp5_candidates.drawio)*
+*draw.io 소스: [`kv_dp5_candidates.drawio`](../../diagrams/kv_dp5_candidates.drawio)*
 
 ### 후보구조 1 — locality 우선형 (KV-affinity 라우팅 + 지연 대기)
 

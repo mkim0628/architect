@@ -1,11 +1,11 @@
 # MCR 1단계 (KV 캐시 최적 운용 AI 런타임) 요구사항 분석 (v1.7)
 
-입력: [mcr_background_scope.md](mcr_background_scope.md) (배경·필요성·범위 **v5**
+입력: [mcr_background_scope.md](../1_과제배경/mcr_background_scope.md) (배경·필요성·범위 **v5**
 — 과제 목표 재정의·단계화).
 산출: FR·제약사항 → 시스템 경계·Use Case → 품질 속성 선정(Utility Tree) →
 Architecture Driver. 하류 문서: [00_qa_definitions.md](00_qa_definitions.md)
 (선정 QA의 정의·정량 bin **단일 출처**),
-[02](02_design_points_dp1_dp2.md)–[05](05_design_points_dp7_dp8.md) DP 문서.
+[02](../3_설계/02_design_points_dp1_dp2.md)–[05](../3_설계/05_design_points_dp7_dp8.md) DP 문서.
 
 **정제 요약**: 수집 24건(결번 2 — R-09·R-14, 유효 **22건**) → 기능
 요구사항 **7건** · 품질 요구(QA 후보) **11건** · 제약사항 **3건** ·
@@ -213,12 +213,12 @@ plug-in, R-17 일부)은 **2단계(MCR 완성)로 이관** — 1단계에서는 
 ### 3.1 시스템 경계
 
 시스템 = **MCR** (Inference Orchestration / Inference Engine / Memory Engine
-3-패키지, [01_architecture_overview.md](01_architecture_overview.md)).
+3-패키지, [01_architecture_overview.md](../3_설계/01_architecture_overview.md)).
 범위 문서 3.3 Out of Scope와 정합.
 
-![MCR Context Diagram](../diagrams/req_context_mcr.svg)
+![MCR Context Diagram](../../diagrams/req_context_mcr.svg)
 
-draw.io 소스: [`diagrams/req_context_mcr.drawio`](../diagrams/req_context_mcr.drawio)
+draw.io 소스: [`diagrams/req_context_mcr.drawio`](../../diagrams/req_context_mcr.drawio)
 (외부 엔티티 = §3.2 액터와 1:1 대응, 화살표 = 경계를 넘는 정보 흐름)
 
 | 경계 내 (MCR 1단계 책임) | 경계 외 (책임 주체) |
@@ -226,7 +226,7 @@ draw.io 소스: [`diagrams/req_context_mcr.drawio`](../diagrams/req_context_mcr.
 | KV 재사용·압축·tier 배치의 **정책 + 메커니즘** — 자체 KV 압축·재사용 알고리즘 개발, 복원 vs 재계산 판단 포함 (FR-02·03·04) | 메모리 디바이스 HW 설계 — 메모리 사업부 (C-01) |
 | 요청 파이프라인·**KV 인지 스케줄링/라우팅**·P/D 운용 (FR-01·05·06) | LLM 응용·모델 자체의 개발 — public 제공물 사용 (User); 모델 재학습·fine-tuning (C-03) |
 | KV telemetry 수집·정책 피드백 · 고정 N 내 **P/D 역할 자동 조정** (FR-07) | **근접연산 오프로드·자사 디바이스 1급 통합** — 2단계(MCR 완성) 이관. retrieval(유사도 검색) 실행·가속 — 외부 컴포넌트(가속은 2단계) |
-| tier 추상화 경계 = 공개 인터페이스(KV Locator·CompressionOp)와 Tier Topology Model (FR-04) — 2단계 디바이스의 접속점 | 클러스터 규모(N) 조정·provisioning — **범위 외**. 연구 범위는 고정 N 테스트베드 전제이며, N을 바꾸는 desired state 인터페이스는 상용화 단계의 진화 경로로만 남긴다 ([01 문서](01_architecture_overview.md) Autoscaler outer 루프 참조) |
+| tier 추상화 경계 = 공개 인터페이스(KV Locator·CompressionOp)와 Tier Topology Model (FR-04) — 2단계 디바이스의 접속점 | 클러스터 규모(N) 조정·provisioning — **범위 외**. 연구 범위는 고정 N 테스트베드 전제이며, N을 바꾸는 desired state 인터페이스는 상용화 단계의 진화 경로로만 남긴다 ([01 문서](../3_설계/01_architecture_overview.md) Autoscaler outer 루프 참조) |
 | | 모델 **학습** 지원 — 범위 외 (R-22 판정); 신규 모델 일반 enablement(가중치·토크나이저 등) — upstream 책임 (DP1 후보1 전제, QA 정의 문서 QA4 각주) |
 
 ### 3.2 액터
@@ -242,9 +242,9 @@ draw.io 소스: [`diagrams/req_context_mcr.drawio`](../diagrams/req_context_mcr.
 
 ### 3.3 Use Case
 
-![MCR Use-case diagram](../diagrams/req_usecase_mcr.svg)
+![MCR Use-case diagram](../../diagrams/req_usecase_mcr.svg)
 
-draw.io 소스: [`diagrams/req_usecase_mcr.drawio`](../diagrams/req_usecase_mcr.drawio)
+draw.io 소스: [`diagrams/req_usecase_mcr.drawio`](../../diagrams/req_usecase_mcr.drawio)
 
 | 번호 | Use Case | 근거 FR |
 |---|---|---|
@@ -423,11 +423,11 @@ Modifiability(M/H)만 선정 잔존 — Maintainability(M/M)는 v1.5 미선정
 | Driver | 아키텍처에 주는 함의 | 관련 DP/컴포넌트 |
 |---|---|---|
 | FR-01 워크로드 서빙 | 요청 파이프라인(admission → context 조립 → 세션 배칭)의 control plane 분리 | Request Manager (Request Lifecycle Manager · Multiturn Batcher) |
-| FR-02 KV 재사용 | 재사용 범위(prefix/비접두·세션/사용자)·복원 전략·복원 vs 재계산 판단과 조회 자료구조 | [DP3](03_design_points_dp3_dp5.md) / KV Index |
-| FR-03 KV 압축 (pruning 중심) | 압축 policy/mechanism 분리, 커널 의존 역전, 요청별 차등 집행 구조 + **토큰 중요도 판정의 위치·시점** 결정 | [DP2](02_design_points_dp1_dp2.md) / Memory Compressor · CompressionOp Kernel · 신규 쟁점 표(pruning×재사용) |
-| FR-04 KV tier 배치 | Memory Engine을 연산 엔진과 대등한 독립 패키지로 분리, placement 정책의 위치 결정, tier 추상화(2단계 접속점) | [DP2](02_design_points_dp1_dp2.md)·[DP4](03_design_points_dp3_dp5.md) / Cache Manager · Tier & Lifecycle · Tier Topology Model |
-| FR-05 KV 인지 스케줄링 | 정책의 중앙(스케줄러) vs 자율(엔진) 위치 결정, cache-locality 라우팅과 메모리 압박 대응의 구조 | [DP2](02_design_points_dp1_dp2.md) / Scheduling (KV-aware Router · SLO/QoS Monitor) |
-| FR-06 P/D 분리 실행 | 인스턴스 간 KV 이동 경로·실패모델의 분리 | [DP5](03_design_points_dp3_dp5.md) / KV Transport · Autoscaler(inner) |
+| FR-02 KV 재사용 | 재사용 범위(prefix/비접두·세션/사용자)·복원 전략·복원 vs 재계산 판단과 조회 자료구조 | [DP3](../3_설계/03_design_points_dp3_dp5.md) / KV Index |
+| FR-03 KV 압축 (pruning 중심) | 압축 policy/mechanism 분리, 커널 의존 역전, 요청별 차등 집행 구조 + **토큰 중요도 판정의 위치·시점** 결정 | [DP2](../3_설계/02_design_points_dp1_dp2.md) / Memory Compressor · CompressionOp Kernel · 신규 쟁점 표(pruning×재사용) |
+| FR-04 KV tier 배치 | Memory Engine을 연산 엔진과 대등한 독립 패키지로 분리, placement 정책의 위치 결정, tier 추상화(2단계 접속점) | [DP2](../3_설계/02_design_points_dp1_dp2.md)·[DP4](../3_설계/03_design_points_dp3_dp5.md) / Cache Manager · Tier & Lifecycle · Tier Topology Model |
+| FR-05 KV 인지 스케줄링 | 정책의 중앙(스케줄러) vs 자율(엔진) 위치 결정, cache-locality 라우팅과 메모리 압박 대응의 구조 | [DP2](../3_설계/02_design_points_dp1_dp2.md) / Scheduling (KV-aware Router · SLO/QoS Monitor) |
+| FR-06 P/D 분리 실행 | 인스턴스 간 KV 이동 경로·실패모델의 분리 | [DP5](../3_설계/03_design_points_dp3_dp5.md) / KV Transport · Autoscaler(inner) |
 | FR-07 KV telemetry·P/D 조정 | KV 관측 지표의 수집·정책 피드백 루프와 고정 N 내 P/D role 조정 (inner 루프; N 조정 outer 루프는 진화 경로) | Resource Manager (Hardware Monitor · Autoscaler inner: P/D Role Controller) |
 | QA1 throughput (decode 성능) | 압축 × tier 확장 × KV 인지 스케줄링의 결합이 batch·처리량을 결정 — QA3(TTFT)과 쌍으로 최상위 축(한쪽만 최적화한 설계 방지) | DP1–DP5 QA 평가표 / DP2·DP4 |
 | QA2 응답 품질 (gate) | 요청별 품질 bound의 집행 구조 (전역 아닌 요청 단위) — 성능·용량 수치의 유효 전제 | DP2·DP3 |
@@ -442,8 +442,8 @@ Modifiability(M/H)만 선정 잔존 — Maintainability(M/M)는 v1.5 미선정
 구조 확정 — DP 불필요).
 
 **2단계 이관 driver**: 구 FR-07(근접연산 오프로드)·구 FR-08(디바이스
-plug-in)이 만든 DP6([04](04_design_points_dp6.md))·DP7·DP8([05](05_design_points_dp7_dp8.md))·
-[ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md)(SSD-PIM retrieval 가속)은
+plug-in)이 만든 DP6([04](../3_설계/04_design_points_dp6.md))·DP7·DP8([05](../3_설계/05_design_points_dp7_dp8.md))·
+[ADR-001](../3_설계/adr/ADR-001-ssd-pim-rag-retrieval.md)(SSD-PIM retrieval 가속)은
 **2단계(MCR 완성) 설계 자산으로 보존**한다 — 1단계 아키텍처는 DP4의 tier
 추상화가 이들의 접속점을 유지하는지를 QA5로 검증한다.
 

@@ -1,10 +1,10 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_necessity_kv.build.js
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/1_과제배경/mcr_necessity_kv.build.js
 // 과제 필요성 1장 (검수 반영 v3: 1층 단독 구성)
 //   좌측: 문제 정의 — 물리 병목 (용량 · 대역폭 + 결합 구조)
 //   우측: 상위 과제 목표 — 자원 관점 총괄 + 3축 (브리지 공식 ①②③이 생성기)
 //   ※ 운용 공백(세 지렛대의 부재)과 그 해소는 설계 챕터(DP1–DP5)에서 다룬다 — 본 페이지는 1층만.
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 const C = A.COLORS, F = A.FONT;
 
 const pptx = A.newDeck();
@@ -44,13 +44,13 @@ physBox(LX, "용량 — KV가 HBM을 넘는다",
     "모델이 아니라 KV가 메모리를 지배 — 컨텍스트·세션이 늘수록 선형 증가",
     { text: "용량 = batch(동시성)의 상한 = 처리량의 상한", bold: true, color: C.navy },
     "초과 시 대기 또는 preemption·전체 재계산뿐 → 지연·처리량 악화 직결",
-  ], path.join(__dirname, "mcr_assets", "bg_kv_evidence.png"));
+  ], path.join(__dirname, "..", "mcr_assets", "bg_kv_evidence.png"));
 physBox(LX + BW + 0.14, "대역폭 — 매 토큰 KV 전체를 읽는다",
   [
     "decode = memory-bandwidth-bound — decode 대기가 E2E의 70–85%(A), 컨텍스트↑ = 토큰당 지연(TPOT)↑",
     { text: "대역폭 포화 시 용량이 남아도 연산기는 유휴 — 처리량 정체", bold: true, color: C.navy },
     "메모리 계층 대역폭 계단 ~10×씩 (HBM→DRAM→SSD) — 하위 tier 복원이 재계산보다 느린 역전 구간 존재",
-  ], path.join(__dirname, "mcr_assets", "nec_tier_ladder.png"));
+  ], path.join(__dirname, "..", "mcr_assets", "nec_tier_ladder.png"));
 // 결합 구조 스트립
 const SY = TOP + PHYS_H + 0.12;
 s.addShape("rect", { x: LX, y: SY, w: LW, h: STRIP_H, fill: { color: "EDEFF4" }, line: { color: C.navy, width: 0.75 } });

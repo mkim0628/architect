@@ -215,7 +215,7 @@ memory-centric 디바이스의 레퍼런스 스택으로 확장한다(⑥).
 계층의 구조 요구는 QA5(확장성·진화성 — KV 구조 변화 수용 + 2단계 디바이스
 수용 대비 + framework 결합 격리 대리 측정)로, 레퍼런스 스택 성립 요건은
 QA6(유지보수성)과 DP1의 판단 기준으로 계승된다. 상세 정의는
-[00_qa_definitions.md](00_qa_definitions.md) 참조.
+[00_qa_definitions.md](../2_요구사항/00_qa_definitions.md) 참조.
 
 ### 참고 문헌 (배경 ④·⑤ 근거)
 

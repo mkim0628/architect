@@ -5,7 +5,7 @@
 > [`02_design_points_dp1_dp5.md`](02_design_points_dp1_dp5.md)를 본다.
 
 작성 기준: 확정안 v2 패키지 다이어그램([`01_architecture_overview.md`](01_architecture_overview.md)).
-QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3을 따른다.
+QA 정의·별점 기준은 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) v0.3을 따른다.
 DP1·DP2는 [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md),
 DP3–DP5는 [`03_design_points_dp3_dp5.md`](03_design_points_dp3_dp5.md) 참조.
 
@@ -18,7 +18,7 @@ DP3–DP5는 [`03_design_points_dp3_dp5.md`](03_design_points_dp3_dp5.md) 참조
 ## 0. QA 정의 (참조)
 
 QA1–QA6의 정의·측정 방법·별점별 정량 bin·근거는
-[`00_qa_definitions.md`](00_qa_definitions.md) 참조. 전 평가는 설계 단계 예측
+[`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) 참조. 전 평가는 설계 단계 예측
 `(F)`, 근거 등급 A 실측 / B 문헌 / C 구조 논증.
 
 > **QA1 재평가 (00 v0.9 — 2지표 bin)**: QA1이 **TTFT(prefill 축) ·
@@ -67,9 +67,9 @@ storage/스마트 NIC의 고전적 **오프로드 경계 논쟁**과 동형이�
 
 ### 후보구조 설계도
 
-![DP6 후보구조 설계도 — 데이터 관리 연산 오프로드 vs 모델 연산 오프로드](../diagrams/dp6_candidates.svg)
+![DP6 후보구조 설계도 — 데이터 관리 연산 오프로드 vs 모델 연산 오프로드](../../diagrams/dp6_candidates.svg)
 
-*draw.io 소스: [`dp6_candidates.drawio`](../diagrams/dp6_candidates.drawio)*
+*draw.io 소스: [`dp6_candidates.drawio`](../../diagrams/dp6_candidates.drawio)*
 
 ### 후보구조 1 — 데이터 관리 연산 오프로드 (수치 경로 밖)
 

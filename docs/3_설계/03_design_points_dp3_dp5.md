@@ -5,7 +5,7 @@
 > [`02_design_points_dp1_dp5.md`](02_design_points_dp1_dp5.md)를 본다.
 
 작성 기준: 확정안 v2 패키지 다이어그램([`01_architecture_overview.md`](01_architecture_overview.md)).
-QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3을 따른다.
+QA 정의·별점 기준은 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) v0.3을 따른다.
 DP1·DP2는 [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md) 참조.
 
 ---
@@ -13,7 +13,7 @@ DP1·DP2는 [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md) 참조.
 ## 0. QA 정의 (참조)
 
 QA1–QA6의 정의·측정 방법·별점별 정량 bin·근거는
-[`00_qa_definitions.md`](00_qa_definitions.md) 참조. 본 문서의 모든 QA 평가표
+[`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) 참조. 본 문서의 모든 QA 평가표
 별점은 해당 문서의 bin 기준으로 해석한다 (전부 설계 단계 예측 `(F)`,
 근거 등급 A 실측 / B 문헌 / C 구조 논증).
 
@@ -66,9 +66,9 @@ Index·복원 파이프라인 복잡도를 수반하며, block table 밖의 1급
 
 ### 후보구조 설계도
 
-![DP3 후보구조 설계도 — Exact-prefix 재사용 vs 비연속 chunk 재사용](../diagrams/dp3_candidates.svg)
+![DP3 후보구조 설계도 — Exact-prefix 재사용 vs 비연속 chunk 재사용](../../diagrams/dp3_candidates.svg)
 
-*draw.io 소스: [`dp3_candidates.drawio`](../diagrams/dp3_candidates.drawio)*
+*draw.io 소스: [`dp3_candidates.drawio`](../../diagrams/dp3_candidates.drawio)*
 
 ### 후보구조 1 — Exact-prefix 재사용 (block-aligned)
 
@@ -178,9 +178,9 @@ bin(어댑터 ≤1모듈·코어 0)이 이 방향의 압력이다.
 
 ### 후보구조 설계도
 
-![DP4 후보구조 설계도 — 공통 파라미터형 vs Capability-aware 프로파일형](../diagrams/dp4_candidates.svg)
+![DP4 후보구조 설계도 — 공통 파라미터형 vs Capability-aware 프로파일형](../../diagrams/dp4_candidates.svg)
 
-*draw.io 소스: [`dp4_candidates.drawio`](../diagrams/dp4_candidates.drawio)*
+*draw.io 소스: [`dp4_candidates.drawio`](../../diagrams/dp4_candidates.drawio)*
 
 ### 후보구조 1 — 공통 파라미터형 (uniform parametric)
 
@@ -295,9 +295,9 @@ drain → KV Transport 의존**으로 설계됐다(01 §검수 5). 즉 "P/D 인�
 
 ### 후보구조 설계도
 
-![DP5 후보구조 설계도 — Point-to-point 직접 전송 vs 공유 tier 스테이징](../diagrams/dp5_candidates.svg)
+![DP5 후보구조 설계도 — Point-to-point 직접 전송 vs 공유 tier 스테이징](../../diagrams/dp5_candidates.svg)
 
-*draw.io 소스: [`dp5_candidates.drawio`](../diagrams/dp5_candidates.drawio)*
+*draw.io 소스: [`dp5_candidates.drawio`](../../diagrams/dp5_candidates.drawio)*
 
 ### 후보구조 1 — Point-to-point 직접 전송 (transfer)
 
@@ -381,4 +381,4 @@ drain(전송) 완료 후 역할 전환.
 | DP5 → DP3 | 공유 tier 채택 시 KV Index가 인스턴스 간 전역 재사용으로 확장 가능 — DP3 후보2의 이득 상한 상승 |
 | DP3 → 구조도 | KV Index의 키 스키마(prefix 해시 vs content-hash) 확정 — 확정안 v2의 "KV Index (신설)" 주석 해소 |
 | DP5 → 구조도 | KV Transport의 구현 형태(전송 엔진 vs 참조 교환) 확정 — "KV Transport (신설)" 주석 해소 |
-| 공통 | 전 DP 평가는 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3 bin 전제. DP3·DP5 모두 KV Locator 인터페이스의 초기 설계(content-hash 키, 위치 투명 참조)에 선행 요구사항을 건다 |
+| 공통 | 전 DP 평가는 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) v0.3 bin 전제. DP3·DP5 모두 KV Locator 인터페이스의 초기 설계(content-hash 키, 위치 투명 참조)에 선행 요구사항을 건다 |

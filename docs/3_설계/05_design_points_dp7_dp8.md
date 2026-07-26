@@ -6,7 +6,7 @@
 
 작성 기준: 확정안 v2 패키지 다이어그램([`01_architecture_overview.md`](01_architecture_overview.md))
 + **[ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md) (SSD-PIM GEMV 검색 가속 — 결정 완료, 본 문서의 전제)**.
-QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3을 따른다.
+QA 정의·별점 기준은 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) v0.3을 따른다.
 DP1–DP6: [`02`](02_design_points_dp1_dp2.md) · [`03`](03_design_points_dp3_dp5.md) · [`04`](04_design_points_dp6.md).
 
 두 DP는 ADR-001이 결정한 것("SSD-PIM이 유사도 검색을 한다") **아래 층위**의
@@ -17,7 +17,7 @@ DP1–DP6: [`02`](02_design_points_dp1_dp2.md) · [`03`](03_design_points_dp3_dp
 
 ## 0. QA 정의 (참조)
 
-QA1–QA6의 정의·측정·별점 bin·근거는 [`00_qa_definitions.md`](00_qa_definitions.md)
+QA1–QA6의 정의·측정·별점 bin·근거는 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md)
 참조. 전 평가는 설계 단계 예측 `(F)`, 근거 등급 A 실측 / B 문헌 / C 구조 논증.
 
 > **QA1 재평가 (00 v0.9 — 2지표 bin)**: QA1이 **TTFT(prefill 축) ·
@@ -67,9 +67,9 @@ SmartSSD 협력의 **계층 인덱스**로 QPS 최대 10.7×를 보고(B). 단 �
 
 ### 후보구조 설계도
 
-![DP7 후보구조 설계도 — 전수 스캔형 vs 인덱스 유도형](../diagrams/dp7_candidates.svg)
+![DP7 후보구조 설계도 — 전수 스캔형 vs 인덱스 유도형](../../diagrams/dp7_candidates.svg)
 
-*draw.io 소스: [`dp7_candidates.drawio`](../diagrams/dp7_candidates.drawio)*
+*draw.io 소스: [`dp7_candidates.drawio`](../../diagrams/dp7_candidates.drawio)*
 
 ### 후보구조 1 — 전수 스캔형 (exact, scan-native)
 
@@ -186,9 +186,9 @@ device-resident 연산이 아니므로 Retrieval Engine을 Request Manager로
 
 ### 후보구조 설계도
 
-![DP8 후보구조 설계도 — 가속 벡터DB 서비스 vs 검색 가능한 메모리 tier](../diagrams/dp8_candidates.svg)
+![DP8 후보구조 설계도 — 가속 벡터DB 서비스 vs 검색 가능한 메모리 tier](../../diagrams/dp8_candidates.svg)
 
-*draw.io 소스: [`dp8_candidates.drawio`](../diagrams/dp8_candidates.drawio)*
+*draw.io 소스: [`dp8_candidates.drawio`](../../diagrams/dp8_candidates.drawio)*
 
 ### 후보구조 1 — 가속 벡터DB 서비스 (Retrieval Engine 소유)
 

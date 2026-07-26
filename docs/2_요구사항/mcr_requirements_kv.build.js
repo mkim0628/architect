@@ -1,4 +1,4 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_requirements_kv.build.js
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/2_요구사항/mcr_requirements_kv.build.js
 // 요구사항 챕터 5장 (구 mcr_requirements_2 덱 양식 승계 — 1단계·v1.6 개정 반영)
 //   P5 요구사항 수집 (stakeholder + 방법) / P6 요구사항 정제 (FR·C + UC diagram)
 //   P7 대표 워크로드 시나리오별 QA 도출 (v1.6 신설 — 요구사항→QA 방향)
@@ -6,7 +6,7 @@
 //   P25 부록 A 원시 요구사항(VOC) R-01~R-24
 // 근거: docs/00_requirements_analysis.md v1.6 · 00_qa_definitions.md v1.6
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 const C = A.COLORS, F = A.FONT;
 const pptx = A.newDeck();
 const TOPY = A.CONTENT_TOP;
@@ -82,7 +82,7 @@ const TOPY = A.CONTENT_TOP;
     ],
   });
   A.sectionHeader(s, { x: 8.1, y: TOPY + 0.34, w: 4.73, text: "시스템 경계 · Use Case (UC-01~10)", color: "navy" });
-  s.addImage({ path: path.join(__dirname, "mcr_assets", "req_usecase_mcr.png"), x: 8.1, y: TOPY + 0.84, w: 4.73, h: 4.73 * 760 / 1080 });
+  s.addImage({ path: path.join(__dirname, "..", "mcr_assets", "req_usecase_mcr.png"), x: 8.1, y: TOPY + 0.84, w: 4.73, h: 4.73 * 760 / 1080 });
   s.addText("전 FR이 ≥1개 UC에 매핑 ✓ — 서빙 3 · 재사용 2 · 압축 1 · 배치 1 · 스케줄링 2(KV 공간 확보 포함) · P/D 1 · telemetry 1", {
     x: 8.1, y: TOPY + 0.9 + 4.73 * 760 / 1080, w: 4.73, h: 0.5, fontSize: 8, fontFace: F.body, color: C.gray70, valign: "top" });
 }

@@ -4,14 +4,14 @@ LLM 추론에서 KV 캐시를 1급 관리 대상으로 최적 운용(재사용·
 
 **목표 3축**: ① KV 재사용성 제고 → 지연시간(TTFT) 개선 ② LLM 정확도를 유지한 KV 압축 → 메모리 병목 해소 → 지연·처리량 개선 ③ KV 캐시 인지형 동적 스케줄링 → 처리량 개선.
 
-**로드맵**: 본 과제는 MCR(Memory-Centric Runtime)의 **1단계** — commodity tier(HBM·DRAM·SSD)에서 KV 운용 정책·구조를 입증한다. 자사 memory-centric 디바이스(PIM/PNM·CXL·HBF) 1급 통합과 근접연산 오프로드는 **2단계(MCR 완성)** 진화 경로 — 1단계의 tier 추상화 인터페이스가 그 접속점이다. 상세: [docs/mcr_background_scope.md](docs/mcr_background_scope.md) (v5).
+**로드맵**: 본 과제는 MCR(Memory-Centric Runtime)의 **1단계** — commodity tier(HBM·DRAM·SSD)에서 KV 운용 정책·구조를 입증한다. 자사 memory-centric 디바이스(PIM/PNM·CXL·HBF) 1급 통합과 근접연산 오프로드는 **2단계(MCR 완성)** 진화 경로 — 1단계의 tier 추상화 인터페이스가 그 접속점이다. 상세: [docs/1_과제배경/mcr_background_scope.md](docs/1_과제배경/mcr_background_scope.md) (v5).
 
 ## 문서
 
 | 문서 | 내용 |
 |---|---|
-| [docs/01_architecture_overview.md](docs/01_architecture_overview.md) | 패키지 구조 확정안 v2 — 검수 반영 사항, 의존 관계, 미결 사항 |
-| [docs/02_design_points_dp1_dp2.md](docs/02_design_points_dp1_dp2.md) | DP1(Framework 실행 구조)·DP2(KV 배치·압축 관리 주체) — 문제 정의, 후보구조, QA 평가 |
+| [docs/3_설계/01_architecture_overview.md](docs/3_설계/01_architecture_overview.md) | 패키지 구조 확정안 v2 — 검수 반영 사항, 의존 관계, 미결 사항 |
+| [docs/3_설계/02_design_points_dp1_dp2.md](docs/3_설계/02_design_points_dp1_dp2.md) | DP1(Framework 실행 구조)·DP2(KV 배치·압축 관리 주체) — 문제 정의, 후보구조, QA 평가 |
 
 ## 다이어그램
 

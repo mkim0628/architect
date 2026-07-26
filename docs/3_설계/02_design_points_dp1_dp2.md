@@ -17,18 +17,18 @@
 v0.3 — DP1에 후보구조 3(KV-계층(LMCache) 확장형) 추가: 문제 정의에
 KV-계층 생태계 압력 보강, 설계 쟁점 4 신설(DP2·DP6 커플링), 검토 노트를 3후보
 구도로 재작성, 의존성 표 갱신. v0.2 — QA 평가표를
-[`00_qa_definitions.md`](00_qa_definitions.md) v0.3 bin 기준으로 재채점 (DP1
+[`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md) v0.3 bin 기준으로 재채점 (DP1
 후보2 QA4 ★★☆→★☆☆, DP2 후보2 QA2 ★☆☆→★★☆, 나머지 별점 유지·근거를 bin
 판정문으로 전면 재작성). v0.1 — 최초 작성.
 
-작성 기준: 확정안 v2 패키지 다이어그램. QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md)를 따른다 (잠정 — 공식 확정 시 재평가 필요).
+작성 기준: 확정안 v2 패키지 다이어그램. QA 정의·별점 기준은 [`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md)를 따른다 (잠정 — 공식 확정 시 재평가 필요).
 
 ---
 
 ## 0. QA 정의 (분리됨)
 
 QA1–QA6의 정의, 측정 방법, **별점별 정량 bin과 그 선정 근거(레퍼런스 SLO)** 는
-[`00_qa_definitions.md`](00_qa_definitions.md)로 분리되었다. 본 문서의 모든
+[`00_qa_definitions.md`](../2_요구사항/00_qa_definitions.md)로 분리되었다. 본 문서의 모든
 QA 평가표 별점은 해당 문서의 bin 기준으로 해석한다.
 
 > 본 문서의 평가표는 **00 v0.3 bin 기준으로 재채점**되었다 (전부 설계 단계
@@ -92,9 +92,9 @@ chunking·영속화·백엔드 추상화·압축(CacheGen)·비접두 재사용(
 
 ### 후보구조 설계도
 
-![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../diagrams/dp1_candidates.svg)
+![DP1 후보구조 설계도 — 외부 스택 활용형(변형 A·B) vs 자체 구현형](../../diagrams/dp1_candidates.svg)
 
-*draw.io 소스: [`dp1_candidates.drawio`](../diagrams/dp1_candidates.drawio)*
+*draw.io 소스: [`dp1_candidates.drawio`](../../diagrams/dp1_candidates.drawio)*
 
 ### 후보구조 1 — 외부 스택 활용형 (vLLM 생태계 기반)
 
@@ -219,9 +219,9 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 ### 후보구조 설계도
 
-![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../diagrams/dp2_candidates.svg)
+![DP2 후보구조 설계도 — Orchestration 중앙 정책 vs Memory Engine 자율](../../diagrams/dp2_candidates.svg)
 
-*draw.io 소스: [`dp2_candidates.drawio`](../diagrams/dp2_candidates.drawio)*
+*draw.io 소스: [`dp2_candidates.drawio`](../../diagrams/dp2_candidates.drawio)*
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 

@@ -233,7 +233,7 @@
 | KV 압축 용량·처리율 (양자화 — 조합 옵션) | 2-bit 양자화: peak memory 2.6× 절감, batch 4×, **처리율 2.35–3.47×** | [KIVI](https://arxiv.org/html/2402.02750v2) |
 | KV 재사용 — **TTFT**(prefill) | RAG KV 재사용 + 선택 재계산(HKVD 10–15%): **TTFT 2.2–3.3× 단축**(부수 처리율 2.8–5×), 품질 저하 F1/Rouge-L 0.01–0.03 | [CacheBlend (EuroSys'25 Best Paper)](https://arxiv.org/abs/2405.16444) |
 | prefix 재사용 — **TTFT**(prefill) | RadixAttention cross-request 재사용 — prefill 재계산 제거로 첫 토큰 지연 단축, prefix 공유 워크로드 처리율 최대 6.4× | [SGLang (NeurIPS'24)](https://arxiv.org/abs/2312.07104) |
-| near-storage 검색 — retrieval (**2단계 참고**, v1.0) | SSD 기반 ANN에서 I/O가 실행 시간 ~67% → host CPU + SSD 협력 인덱싱으로 **QPS 최대 10.7×** — 2단계(근접연산 오프로드) 편입 시 RAG TTFT 임계 경로 단축 근거 | [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) · [ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md) |
+| near-storage 검색 — retrieval (**2단계 참고**, v1.0) | SSD 기반 ANN에서 I/O가 실행 시간 ~67% → host CPU + SSD 협력 인덱싱으로 **QPS 최대 10.7×** — 2단계(근접연산 오프로드) 편입 시 RAG TTFT 임계 경로 단축 근거 | [SmartANNS (ATC'24)](https://www.usenix.org/system/files/atc24-tian.pdf) · [ADR-001](../3_설계/adr/ADR-001-ssd-pim-rag-retrieval.md) |
 | paging — **throughput**(decode) | PagedAttention KV 관리만으로 동일 GPU **처리량 2–4×** | [vLLM (SOSP'23)](https://arxiv.org/abs/2309.06180) |
 | KV 압축 품질 (PPL) | 3-bit 양자화 **ΔPPL < 0.1 (절대)** — Wikitext-2·C4, LLaMA/Llama-2/-3/Mistral | [KVQuant (NeurIPS'24)](https://arxiv.org/html/2401.18079v4) |
 | KV 압축 품질 (accuracy) | 2-bit 양자화 LongBench accuracy 저하 **최대 2%p** (Llama/Mistral) | [KIVI](https://arxiv.org/html/2402.02750) |

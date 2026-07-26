@@ -1,7 +1,7 @@
 /**
  * mcr_driver_selection.build.js — P8 「Architecture Driver 도출」 단일 슬라이드.
  *
- *   NODE_PATH=<pptxgenjs 위치> node docs/mcr_driver_selection.build.js [out.pptx]
+ *   NODE_PATH=<pptxgenjs 위치> node docs/2_요구사항/mcr_driver_selection.build.js [out.pptx]
  *
  * 구성: FR-01~09(navy) · 선정 QA 6건(green) · C-01(brown) 태그바 3그룹이
  * 중앙 노란 타원 "Architectural Drivers"로 수렴 → 산출물 인용구.

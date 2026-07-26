@@ -1,10 +1,10 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_dp1_dp5.build.js
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/3_설계/mcr_dp1_dp5.build.js
 // KV 캐시 최적 운용 (MCR 1단계) DP1–DP5 — 설계 Point 선정 1장 + DP별 상세 2장 = 11장
 // 근거: docs/02_design_points_dp1_dp5.md v1.0 · QA 정의 v1.5 (신번호 QA1 Thpt/QA2 Acc/QA3 TTFT/QA4 ResEff/QA5 Mod)
 // 자산: docs/mcr_assets/make_kv_dp_assets.py
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
-const img = f => path.join(__dirname, "mcr_assets", "kvdp", f);
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const img = f => path.join(__dirname, "..", "mcr_assets", "kvdp", f);
 const GREEN = "1B7A4B", RED = "B3402A";
 
 const pptx = A.newDeck();

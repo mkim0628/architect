@@ -1,7 +1,7 @@
 /**
  * mcr_dp_selection.build.js — P9 「설계 Point 선정」 단일 슬라이드.
  *
- *   NODE_PATH=<pptxgenjs 위치> node docs/mcr_dp_selection.build.js [out.pptx]
+ *   NODE_PATH=<pptxgenjs 위치> node docs/3_설계/mcr_dp_selection.build.js [out.pptx]
  *
  * 구성: 좌측 드라이버 레일(F1~F9 · Q1~Q6 · C1) — 중앙 MCR Module View(확정안 v2
  * 패키지 구조 + 드라이버 배지 + DP 색 프레임) — 우측 DP-01~08 카드.

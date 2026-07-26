@@ -2,7 +2,7 @@
  * mcr_dp_deck.build.js — MCR DP1~DP8 상세 덱 (DP당 2페이지 = 16장).
  * architect-ppt 스킬의 pageDpProblem / pageDpCompare 빌더 사용.
  *
- *   NODE_PATH=<pptxgenjs 위치> node docs/mcr_dp_deck.build.js [out.pptx]
+ *   NODE_PATH=<pptxgenjs 위치> node docs/3_설계/mcr_dp_deck.build.js [out.pptx]
  *
  * 내용 출처: docs/02·03·04·05_design_points_*.md (요약 발췌 — 별점은 QA 평가표 그대로).
  * 이미지: docs/mcr_assets/dp/dpN_problem.png (문제 정의 그림, 생성)

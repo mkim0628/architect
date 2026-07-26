@@ -1,13 +1,13 @@
-// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_scope_kv.build.js
+// Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/1_과제배경/mcr_scope_kv.build.js
 // 과제 범위 1장 (세로 2단)
 //   좌측: 전체 AI SW 스택 — 본 과제(추론 서빙 런타임) 영역 강조
 //   우측: 그 영역 확대 = MCR 전체 구조도(확정안 v2) 위에 1단계(KV 캐시 최적 운용) 범위 표시
 //        — 자사 computable memory(CXL/CMM·PIM·PNM/HBF)·근접연산 활용부는 2단계(범위 외)로 해칭
 // 자산: docs/mcr_assets/scope_ai_stack.svg(.png) · scope_mcr_stage1.svg(.png — mcr_package_diagram_v2 파생)
 const path = require("path");
-const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
+const A = require(path.join(__dirname, "..", "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 const C = A.COLORS, F = A.FONT;
-const img = f => path.join(__dirname, "mcr_assets", f);
+const img = f => path.join(__dirname, "..", "mcr_assets", f);
 
 const pptx = A.newDeck();
 const s = A.slide(pptx, { title: "과제 범위", active: 0, band: "green", page: 3 });
