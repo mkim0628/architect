@@ -143,6 +143,69 @@ const TOPY = A.CONTENT_TOP;
   A.linkButton(s, { label: "QA별 정량 bin·근거 상세 : 00_qa_definitions.md v1.6", inBand: true });
 }
 
+// ── P9. Architecture Driver 도출 ─────────────────────────────────────
+{
+  const s = A.slide(pptx, { title: "Architecture Driver 도출", active: 1, band: "navy", page: 9 });
+  function groupLabel(x, y, text) {
+    s.addShape("rect", { x, y: y + 0.03, w: 0.045, h: 0.24, fill: { color: C.ink }, line: { type: "none" } });
+    s.addText(text, { x: x + 0.12, y, w: 4.4, h: 0.3, fontSize: 12.5, bold: true, color: C.ink, fontFace: F.head, align: "left", valign: "middle", margin: 0 });
+  }
+  // 좌측: FR 7건 (navy)
+  const FRX = 0.45, FRW = 4.62;
+  groupLabel(FRX, 1.24, "Functional Requirements");
+  [
+    ["FR-01", "워크로드 서빙", "RAG·multiturn·agent E2E 서빙"],
+    ["FR-02", "KV 재사용", "prefix+비접두 재사용·영속·복원 판단"],
+    ["FR-03", "KV 압축(pruning)", "중요도 기반 pruning·요청별 차등"],
+    ["FR-04", "KV tier 배치", "commodity tier 배치·승격/강등"],
+    ["FR-05", "KV 인지 스케줄링", "locality 라우팅·KV 공간 확보"],
+    ["FR-06", "P/D 분리 실행", "인스턴스 간 KV 전송 포함 실행"],
+    ["FR-07", "KV telemetry", "관측 → 정책 피드백·P/D 조정"],
+  ].forEach(([id, tag, text], i) => {
+    A.tagBar(s, { x: FRX, y: 1.66 + i * 0.52, w: FRW, id, tag, text, color: "navy", fontSize: 9.5 });
+  });
+  // 우상단: QA 5건 (green — 번호 = 우선순위)
+  const QAX = 5.5, QAW = 4.45;
+  groupLabel(QAX, 1.24, "Quality Attributes");
+  [
+    ["QA1", "Throughput", "decode 성능 (≥2×, iso-latency)"],
+    ["QA2", "Accuracy", "품질 저하 bound (gate, ΔF1≤1%p)"],
+    ["QA3", "TTFT", "prefill 성능 (≥2×, 재사용 축)"],
+    ["QA4", "Resource Efficiency", "유효 KV 용량 (≥3×)"],
+    ["QA5", "Modifiability", "확장성·진화성 (2단계 접속점)"],
+  ].forEach(([id, tag, text], i) => {
+    A.tagBar(s, { x: QAX, y: 1.66 + i * 0.52, w: QAW, id, tag, text, color: "green", fontSize: 9.5 });
+  });
+  // 우하단: C 3건 (brown — 첨부 원본 배치)
+  const CX = 10.05, CW2 = 2.83;
+  groupLabel(CX, 3.95, "Constraints");
+  [
+    ["C-01", "디바이스 불변", "HW 스펙 변경 불가 — 파라미터 취급"],
+    ["C-02", "Transformer 한정", "KV cache 보유 모델만 대상"],
+    ["C-03", "training-free", "재학습 없이 정확도 유지"],
+  ].forEach(([id, tag, text], i) => {
+    A.tagBar(s, { x: CX, y: 4.3 + i * 0.52, w: CW2, id, tag, text, color: "brown", fontSize: 8.6 });
+  });
+  // 중앙 수렴부
+  const EX = 6.5, EYE = 4.95, EW2 = 2.45, EH2 = 1.0;
+  s.addShape("downArrow", { x: 7.5, y: 4.32, w: 0.45, h: 0.58, fill: { color: C.green }, line: { type: "none" } });
+  s.addShape("rightArrow", { x: 5.2, y: 5.22, w: 1.2, h: 0.46, fill: { color: C.navy }, line: { type: "none" } });
+  s.addShape("leftArrow", { x: 9.05, y: 5.22, w: 0.92, h: 0.46, fill: { color: C.brown }, line: { type: "none" } });
+  s.addShape("ellipse", { x: EX, y: EYE, w: EW2, h: EH2, fill: { color: C.yellow }, line: { color: "BF9000", width: 1 } });
+  s.addText([
+    { text: "Architectural Drivers", options: { bold: true, fontSize: 13, color: C.navy, breakLine: true } },
+    { text: "FR 7 · QA 5 · C 3 = 15종", options: { fontSize: 8, color: C.navy } },
+  ], { x: EX, y: EYE, w: EW2, h: EH2, align: "center", valign: "middle", margin: 0, fontFace: F.head });
+  // 하단 산출물
+  s.addShape("downArrow", { x: 7.32, y: 6.08, w: 0.8, h: 0.55, fill: { color: "A9C08C" }, line: { type: "none" } });
+  s.addText("“MCR 1단계 — KV 캐시 최적 운용 AI 런타임”", {
+    x: 2.7, y: 6.66, w: 10.0, h: 0.38, fontSize: 16, bold: true, color: C.ink, fontFace: F.head, align: "center", valign: "middle", margin: 0,
+  });
+  s.addText("전 driver가 DP1–DP5 또는 확정 컴포넌트에 매핑 ✓ (2단계 이관 driver[근접연산·디바이스 plug-in]는 DP6–DP8·ADR-001로 보존)", {
+    x: 0.45, y: A.CONTENT_BOTTOM - 0.02, w: 12.4, h: 0.3, fontSize: 8, color: C.gray70, fontFace: F.body, align: "left", valign: "middle", margin: 0,
+  });
+}
+
 // ── P25. 부록 A VOC ──────────────────────────────────────────────────
 {
   const s = A.slide(pptx, { title: "부록 A. 수집 원시 요구사항 (VOC)", active: 1, band: "navy", page: 25 });
