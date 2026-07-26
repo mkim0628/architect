@@ -84,7 +84,7 @@
 
   <!-- MCR tier assets (common) -->
   <rect x="60" y="722" width="580" height="82" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
-  <text x="74" y="744" font-size="12" font-weight="700" fill="#1F2A44">«MCR» 자사 tier 자산 — CXL · PNM DRAM · HBF (변형 공통)</text>
+  <text x="74" y="744" font-size="12" font-weight="700" fill="#1F2A44">«MCR» 저장 tier 자산 — DRAM · NVMe SSD (변형 공통, 1단계 상용 계층)</text>
   <text x="74" y="764" font-size="10" fill="#6B7A90">변형 A: Memory Engine 내 tier 어댑터 모듈 · 변형 B: LMCache storage backend connector 모듈</text>
   <text x="74" y="782" font-size="10" fill="#1B7A4B">tier 추가 = 모듈 1개 (코어 무수정) — 두 변형 동일</text>
 
@@ -145,7 +145,7 @@
 
   <rect x="754" y="602" width="270" height="80" fill="#E9F5EE" stroke="#1B7A4B" stroke-width="1.5"/>
   <text x="768" y="624" font-size="12" font-weight="700" fill="#155F3B">Tier-agnostic KV/Block Manager</text>
-  <text x="768" y="642" font-size="9.5" fill="#155F3B">HBM/PNM/CXL 동일 추상화 —</text>
+  <text x="768" y="642" font-size="9.5" fill="#155F3B">HBM/DRAM/SSD 동일 추상화 —</text>
   <text x="768" y="656" font-size="9.5" fill="#155F3B">압축·비연속 KV를 block table 1급으로</text>
 
   <rect x="1050" y="602" width="270" height="80" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
@@ -157,7 +157,7 @@
   <text x="768" y="720" font-size="12" font-weight="700" fill="#1F2A44">Tier &amp; Lifecycle</text>
   <text x="768" y="738" font-size="10" fill="#6B7A90">Tier Topology Model (자사 HW 로드맵 직접 수용) · Migration · KV Transport</text>
 
-  <text x="754" y="788" font-size="10" fill="#1B7A4B">자사 디바이스(HBM4·CMM-DC·HBF) 확장점 제약 없음 — QA4(자사 HW) 최고</text>
+  <text x="754" y="788" font-size="10" fill="#1B7A4B">tier 확장(2단계 자사 디바이스 포함) 확장점 제약 없음 — QA5 접속점 보존</text>
 
   <text x="730" y="852" font-size="10.5" fill="#B3402A" font-weight="700">리스크: 배칭·모델 지원·수치 검증을 전부 자체 구축 + 영구 추종 (수십 인월+,</text>
   <text x="730" y="870" font-size="10.5" fill="#B3402A" font-weight="700">vLLM 동등 baseline 도달 자체가 선행 과제 — QA1 상한과 도달 확률의 분리)</text>

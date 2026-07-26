@@ -1,5 +1,9 @@
 # MCR 설계포인트 전개 — DP3 · DP4 · DP5 (v0.1)
 
+> **[구 체계 동결]** 본 문서의 DP 번호는 구 체계(MCR 전체 범위·구 QA 번호)
+> 기준이다. 1단계(KV 캐시 최적 운용) 현행 DP 체계는
+> [`02_design_points_dp1_dp5.md`](02_design_points_dp1_dp5.md)를 본다.
+
 작성 기준: 확정안 v2 패키지 다이어그램([`01_architecture_overview.md`](01_architecture_overview.md)).
 QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3을 따른다.
 DP1·DP2는 [`02_design_points_dp1_dp2.md`](02_design_points_dp1_dp2.md) 참조.

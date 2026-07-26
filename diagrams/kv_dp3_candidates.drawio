@@ -1,0 +1,26 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DP3 candidates" id="kv-dp3">
+    <mxGraphModel dx="1420" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="&lt;b&gt;후보 1 — 본체 융합형 (in-engine, exact)&lt;/b&gt; · selector 훅 = prefill 실행 루프(layer 경계) 내부" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="20" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c1req" value="요청 도착 → prefill 즉시 시작" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="40" y="50" width="600" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1l1" value="&lt;b&gt;Layer 1: 전체 연산 + 융합 selector&lt;/b&gt;&lt;br&gt;실제 K/V deviation 스코어 = 선택 근거 (근사 오차 0)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="40" y="120" width="290" height="80" as="geometry"/></mxCell>
+        <mxCell id="c1ln" value="&lt;b&gt;Layer 2..N: 선택 토큰(10–15%)만 재계산&lt;/b&gt;&lt;br&gt;chunk KV 로딩과 중첩" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF1E7;strokeColor=#4E7C3A;" vertex="1" parent="1"><mxGeometry x="350" y="120" width="290" height="80" as="geometry"/></mxCell>
+        <mxCell id="c1hook" value="&lt;b&gt;훅 위치 = 엔진 실행 루프 (코어)&lt;/b&gt; — 릴리스 추종·DP1 확장점 제약 정면 노출, 선택 연산이 피크 GPU 자원 소비" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="40" y="230" width="600" height="60" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c1l1" target="c1ln"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#B3402A;" edge="1" parent="1" source="c1l1" target="c1hook"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t2" value="&lt;b&gt;후보 2 — 경량 선행형 (proxy, speculative)&lt;/b&gt; · 엔진 밖 독립 컴포넌트, prefill 전 계획 확정" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="720" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c2ret" value="retrieval 반환" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="740" y="50" width="150" height="40" as="geometry"/></mxCell>
+        <mxCell id="c2px" value="&lt;b&gt;Proxy Selector (신설, 엔진 밖)&lt;/b&gt;&lt;br&gt;축소 모델/저차원 근사 — CPU·보조 스트림" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="930" y="40" width="410" height="60" as="geometry"/></mxCell>
+        <mxCell id="c2plan" value="&lt;b&gt;계획 확정 (prefill 시작 전)&lt;/b&gt;: 재계산 대상 + 로딩 순서" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#7A5C2E;" vertex="1" parent="1"><mxGeometry x="930" y="130" width="410" height="50" as="geometry"/></mxCell>
+        <mxCell id="c2pf" value="&lt;b&gt;prefill = 계획 실행: 로딩 ∥ 재계산 ∥ prefetch&lt;/b&gt;&lt;br&gt;엔진 무수정 — proxy 모듈만 교체 (알고리즘 연구 트랙 정합)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF1E7;strokeColor=#4E7C3A;" vertex="1" parent="1"><mxGeometry x="740" y="210" width="600" height="60" as="geometry"/></mxCell>
+        <mxCell id="c2risk" value="리스크: 근사 오차 — 정찰이 틀리면 ΔF1 리스크, 방어 시 재계산율 보수 상향 → TTFT 반납" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="740" y="290" width="600" height="40" as="geometry"/></mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c2ret" target="c2px"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c2px" target="c2plan"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4E7C3A;" edge="1" parent="1" source="c2plan" target="c2pf"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,30 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DP4 candidates" id="kv-dp4">
+    <mxGraphModel dx="1420" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="&lt;b&gt;후보 1 — 입장 시 고정 예산·단일 사본형 (eager, 파괴적)&lt;/b&gt;" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="20" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c1pr" value="&lt;b&gt;Prefill-exit Pruner (신설, 훅 1점)&lt;/b&gt; — 전역 예산(예: 토큰 20%)으로 확정 집행" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="40" y="50" width="600" height="50" as="geometry"/></mxCell>
+        <mxCell id="c1kv" value="&lt;b&gt;pruned KV = 유일 사본&lt;/b&gt; (불가역)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF1E7;strokeColor=#4E7C3A;" vertex="1" parent="1"><mxGeometry x="40" y="130" width="600" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1a" value="저장·tier 이동" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="40" y="200" width="180" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1b" value="영속 (세션·사용자)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="250" y="200" width="180" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1c" value="재사용 로드" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="460" y="200" width="180" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1risk" value="전 경로가 예산 비율만큼 가벼움(산술 5×) — 단, 미래 쿼리가 지운 토큰을 원하면 회복 불가 (pruning×재사용 충돌 정면 노출)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="40" y="270" width="600" height="50" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c1pr" target="c1kv"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="c1kv" target="c1a"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="c1kv" target="c1b"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="c1kv" target="c1c"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t2" value="&lt;b&gt;후보 2 — 수명주기 적응·이중 표현형 (adaptive, 가역)&lt;/b&gt;" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="720" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c2mgr" value="&lt;b&gt;Lifecycle Pruning Manager (신설)&lt;/b&gt; + 품질 피드백 루프 (FR-07 telemetry)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="740" y="50" width="600" height="50" as="geometry"/></mxCell>
+        <mxCell id="c2up" value="&lt;b&gt;상위 tier: 파생 pruned view&lt;/b&gt;&lt;br&gt;요청별 품질 예산으로 생성" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF1E7;strokeColor=#4E7C3A;" vertex="1" parent="1"><mxGeometry x="740" y="130" width="290" height="70" as="geometry"/></mxCell>
+        <mxCell id="c2lo" value="&lt;b&gt;하위 tier: 원본 보존&lt;/b&gt;&lt;br&gt;(파괴 대신 강등)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="1050" y="130" width="290" height="70" as="geometry"/></mxCell>
+        <mxCell id="c2ix" value="&lt;b&gt;KV Index: 이중 표현&lt;/b&gt; — 원본 ↔ 파생 view를 함께 지시" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#7A5C2E;" vertex="1" parent="1"><mxGeometry x="740" y="230" width="600" height="40" as="geometry"/></mxCell>
+        <mxCell id="c2risk" value="가역 — 요청별 ΔF1 bound 집행·알고리즘 교체 자유 / 대가: 이중 사본의 하위 tier 잠식 + 정합성 관리" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="740" y="290" width="600" height="50" as="geometry"/></mxCell>
+        <mxCell id="e21" value="파생" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c2lo" target="c2up"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="c2up" target="c2ix"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="c2lo" target="c2ix"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

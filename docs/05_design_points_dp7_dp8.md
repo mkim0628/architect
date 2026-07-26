@@ -1,5 +1,9 @@
 # MCR 설계포인트 전개 — DP7 · DP8 (v0.1)
 
+> **[구 체계 동결 — 2단계 이관]** ADR-001(SSD-PIM retrieval) 계열은 배경
+> v5에서 2단계로 이관되었다. 1단계 현행 DP 체계는
+> [`02_design_points_dp1_dp5.md`](02_design_points_dp1_dp5.md)를 본다.
+
 작성 기준: 확정안 v2 패키지 다이어그램([`01_architecture_overview.md`](01_architecture_overview.md))
 + **[ADR-001](adr/ADR-001-ssd-pim-rag-retrieval.md) (SSD-PIM GEMV 검색 가속 — 결정 완료, 본 문서의 전제)**.
 QA 정의·별점 기준은 [`00_qa_definitions.md`](00_qa_definitions.md) v0.3을 따른다.

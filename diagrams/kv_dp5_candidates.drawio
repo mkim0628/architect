@@ -1,0 +1,32 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DP5 candidates" id="kv-dp5">
+    <mxGraphModel dx="1420" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="&lt;b&gt;후보 1 — locality 우선형 (KV-affinity 라우팅 + 지연 대기)&lt;/b&gt; · 요청이 KV에게 간다" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="20" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c1r" value="&lt;b&gt;KV-aware Router (신설)&lt;/b&gt; — KV Index 조회 → affinity 라우팅" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="40" y="50" width="600" height="45" as="geometry"/></mxCell>
+        <mxCell id="c1i1" value="instance 1&lt;br&gt;(붐빔, &lt;b&gt;KV 보유&lt;/b&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF1E7;strokeColor=#4E7C3A;" vertex="1" parent="1"><mxGeometry x="40" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c1dq" value="&lt;b&gt;delay 큐 (신설)&lt;/b&gt;&lt;br&gt;locality 위한 상한부 대기" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#7A5C2E;" vertex="1" parent="1"><mxGeometry x="250" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c1i2" value="instance 2/3 (한산, KV 없음)&lt;br&gt;임계 초과 시만 사용" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="460" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c1ix" value="KV Index (data plane) — control plane이 직조회 (결합)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="40" y="230" width="600" height="40" as="geometry"/></mxCell>
+        <mxCell id="c1risk" value="hit rate 극대 — 재사용 이득 온전 / 리스크: hotspot 부하·용량 집중 + head-of-line 대기" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="40" y="295" width="600" height="45" as="geometry"/></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#4E7C3A;strokeWidth=2;" edge="1" parent="1" source="c1r" target="c1i1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c1r" target="c1dq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#9AA0A6;" edge="1" parent="1" source="c1dq" target="c1i2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#1F3864;" edge="1" parent="1" source="c1r" target="c1ix"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="t2" value="&lt;b&gt;후보 2 — 부하 우선형 (+ KV 이동/재계산)&lt;/b&gt; · KV가 요청에게 온다" style="text;html=1;fontSize=14;fontColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="720" y="10" width="640" height="30" as="geometry"/></mxCell>
+        <mxCell id="c2r" value="Router — 부하 지표 + 요약 힌트만 (Index 무결합)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F6F8;strokeColor=#9AA0A6;" vertex="1" parent="1"><mxGeometry x="740" y="50" width="600" height="45" as="geometry"/></mxCell>
+        <mxCell id="c2i1" value="instance 1&lt;br&gt;(균형 배치)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="740" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c2i2" value="instance 2&lt;br&gt;(균형 배치)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="950" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c2i3" value="instance 3&lt;br&gt;(균형 배치)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="1160" y="130" width="180" height="60" as="geometry"/></mxCell>
+        <mxCell id="c2tr" value="&lt;b&gt;KV Transport (신설)&lt;/b&gt; — KV를 요청에게 이동: tier/인스턴스 간 전송·복원, 비용 우위면 재계산 (DP3 비용 추정기 재사용)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDEBDD;strokeColor=#ED7D31;" vertex="1" parent="1"><mxGeometry x="740" y="230" width="600" height="55" as="geometry"/></mxCell>
+        <mxCell id="c2risk" value="균형 배치 — iso-latency 처리량 최대·전 용량 활용 / 리스크: GB급 이동 + 부하 사유 축출의 품질 blind" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE4E0;strokeColor=#B3402A;fontColor=#B3402A;" vertex="1" parent="1"><mxGeometry x="740" y="305" width="600" height="45" as="geometry"/></mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1F3864;" edge="1" parent="1" source="c2r" target="c2i1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1F3864;" edge="1" parent="1" source="c2r" target="c2i2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#1F3864;" edge="1" parent="1" source="c2r" target="c2i3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#ED7D31;" edge="1" parent="1" source="c2i2" target="c2tr"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
