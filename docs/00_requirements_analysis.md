@@ -23,6 +23,10 @@ Architecture Driver. 하류 문서: [00_qa_definitions.md](00_qa_definitions.md)
 추가하고 본 분석을 재수행한다.
 
 **개정 이력**
+- v1.5: **QA-06(Maintainability) 미선정 전환** — 초기 구축 인월·유지
+  FTE는 critical 요구가 아님(검수). 선정 5건(QA-01~05)으로 과제 표준
+  복귀, Drivers 16→15종(FR 7 + QA 5 + C 3). 구 bin은 DP1 비용 모델 판단
+  기준으로 보존, R-08·R-12는 미선정 사유·상용화 재평가로 처리
 - v1.4: **우선순위 규칙 개정(① 중요도 → ② 난이도 → ③ 잔여 동률 역할)
   + 재번호(QA 정의 v1.4 정합).** Utility Tree 재정렬: **QA-01
   Throughput**(중요도 rubric 최고 6점 — 두 목표 공동 판정) → **QA-02
@@ -139,7 +143,7 @@ MCAS가 구축하려는 시스템 환경은 실장(實裝) 전이라 MCR의 실�
 | QAW (Quality Attribute Workshop) | 이해관계자 합동 — 품질 요구를 시나리오 형태로 구체화 | §4.2 Utility Tree의 시나리오 행 |
 | 자체 벤치마크 실측 | P/D 분리 벤치 — decode 대기 70–85% (근거 A) | R-01의 정량 근거, QA1·QA3 baseline 정의 |
 | 문헌·업계 벤치마크 조사 | MLPerf · DistServe · KIVI · KVQuant · vLLM(SOSP'23) · FlexGen (근거 B) | QA 정의 문서의 SLO 앵커 표 |
-| upstream 로드맵·릴리스 분석 | vLLM 정규 릴리스 2주 케이던스 (근거 B) | R-13, QA5·QA6 bin 근거 |
+| upstream 로드맵·릴리스 분석 | vLLM 정규 릴리스 2주 케이던스 (근거 B) | R-13, QA5 bin·DP1 비용 모델 근거 |
 | 유사 시스템 분석 | LMCache 등 KV offloading 계층 (근거 B) | 범위 문서 배경 ④, DP1 후보 발굴 |
 
 주: 연구 과제 성격상 서비스 운영 조직이 stakeholder에 없으므로, 서빙 SLO·
@@ -258,10 +262,7 @@ QA-09 ← R-15 / QA-10 ← R-23 / QA-11 ← R-20.
 우선순위 규칙(QA 정의 문서 v1.4와 동일): **① 중요도(rubric 점수) →
 ② 난이도(rubric 점수) → ③ 잔여 동률은 성능 사슬 내 역할(목표 > gate >
 수단)** — ATAM 표준 순서((H,H)가 최상위 ASR). gate의 파급(전 수치
-무효화)은 중요도 세부 기준 I2에 반영. **상위 6건 선정** (기본 5건에서 확장 —
-Performance를 prefill/decode 2 QA로 분할했기 때문이며 **실질 관심축은
-5개**다. v1.0까지 선정이던 Adaptability는 v1.1 재평가로 미선정 전환 —
-QA-10 행·미선정 사유 참조).
+무효화)은 중요도 세부 기준 I2에 반영. **상위 5건 선정** (과제 표준 — Performance 2분할에도 Maintainability·Adaptability 미선정 전환으로 5건 유지).
 
 | 번호 | QA | Refinement | Scenario [측정] | 중요도 | 난이도 | 우선순위 | 선정 |
 |---|---|---|---|---|---|---|---|
@@ -270,7 +271,7 @@ QA-10 행·미선정 사유 참조).
 | QA-03 | Performance — Latency (TTFT) | prefill 성능 — baseline 대비 **TTFT 단축 배율** (목표 1: KV 재사용) | 대표 워크로드(long-context RAG·multiturn·agent)를 동일 HW·동일 실행 구성에서 E2E 서빙하며 첫 토큰까지의 시간을 잰다 — KV 재사용(prefix·비접두)과 복원 vs 재계산 판단의 효과가 나타나는 축. [측정: **TTFT 단축 배율 ≥ 2×** → ★★★. **평균 기준 판정·p99 병행**(꼬리는 cache-miss cold 요청이 지배). baseline = 동일 HW·**GPU HBM 단일 tier** 구성 — 순증분 분리 측정. ablation: 재사용 off 대비 순기여 분리. P/D 분리는 실험 변수(양쪽 동일 적용)] | H | M (v1.3 H→M — 경로 2/3 문헌 재현, 신규는 agent memory 축 국한) | 3 (QA-04와 완전 동률 — 잔여 동률 역할[목표>수단]로 선순위) | **O** |
 | QA-04 | Resource Efficiency | 유효 KV 용량 (원본 환산 동시 수용량) | QA-02 품질 bound를 지키는 조건에서 시스템이 동시 수용하는 KV 총량을 원본 환산으로 잰다. [측정: **유효 KV 용량 ÷ 물리 HBM 용량 배율** — Σ_tier(용량 × 평균 압축률 × KV 가용 비율)로 산출. baseline = **HBM 단일 tier·비압축**(정의상 1.0×) — HBM이 희소 자원이라 "HBM 한 장당 수용 컨텍스트"가 비용 구조를 결정하기 때문] | H (목표 2 공동 판정 — 기전 입증) | M (v1.3 H→M — pruning 확정으로 도달선 문헌화) | 4 | **O** |
 | QA-05 | Modifiability (확장성·진화성) | KV 구조 변화·신규 tier 수용성 — framework 결합 격리를 코어/모듈 경계 지표로 포괄 (v1.1 Adaptability 흡수) | KV 구조 영향 모델 변화(GQA/MQA · MLA · linear attention 계열)와 신규 tier 1종 추가(1단계 commodity 조합 변경 — 2단계 자사 디바이스[HBM4/CMM-DC/HBF] 수용의 사전 검증)를 수용하는 실험을 수행한다. [측정: (i) 신규/변경 **모듈 수** (ii) **코어 변경 LOC 비율(%)** — 코어 = 골격 + 공개 인터페이스(KV Locator·CompressionOp) (iii) 인터페이스 **시그니처 변경 건수** (iv) 모델 변화 수용 **리드타임**(upstream 공개일 기준). baseline = 현행 코드베이스. framework 결합 코드의 어댑터 격리는 (ii)·(iii)이 대리 측정] | M | H | 5 | **O** |
-| QA-06 | Maintainability | 개발·운영 비용 (지속 유지 가능성) | 초기 구축부터 지속 유지까지의 비용을 산정한다. [측정: **초기 구축 공수(인월**, 대표 워크로드 E2E 벤치 완주 기준**)과 연간 유지보수 FTE**(upstream 추종·회귀 검증 포함). baseline = DP1 후보별 비용 모델(02 문서 실측 표현: plugin형 수 인월 vs 독립형 수십 인월+) — 구조 선택이 비용을 한 자릿수 이상 가르기 때문] | M | M | 6 | **O** |
+| QA-06 | Maintainability | 개발·운영 비용 (지속 유지 가능성) | 초기 구축부터 지속 유지까지의 비용을 산정한다. [측정: **초기 구축 공수(인월**, 대표 워크로드 E2E 벤치 완주 기준**)과 연간 유지보수 FTE**(upstream 추종·회귀 검증 포함). baseline = DP1 후보별 비용 모델(02 문서 실측 표현: plugin형 수 인월 vs 독립형 수십 인월+) — 구조 선택이 비용을 한 자릿수 이상 가르기 때문] | M (v1.5 — critical 요구 아님) | M | 6 | (v1.4까지 선정 → v1.5 미선정 전환) |
 | QA-07 | Availability | 영속 KV 자산의 유실 복구 | 노드 장애로 영속 KV(agent memory 등) 일부가 유실될 때 재계산(re-prefill)으로 세션을 복구한다. [측정: KV 유실 시 세션 손실 건수와 복구 비용(재계산으로 인한 goodput 저하) — baseline = 무장애 운전] | M | M | 7 | |
 | QA-08 | Security | 사용자 간 KV 재사용 격리 | 타 사용자 요청이 내 KV 블록의 재사용을 시도할 때 차단된다. [측정: cross-user KV 재사용 발생 건수(목표 0) — 재사용 범위 = 사용자/세션 내] | M | M | 8 | |
 | QA-09 | Interoperability | 기존 서빙 생태계 호환 | vLLM 기반 스택을 쓰는 조직이 MCR 도입 시 응용 수정 없이 전환한다. [측정: 서빙 API 호환 여부, 응용 코드 수정 건수] | M | M | 9 | |
@@ -289,8 +290,9 @@ QA-01 Throughput이 중요도 단독 최고(6점 — 두 목표 공동 판정)�
 gate(QA-02)가 목표 지표(QA-03)보다 앞서는 것은 강등·우대가 아니라 rubric
 점수의 귀결 — gate의 파급(전 수치 무효화)은 I2=2로 중요도에 반영되어
 있고, 동률군 내 순서는 ATAM 표준대로 난이도가 가른다(C). **H/H는
-QA-01(중요도 최고)·QA-02(난이도 최고) 2건뿐** — 축이 서로 다르다. 중요도
-M 2건은 난이도로 Modifiability(M/H) > Maintainability(M/M).
+QA-01(중요도 최고)·QA-02(난이도 최고) 2건뿐** — 축이 서로 다르다. 중요도 M그룹은
+Modifiability(M/H)만 선정 잔존 — Maintainability(M/M)는 v1.5 미선정
+전환(critical 요구 아님, rubric 양축 최하).
 
 **미선정 사유** (전건 기록):
 
@@ -302,9 +304,16 @@ M 2건은 난이도로 Modifiability(M/H) > Maintainability(M/M).
 - **QA-08 Security** — 실증 단계에서는 재사용 범위를 **사용자/세션 내로
   한정**하는 정책 제약으로 완화(DP3 커플링, 위 [측정]이 그 제약).
   멀티테넌트 상용화 시 독립 QA로 재평가.
+- **QA-06 Maintainability** (v1.5 미선정 전환) — 초기 구축 인월·연간
+  유지 FTE는 **연구 과제 성패의 critical 요구가 아니다**(rubric 중요도
+  2점·난이도 2점 — 선정군 유일 양축 최하). 비용이 구조 선택으로 한 자릿수
+  이상 갈리는 사실(A)은 유효하나, 이는 시스템 품질속성이 아니라 **특정
+  DP(플랫폼/실행 스택 결정)의 판단 기준** — 구 bin(≤6인월·≤0.5 FTE)을 그
+  DP의 비용 모델로 보존한다. R-08(레퍼런스 스택)·R-12(소수 인력)는 이
+  기준과 상용화 단계(운영 조직 등장 시) 재평가로 처리.
 - **QA-09 Interoperability** — 독립 QA가 아니라 **DP1(framework 실행
-  구조)의 결정 변수로 흡수**. upstream 추종성은 QA5(Modifiability)·QA6
-  (Maintainability)의 bin이 대리 측정.
+  구조)의 결정 변수로 흡수**. upstream 추종성은 QA5(Modifiability)의
+  bin(upstream+2주)과 DP1 비용 모델이 대리 측정.
 - **QA-10 Adaptability** (v1.1 미선정 전환 — 유사 QA 통합 재평가) —
   Modifiability와 관심사(변화 수용)·측정축(코어/모듈 경계, 변경 LOC,
   전환 공수)이 중복되어 **하나만 선정**: ① 1단계 과제 본질 축은 **KV 구조
@@ -338,11 +347,10 @@ M 2건은 난이도로 Modifiability(M/H) > Maintainability(M/M).
 | QA-03 Performance — Latency (3) | QA3. TTFT (prefill 성능) | H/M — 목표 1. v1.4 재번호(구 QA1) |
 | QA-04 Resource Efficiency (4) | QA4. 메모리 효율 (유효 KV 용량) | H/M — 목표 2 공동 판정(기전). 번호 불변 |
 | QA-05 Modifiability (5) | QA5. 확장성·진화성 | M/H — 번호 불변 |
-| QA-06 Maintainability (6) | QA6. 유지보수성 (개발·운영 비용) | M/M — 번호 불변 |
 
 ## 5. Architecture Driver 선정
 
-**[기능 7, QA 6, Constraint 3 — Drivers 총 16종 선정]**
+**[기능 7, QA 5, Constraint 3 — Drivers 총 15종 선정]**
 
 | Driver | 아키텍처에 주는 함의 | 관련 DP/컴포넌트 |
 |---|---|---|
@@ -358,7 +366,6 @@ M 2건은 난이도로 Modifiability(M/H) > Maintainability(M/M).
 | QA3 TTFT (prefill 성능) | 재사용 경로(KV Index 조회·복원 vs 재계산 판단)와 admission 경로가 임계 경로 | DP1–DP5 QA 평가표 / DP3 |
 | QA4 메모리 효율 | tier 오프로딩 × 압축의 결합 구조 요구 (압축 단독 초과) | DP2·DP4 |
 | QA5 확장성·진화성 | 코어/모듈 경계와 공개 인터페이스의 안정성 설계 (KV 구조 변화 + 2단계 디바이스 수용 대비 + framework 결합 격리 대리 측정) | DP1·DP4 / KV Locator · CompressionOp |
-| QA6 유지보수성 | framework 실행 구조(plugin vs 독립)의 핵심 판단 기준 | [DP1](02_design_points_dp1_dp2.md) |
 | C-01 디바이스 불변 | tier를 파라미터로 추상화하도록 강제 (전용 코드 최소화) | DP4 / Tier Topology Model |
 | C-02 Transformer 모델 한정 | 압축·재사용·배치 설계 공간을 KV cache 전제로 고정 — 탈Transformer 일반화는 요구하지 않음 (KV 구조 **변화** 수용은 QA5 축) | DP2·DP3 전제 / QA5 각주 |
 | C-03 모델 무변경 (training-free) | 압축·재사용 기법 선택지를 런타임 계층으로 한정 — 품질 회복을 재학습에 기댈 수 없어 요청별 bound 집행 구조(QA2)의 중요성이 커짐 (QA2 난이도 H 판정의 한 근거) | DP2·DP3 전제 / QA2 |
