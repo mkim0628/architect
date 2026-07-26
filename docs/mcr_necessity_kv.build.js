@@ -1,10 +1,8 @@
 // Regenerate: NODE_PATH=<dir-with-pptxgenjs> node docs/mcr_necessity_kv.build.js
-// 과제 필요성 1장 (2층 구성 — 검수 반영 v2: 목표는 상위층 자원 view, 2층 우측은 설계 접근)
-//   좌측 상단: 문제 정의 Ⅰ — 물리 병목 (용량 · 대역폭 + 트레이드오프)
-//   우측 상단: 상위 과제 목표 — 자원 관점 총괄 + 3축 (브리지 공식 ①②③이 생성기)
-//   좌측 하단: 문제 정의 Ⅱ — 운용 공백 3건 (우선순위 순)
-//   우측 하단: 설계 접근 — 공백 ①②③을 설계 결정 DP3·DP4·DP5로 전개 (행 1:1)
-//   하단 바: 관통 문제(조율 계층 부재) → DP2(관리 주체) · 기반 DP1(실행 스택 소싱)
+// 과제 필요성 1장 (검수 반영 v3: 1층 단독 구성)
+//   좌측: 문제 정의 — 물리 병목 (용량 · 대역폭 + 결합 구조)
+//   우측: 상위 과제 목표 — 자원 관점 총괄 + 3축 (브리지 공식 ①②③이 생성기)
+//   ※ 운용 공백(세 지렛대의 부재)과 그 해소는 설계 챕터(DP1–DP5)에서 다룬다 — 본 페이지는 1층만.
 const path = require("path");
 const A = require(path.join(__dirname, "..", ".claude", "skills", "architect-ppt", "lib", "architect_deck"));
 const C = A.COLORS, F = A.FONT;
@@ -17,136 +15,99 @@ const LX = A.MARGIN, LW = 6.08;
 const RX = 6.98, RW = 13.333 - A.MARGIN - RX;
 const ARROW_X = LX + LW + 0.06, ARROW_W = RX - ARROW_X - 0.06;
 
-const H1_Y = A.CONTENT_TOP;            // 1.18
-const PHYS_Y = 1.60, PHYS_H = 1.42;    // 물리 병목 2박스
-const STRIP_Y = PHYS_Y + PHYS_H + 0.05, STRIP_H = 0.30;  // 트레이드오프 스트립
-const H2_Y = STRIP_Y + STRIP_H + 0.09; // 2층 헤더
-const ROWS_TOP = H2_Y + 0.34 + 0.10;
-const SYNTH_H = 0.58;
-const ROWS_BOTTOM = A.CONTENT_BOTTOM - SYNTH_H - 0.10;
-const GAP = 0.10;
-const ROW_H = (ROWS_BOTTOM - ROWS_TOP - 2 * GAP) / 3;
-
+const H_Y = A.CONTENT_TOP;                       // 헤더
+const TOP = H_Y + 0.34 + 0.12;                   // 본문 시작
+const BOTTOM = A.CONTENT_BOTTOM;                 // 본문 끝
 const bullet = { characterCode: "25C6", indent: 8 };
 
-// ── 헤더 (1층) ────────────────────────────────────────────────────────
-A.sectionHeader(s, { x: LX, y: H1_Y, w: LW, text: "문제 정의 Ⅰ — 물리 병목: KV cache가 용량·대역폭을 동시에 압박", color: "navy", fontSize: 11.5 });
-A.sectionHeader(s, { x: RX, y: H1_Y, w: RW, text: "상위 과제 목표 — 자원 효율로 AI 추론 성능 향상 (MCR 1단계)", color: "green", fontSize: 11.5 });
+// ── 헤더 ─────────────────────────────────────────────────────────────
+A.sectionHeader(s, { x: LX, y: H_Y, w: LW, text: "문제 정의 — 물리 병목: KV cache가 용량·대역폭을 동시에 압박", color: "navy", fontSize: 11.5 });
+A.sectionHeader(s, { x: RX, y: H_Y, w: RW, text: "과제 목표 — 자원 효율로 AI 추론 성능 향상 (MCR 1단계)", color: "green", fontSize: 11.5 });
 
-// ── 좌측 1층: 물리 병목 2박스 ─────────────────────────────────────────
+// ── 좌측: 물리 병목 2박스 + 결합 구조 ────────────────────────────────
+const STRIP_H = 0.62;
+const PHYS_H = BOTTOM - TOP - STRIP_H - 0.12;
 const BW = (LW - 0.14) / 2;
-function physBox(x, title, lines) {
-  A.panel(s, { x, y: PHYS_Y, w: BW, h: PHYS_H });
-  s.addText(title, { x: x + 0.08, y: PHYS_Y + 0.04, w: BW - 0.16, h: 0.26, fontFace: F.head, fontSize: 10.3, bold: true, color: C.navy, valign: "middle" });
-  const runs = lines.map(t => ({ text: t, options: { bullet, fontFace: F.body, fontSize: 8.2, color: C.ink, breakLine: true, paraSpaceAfter: 2 } }));
-  s.addText(runs, { x: x + 0.10, y: PHYS_Y + 0.30, w: BW - 0.18, h: PHYS_H - 0.36, valign: "top" });
+function physBox(x, title, lines, image) {
+  A.panel(s, { x, y: TOP, w: BW, h: PHYS_H });
+  s.addText(title, { x: x + 0.08, y: TOP + 0.06, w: BW - 0.16, h: 0.30, fontFace: F.head, fontSize: 11.5, bold: true, color: C.navy, valign: "middle" });
+  const IMG_H = 1.42, IMG_W = BW - 0.24;
+  const runs = lines.map(t => (typeof t === "string"
+    ? { text: t, options: { bullet, fontFace: F.body, fontSize: 9.2, color: C.ink, breakLine: true, paraSpaceAfter: 5 } }
+    : { text: t.text, options: { bullet, fontFace: F.body, fontSize: 9.2, color: t.color || C.ink, bold: !!t.bold, breakLine: true, paraSpaceAfter: 5 } }));
+  s.addText(runs, { x: x + 0.10, y: TOP + 0.42, w: BW - 0.20, h: PHYS_H - 0.56 - IMG_H, valign: "top" });
+  if (image) s.addImage({ path: image, x: x + 0.12, y: TOP + PHYS_H - IMG_H - 0.10, w: IMG_W, h: IMG_H, sizing: { type: "contain", w: IMG_W, h: IMG_H } });
 }
 physBox(LX, "용량 — KV가 HBM을 넘는다",
   [
-    "KV ∝ 컨텍스트 × 동시 세션 — 32k 1세션 ≈ 10.5 GB (토큰당 320 KB, Llama-2-70B)",
-    "용량 = batch(동시성)의 상한 = 처리량의 상한",
+    "KV ∝ 컨텍스트 길이 × 동시 세션 수 — 32k 토큰 1세션 ≈ 10.5 GB (토큰당 320 KB, Llama-2-70B)",
+    "모델이 아니라 KV가 메모리를 지배 — 컨텍스트·세션이 늘수록 선형 증가",
+    { text: "용량 = batch(동시성)의 상한 = 처리량의 상한", bold: true, color: C.navy },
     "초과 시 대기 또는 preemption·전체 재계산뿐 → 지연·처리량 악화 직결",
-  ]);
+  ], path.join(__dirname, "mcr_assets", "bg_kv_evidence.png"));
 physBox(LX + BW + 0.14, "대역폭 — 매 토큰 KV 전체를 읽는다",
   [
-    "decode = memory-bandwidth-bound — 대기가 E2E의 70–85%(A), 컨텍스트↑ = TPOT↑",
-    "대역폭 포화 시 용량 남아도 연산기 유휴 — 처리량 정체",
-    "tier 계단 ~10×씩(HBM→DRAM→SSD) — 복원이 재계산보다 느릴 수도",
-  ]);
-// 트레이드오프 스트립
-s.addShape("rect", { x: LX, y: STRIP_Y, w: LW, h: STRIP_H, fill: { color: "EDEFF4" }, line: { color: C.navy, width: 0.75 } });
+    "decode = memory-bandwidth-bound — decode 대기가 E2E의 70–85%(A), 컨텍스트↑ = 토큰당 지연(TPOT)↑",
+    { text: "대역폭 포화 시 용량이 남아도 연산기는 유휴 — 처리량 정체", bold: true, color: C.navy },
+    "메모리 계층 대역폭 계단 ~10×씩 (HBM→DRAM→SSD) — 하위 tier 복원이 재계산보다 느린 역전 구간 존재",
+  ], path.join(__dirname, "mcr_assets", "nec_tier_ladder.png"));
+// 결합 구조 스트립
+const SY = TOP + PHYS_H + 0.12;
+s.addShape("rect", { x: LX, y: SY, w: LW, h: STRIP_H, fill: { color: "EDEFF4" }, line: { color: C.navy, width: 0.75 } });
 s.addText([
-  { text: "결합 구조: ", options: { bold: true, color: C.navy, fontFace: F.head, fontSize: 8.8 } },
-  { text: "offload로 용량을 풀면 대역폭 계단에 부딪힌다(용량 ↔ 대역폭 트레이드오프) — 어디에 두고·얼마나 줄이고·언제 다시 만들지의 ", options: { color: C.ink, fontFace: F.body, fontSize: 8.8 } },
-  { text: "운용 결정이 성능을 결정", options: { bold: true, color: C.navy, fontFace: F.body, fontSize: 8.8 } },
-], { x: LX + 0.08, y: STRIP_Y, w: LW - 0.16, h: STRIP_H, valign: "middle" });
+  { text: "결합 구조: ", options: { bold: true, color: C.navy, fontFace: F.head, fontSize: 9.6 } },
+  { text: "offload로 용량을 풀면 대역폭 계단에 부딪힌다(용량 ↔ 대역폭 트레이드오프) — 두 병목은 따로 풀 수 없고, HW 증설이 아닌 ", options: { color: C.ink, fontFace: F.body, fontSize: 9.6 } },
+  { text: "자원 사용 방식의 개선", options: { bold: true, color: C.navy, fontFace: F.body, fontSize: 9.6 } },
+  { text: "이 요구된다", options: { color: C.ink, fontFace: F.body, fontSize: 9.6 } },
+], { x: LX + 0.10, y: SY, w: LW - 0.20, h: STRIP_H, valign: "middle" });
 
-// ── 우측 1층: 상위 과제 목표 (자원 관점 총괄 + 3축) ──────────────────
-const BR_H = STRIP_Y + STRIP_H - PHYS_Y;   // 물리 병목+스트립과 동일 높이
-A.panel(s, { x: RX, y: PHYS_Y, w: RW, h: BR_H, fill: "F3F7F0" });
+// ── 가운데 화살표 ────────────────────────────────────────────────────
+s.addShape("rightArrow", { x: ARROW_X, y: TOP + (BOTTOM - TOP) / 2 - 0.16, w: ARROW_W, h: 0.32, fill: { color: C.grayArrow }, line: { type: "none" } });
+
+// ── 우측: 상위 과제 목표 (총괄 + 자원 3축) ───────────────────────────
+// 총괄 callout
+const OV_H = 0.72;
+s.addShape("rect", { x: RX, y: TOP, w: RW, h: OV_H, fill: { color: "F3F7F0" }, line: { color: C.green, width: 1.2 } });
 s.addText([
-  { text: "총괄: ", options: { bold: true, fontFace: F.head, fontSize: 9.8, color: C.greenDark } },
-  { text: "연산기의 불필요한 연산은 줄이고 메모리의 사용성은 높여, 동일 HW에서 AI 추론 성능(지연·처리량)을 향상시킨다", options: { bold: true, fontFace: F.body, fontSize: 9.8, color: C.greenDark } },
-], { x: RX + 0.10, y: PHYS_Y + 0.04, w: RW - 0.2, h: 0.44, valign: "middle" });
+  { text: "총괄: ", options: { bold: true, fontFace: F.head, fontSize: 10.6, color: C.greenDark } },
+  { text: "연산기의 불필요한 연산은 줄이고 메모리의 사용성은 높여, 동일 HW에서 AI 추론 성능(지연·처리량)을 향상시킨다", options: { bold: true, fontFace: F.body, fontSize: 10.6, color: C.greenDark } },
+], { x: RX + 0.12, y: TOP, w: RW - 0.24, h: OV_H, valign: "middle" });
+
+// 브리지 공식
+const BR_Y = TOP + OV_H + 0.10, BR_H = 0.46;
+s.addShape("rect", { x: RX, y: BR_Y, w: RW, h: BR_H, fill: { color: C.cream }, line: { color: C.brown, width: 0.75 } });
 s.addText([
-  { text: "KV 총량·이동량 = ① 만드는 횟수 × ② 토큰당 바이트 × ③ 두는 위치·순서 — 세 인자가 곧 목표 3축", options: { fontFace: F.body, fontSize: 8.4, color: C.navy, breakLine: true, paraSpaceAfter: 3 } },
-  { text: "목표 1 [연산 효율] 계산한 결과를 재활용해 불필요한 재연산 제거 → TTFT 단축  (① 축소)", options: { bullet, bold: true, fontFace: F.body, fontSize: 8.6, color: C.greenDark, breakLine: true, paraSpaceAfter: 2 } },
-  { text: "목표 2 [메모리 효율] 정확도 유지한 채 실효 용량·토큰당 읽기량 개선 → 동시성·처리량 향상  (② 축소)", options: { bullet, bold: true, fontFace: F.body, fontSize: 8.6, color: C.greenDark, breakLine: true, paraSpaceAfter: 2 } },
-  { text: "목표 3 [자원 인지 운용] 캐시·메모리·부하 상태 인지 동적 배치·선별 — 개별 개선을 시스템 처리량으로 전환  (③ 최적화)", options: { bullet, bold: true, fontFace: F.body, fontSize: 8.6, color: C.greenDark, breakLine: true } },
-], { x: RX + 0.12, y: PHYS_Y + 0.48, w: RW - 0.24, h: BR_H - 0.54, valign: "top" });
-// 물리 병목 → 해법 공간 화살표
-s.addShape("rightArrow", { x: ARROW_X, y: PHYS_Y + BR_H / 2 - 0.14, w: ARROW_W, h: 0.28, fill: { color: C.grayArrow }, line: { type: "none" } });
+  { text: "KV 총량·이동량 = ① 만드는 횟수 × ② 토큰당 바이트 × ③ 두는 위치·처리 순서", options: { bold: true, fontFace: F.body, fontSize: 9.4, color: C.navy } },
+  { text: "  — 공식의 세 인자가 곧 목표 3축", options: { fontFace: F.body, fontSize: 9.2, color: C.brown } },
+], { x: RX + 0.12, y: BR_Y, w: RW - 0.24, h: BR_H, valign: "middle" });
 
-// ── 헤더 (2층) ────────────────────────────────────────────────────────
-A.sectionHeader(s, { x: LX, y: H2_Y, w: LW, text: "문제 정의 Ⅱ — 운용 공백: 세 지렛대가 현 런타임에 없다 (우선순위 순)", color: "navy", fontSize: 11.5 });
-A.sectionHeader(s, { x: RX, y: H2_Y, w: RW, text: "설계 접근 — 공백 ①②③을 설계 결정(DP)으로 전개, 목표 3축 실현", color: "green", fontSize: 11.5 });
-
-// ── 2층 행: 공백 ↔ 목표 ──────────────────────────────────────────────
-function gapRow(y, num, lead, body, result) {
-  A.panel(s, { x: LX, y, w: LW, h: ROW_H });
-  s.addShape("ellipse", { x: LX + 0.08, y: y + 0.07, w: 0.26, h: 0.26, fill: { color: C.navy }, line: { type: "none" } });
-  s.addText(String(num), { x: LX + 0.08, y: y + 0.07, w: 0.26, h: 0.26, align: "center", valign: "middle", fontFace: F.head, fontSize: 10.5, bold: true, color: C.white });
-  s.addText([
-    { text: lead, options: { bold: true, fontFace: F.head, fontSize: 9.8, color: C.navy, breakLine: true, paraSpaceAfter: 2 } },
-    { text: body, options: { fontFace: F.body, fontSize: 8.6, color: C.ink, breakLine: true, paraSpaceAfter: 2 } },
-    { text: "⇒ " + result, options: { bold: true, fontFace: F.body, fontSize: 8.8, color: "B3402A", breakLine: true } },
-  ], { x: LX + 0.42, y: y + 0.04, w: LW - 0.54, h: ROW_H - 0.08, valign: "top" });
-}
-function dpRow(y, dpId, goalTag, title, body, verdict) {
+// 목표 3축 rows
+const ROWS_TOP = BR_Y + BR_H + 0.12;
+const GAP = 0.12;
+const ROW_H = (BOTTOM - ROWS_TOP - 2 * GAP) / 3;
+function goalRow(y, num, axis, lever, title, body, verdict) {
   A.panel(s, { x: RX, y, w: RW, h: ROW_H, fill: "F3F7F0" });
-  const dpc = C.dp[dpId] || C.navy;
-  s.addShape("roundRect", { x: RX + 0.08, y: y + 0.07, w: 0.64, h: 0.26, rectRadius: 0.05, fill: { color: dpc }, line: { type: "none" } });
-  s.addText(dpId.replace("DP-0", "DP"), { x: RX + 0.08, y: y + 0.07, w: 0.64, h: 0.26, align: "center", valign: "middle", fontFace: F.head, fontSize: 9.5, bold: true, color: C.white });
+  s.addShape("roundRect", { x: RX + 0.10, y: y + 0.09, w: 0.66, h: 0.28, rectRadius: 0.05, fill: { color: C.green }, line: { type: "none" } });
+  s.addText("목표 " + num, { x: RX + 0.10, y: y + 0.09, w: 0.66, h: 0.28, align: "center", valign: "middle", fontFace: F.head, fontSize: 9.5, bold: true, color: C.white });
   s.addText([
-    { text: title + "  ", options: { bold: true, fontFace: F.head, fontSize: 9.8, color: C.greenDark } },
-    { text: "— " + goalTag, options: { bold: true, fontFace: F.body, fontSize: 8.6, color: C.navy, breakLine: true, paraSpaceAfter: 2 } },
-    { text: body, options: { fontFace: F.body, fontSize: 8.6, color: C.ink, breakLine: true, paraSpaceAfter: 2 } },
-    { text: "판정: ", options: { bold: true, fontFace: F.body, fontSize: 8.8, color: C.navy } },
-    { text: verdict, options: { fontFace: F.body, fontSize: 8.8, color: C.navy, breakLine: true } },
-  ], { x: RX + 0.82, y: y + 0.04, w: RW - 0.94, h: ROW_H - 0.08, valign: "top" });
+    { text: "[" + axis + "]  " + title + "  ", options: { bold: true, fontFace: F.head, fontSize: 10.4, color: C.greenDark } },
+    { text: "(브리지 " + lever + ")", options: { fontFace: F.body, fontSize: 8.8, color: C.brown, breakLine: true, paraSpaceAfter: 3 } },
+    { text: body, options: { fontFace: F.body, fontSize: 9.2, color: C.ink, breakLine: true, paraSpaceAfter: 3 } },
+    { text: "판정: ", options: { bold: true, fontFace: F.body, fontSize: 9.2, color: C.navy } },
+    { text: verdict, options: { fontFace: F.body, fontSize: 9.2, color: C.navy, breakLine: true } },
+  ], { x: RX + 0.88, y: y + 0.06, w: RW - 1.02, h: ROW_H - 0.12, valign: "top" });
 }
-function rowArrow(y) {
-  s.addShape("rightArrow", { x: ARROW_X, y: y + ROW_H / 2 - 0.13, w: ARROW_W, h: 0.26, fill: { color: C.yellow }, line: { type: "none" } });
-}
-
-const y1 = ROWS_TOP;
-gapRow(y1, 1, "재사용 공백 — prefix 일치·일회성 버퍼에 갇힘 (다시 만들지 않기의 부재)",
-  "prefix 정확 일치 시만 hit(vLLM·SGLang), 요청 종료 시 폐기 — 비접두 재사용·세션/사용자 영속화·복원 vs 재계산 판단 없음",
-  "수십 k 토큰을 매 요청 전체 re-prefill — TTFT 지배 (R-03·04·05)");
-rowArrow(y1);
-dpRow(y1, "DP-03", "목표 1 [연산 효율] 실현", "KV 재사용 범위·복원 전략",
-  "prefix + 비접두(chunk) 재사용 · 세션/사용자 영속 · 복원 vs 재계산 판단 (FR-02) — 재계산 토큰 선택의 실행 구조를 후보 대결로 결정",
-  "TTFT ≥ 2× (QA3) — CacheBlend 2.2–3.3×(B) 앵커");
-
-const y2 = y1 + ROW_H + GAP;
-gapRow(y2, 2, "압축 공백 — 중요도 판정이 정적·전역 일률 (줄이기의 부재)",
-  "중요도 기반 토큰 pruning(H2O·SnapKV)은 입증됐으나 고정 예산·고정 휴리스틱 — 요청별 품질 예산·차등 집행, 재사용과의 조율(쿼리 의존 중요도) 부재",
-  "용량·대역폭 이중 병목 지속, 품질 리스크 통제 불가 (R-01·02·06)");
-rowArrow(y2);
-dpRow(y2, "DP-04", "목표 2 [메모리 효율] 실현", "정확도를 유지한 KV 캐시 압축",
-  "품질 bound(ΔF1 ≤ 1%p, QA2 gate) 안의 요청별 차등 pruning — 집행 시점 × 자산 표현(단일 사본 vs 원본·파생)을 후보 대결로 결정 (FR-03·04, C-03)",
+let gy = ROWS_TOP;
+goalRow(gy, 1, "연산 효율", "① 축소", "이미 계산한 결과를 재활용해 불필요한 재연산을 제거한다",
+  "같은 컨텍스트를 매 요청 다시 만드는 연산을 없애 응답 시작 지연을 줄인다",
+  "TTFT 단축 배율 ≥ 2× (QA3)");
+gy += ROW_H + GAP;
+goalRow(gy, 2, "메모리 효율", "② 축소", "정확도를 유지한 채 메모리의 실효 용량·토큰당 읽기량을 개선한다",
+  "같은 HBM으로 더 많은 컨텍스트를 수용하고(동시성) 매 토큰 읽기량을 줄인다(대역폭) — 품질 bound가 전제(QA2 gate)",
   "유효 KV 용량 ≥ 3× (QA4) · throughput ≥ 2× (QA1)");
-
-const y3 = y2 + ROW_H + GAP;
-gapRow(y3, 3, "스케줄링 공백 — 스케줄러가 KV를 모른다, KV-blind (잘 두고 고르기의 부재)",
-  "admission·라우팅이 cache locality 비인지(재사용 이득 소실), KV 풀 포화 시 preemption·전체 재계산뿐 — 압축/강등/축출 선택 없음",
-  "재사용·압축의 이득이 시스템 처리량으로 전환되지 않음 (R-16)");
-rowArrow(y3);
-dpRow(y3, "DP-05", "목표 3 [자원 인지 운용] 실현", "KV 캐시 인지형 동적 스케줄링",
-  "locality 인지 라우팅 + KV 공간 확보(압축/강등/축출 선택) (FR-05) — 라우팅 1차 기준(locality vs 부하)을 후보 대결로 결정",
+gy += ROW_H + GAP;
+goalRow(gy, 3, "자원 인지 운용", "③ 최적화", "캐시·메모리·부하 상태를 인지해 요청과 데이터를 동적으로 배치·선별한다",
+  "유휴 자원 없이, 개별 효율 개선(목표 1·2)을 시스템 전체 처리량으로 전환한다",
   "throughput ≥ 2× (QA1) — 축별 ablation으로 순기여 분리");
-
-// ── 하단 종합 바 ─────────────────────────────────────────────────────
-const sy = A.CONTENT_BOTTOM - SYNTH_H;
-s.addShape("rect", { x: LX, y: sy, w: 13.333 - 2 * A.MARGIN, h: SYNTH_H, fill: { color: C.cream }, line: { color: C.brown, width: 1 } });
-s.addText([
-  { text: "관통 문제: ", options: { bold: true, color: C.brown, fontFace: F.head, fontSize: 9.6 } },
-  { text: "세 지렛대는 결합되어 있으나(재사용은 남는 것을, 압축은 비용을, 스케줄링은 활용을 결정) 조율 계층이 어느 런타임에도 없다 → ", options: { color: C.ink, fontFace: F.body, fontSize: 9.6 } },
-  { text: "DP2 KV 배치·압축의 관리 주체", options: { bold: true, color: C.navy, fontFace: F.head, fontSize: 9.6 } },
-  { text: "가 조율의 소재를, ", options: { color: C.ink, fontFace: F.body, fontSize: 9.6 } },
-  { text: "DP1 실행 스택 소싱", options: { bold: true, color: C.navy, fontFace: F.head, fontSize: 9.6 } },
-  { text: "이 이 모두가 사는 집을 결정 — 설계 챕터 DP1–DP5로 전개.", options: { color: C.ink, fontFace: F.body, fontSize: 9.6 } },
-  { text: "  (2단계 진화: 자사 memory-centric 디바이스 확장 — MCR 완성)", options: { color: C.muted, fontFace: F.body, fontSize: 8.8 } },
-], { x: LX + 0.14, y: sy, w: 13.333 - 2 * A.MARGIN - 0.28, h: SYNTH_H, valign: "middle" });
 
 A.writeDeck(pptx, process.argv[2] || path.join(__dirname, "mcr_necessity_kv.pptx")).then(() => console.log("written"));
