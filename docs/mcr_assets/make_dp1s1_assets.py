@@ -1,4 +1,5 @@
-# DP-01 (Phase-1: KV 재사용성 제고) slide assets — problem diagram + candidate diagrams
+# DP-01 (KV 재사용성 제고 — non-contiguous 재사용 개선) slide assets
+# baseline = CacheBlend. 후보 = 사전 가공형(store-time) vs 요청 적응형(read-time)
 # Regenerate: python3 docs/mcr_assets/make_dp1s1_assets.py
 import matplotlib
 matplotlib.use("Agg")
@@ -21,91 +22,94 @@ def arrow(ax, x1, y1, x2, y2, color=GRAY, lw=1.6, style="-|>", ls="-"):
                                  color=color, lw=lw, linestyle=ls, mutation_scale=14))
 
 # ─────────────────────────────────────────────────────────────────────
-# 1) Problem diagram: (a) prefix-only reuse fails + ephemeral  (b) restore-vs-recompute inversion
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(9.2, 3.4), dpi=200)
+# 1) Problem diagram
+#    (a) TTFT breakdown: full re-prefill vs CacheBlend baseline (residual floor)
+#    (b) the open design axis: when to spend the residual work (store-time vs read-time)
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(9.6, 3.4), dpi=200)
 for ax in (a1, a2):
-    ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
+    ax.axis("off")
 
-a1.set_title("(a) Prefix-only & ephemeral reuse", fontsize=10, color=NAVY, fontweight="bold")
-a1.text(0.4, 8.9, "Cached KV (turn N)", fontsize=8, color="#262626")
-for i, c in enumerate(["A", "B", "C"]):
-    box(a1, 0.4 + i*1.5, 7.4, 1.25, 1.15, c, fc=CREAM, ec="#7A5C2E", fs=10, bold=True)
-a1.text(0.4, 6.3, "Incoming (turn N+1, chunks reordered)", fontsize=8, color="#262626")
-for i, c in enumerate(["B", "A", "D"]):
-    box(a1, 0.4 + i*1.5, 4.8, 1.25, 1.15, c, fc="#FFFFFF", ec=GRAY, fs=10, bold=True)
-box(a1, 6.0, 5.9, 3.6, 1.5, "prefix match\nHIT = 0", fc="#FBE4E0", ec=RED, fs=9.5, tc=RED, bold=True)
-arrow(a1, 5.2, 6.6, 6.0, 6.6, color=RED)
-box(a1, 0.4, 2.5, 5.3, 1.3, "request ends → KV discarded\n(ephemeral buffer)", fc="#FFFFFF", ec=GRAY, fs=8.5)
-box(a1, 6.0, 2.5, 3.6, 1.3, "full re-prefill\n(TTFT-dominant)", fc="#FBE4E0", ec=RED, fs=9, tc=RED, bold=True)
-arrow(a1, 5.7, 3.15, 6.0, 3.15, color=RED)
-a1.text(5.0, 0.9, "tens of k tokens recomputed on every request", fontsize=8.5,
-        ha="center", color=RED, style="italic")
+a1.set_xlim(0, 10); a1.set_ylim(0, 10)
+a1.set_title("(a) TTFT after adopting CacheBlend: a residual floor remains",
+             fontsize=9.5, color=NAVY, fontweight="bold")
+# bar 1: full re-prefill
+a1.add_patch(plt.Rectangle((0.6, 7.3), 8.6, 1.5, fc=GRAY, alpha=0.75))
+a1.text(0.6, 9.1, "full re-prefill (no reuse)  = 1.0x", fontsize=8.5, color="#262626")
+# bar 2: CacheBlend baseline decomposition (~0.35 of full)
+segs = [("load chunk KV (I/O)", 1.6, NAVY), ("selective recompute 10-15% (fixed)", 1.4, RED), ("misc", 0.4, GRAY)]
+x = 0.6
+a1.text(0.6, 6.3, "CacheBlend baseline  = 0.30-0.45x  (TTFT 2.2-3.3x, B)", fontsize=8.5, color="#262626")
+for label, w, c in segs:
+    a1.add_patch(plt.Rectangle((x, 4.5), w, 1.5, fc=c, alpha=0.85))
+    x += w
+a1.text(0.6, 4.0, "I/O: worse on lower tiers", fontsize=7.2, color=NAVY, ha="left")
+a1.text(0.6, 3.4, "recompute: fixed ratio, on the critical path", fontsize=7.2, color=RED, ha="left")
+box(a1, 5.7, 2.6, 4.1, 2.0, "residual floor:\nrecompute + load I/O\nstay ONLINE", fc="#FBE4E0", ec=RED, fs=8.5, tc=RED, bold=True)
+arrow(a1, 4.2, 5.0, 6.4, 4.6, color=RED)
+a1.text(5.0, 0.7, "blind to per-request quality budget (QA2) · coverage request-scoped —\nsession/user persistence left passive",
+        fontsize=7.8, ha="center", color="#262626")
 
-a2.set_title("(b) Restore-vs-recompute inversion", fontsize=10, color=NAVY, fontweight="bold")
-tiers = ["HBM", "DRAM", "SSD"]
-restore = [0.6, 2.4, 7.6]     # illustrative restore time (bandwidth ladder ~10x)
-recomp  = [4.0, 4.0, 4.0]     # recompute time (constant)
-xs = [1.1, 4.1, 7.1]
-for x, t, r in zip(xs, tiers, restore):
-    a2.add_patch(plt.Rectangle((x, 1.6), 0.9, r, fc=NAVY, alpha=0.85))
-    a2.add_patch(plt.Rectangle((x + 1.0, 1.6), 0.9, 4.0, fc=GRAY, alpha=0.7))
-    a2.text(x + 0.95, 0.9, t, ha="center", fontsize=9, color="#262626", fontweight="bold")
-a2.plot([0.6, 9.6], [5.6, 5.6], color=RED, lw=1.2, ls="--")
-a2.text(8.9, 9.3, "restore", color=NAVY, fontsize=8.5, ha="right", fontweight="bold")
-a2.text(8.9, 8.5, "recompute", color=GRAY, fontsize=8.5, ha="right", fontweight="bold")
-box(a2, 5.6, 6.4, 4.1, 1.6, "SSD: restore > recompute\nno cost decision exists today", fc="#FBE4E0", ec=RED, fs=8.2, tc=RED, bold=True)
-a2.text(5.0, 0.15, "bandwidth ladder ~10x per tier (illustrative)", fontsize=7.5, ha="center",
-        color="#7F7F7F", style="italic")
+a2.set_xlim(0, 10); a2.set_ylim(0, 10)
+a2.set_title("(b) Open design axis: WHEN to spend the residual work",
+             fontsize=9.5, color=NAVY, fontweight="bold")
+box(a2, 3.0, 7.6, 4.0, 1.5, "residual work\n(blend + place)", fc=CREAM, ec="#7A5C2E", fs=9, bold=True)
+box(a2, 0.4, 3.6, 4.2, 2.6, "C1  STORE-TIME (eager)\npre-blend on idle,\nwarm upper tiers\n-> online = pure load", fc="#EAF1E7", ec=GREEN, fs=8.3, tc="#2C4A20", bold=True)
+box(a2, 5.4, 3.6, 4.2, 2.6, "C2  READ-TIME (lazy)\nrecompute only what\nthe request needs\n(quality budget)", fc="#EDEFF4", ec=NAVY, fs=8.3, tc=NAVY, bold=True)
+arrow(a2, 4.2, 7.6, 2.5, 6.2, color=GREEN)
+arrow(a2, 5.8, 7.6, 7.5, 6.2, color=NAVY)
+a2.text(2.5, 2.6, "risk: wasted precompute,\nstale fused copies", fontsize=7.6, ha="center", color=RED)
+a2.text(7.5, 2.6, "risk: TTFT floor stays\non the critical path", fontsize=7.6, ha="center", color=RED)
+a2.text(5.0, 0.9, "classic eager-vs-lazy: undecidable without workload predictability",
+        fontsize=8, ha="center", color="#7F7F7F", style="italic")
+
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "dp1s1_problem.png"), bbox_inches="tight")
 plt.close(fig)
 
 # ─────────────────────────────────────────────────────────────────────
-# 2) Candidate diagrams — same base layout, differences highlighted
-def base(ax, title):
+# 2) Candidate diagrams — 공통 전제(비접두 chunk index + tiered store) 위에
+#    각 후보가 신설하는 컴포넌트를 강조
+def base(ax, title, sub, subcolor):
     ax.set_xlim(0, 10); ax.set_ylim(0, 10); ax.axis("off")
     ax.set_title(title, fontsize=10.5, color=NAVY, fontweight="bold")
-    box(ax, 0.3, 7.9, 3.0, 1.4, "Router /\nScheduler", fc=PANEL)
-    box(ax, 0.3, 5.4, 3.0, 1.6, "Prefill\nPipeline", fc=PANEL)
-    box(ax, 0.3, 0.7, 9.4, 1.6, "Tiered KV Store   [ HBM | DRAM | SSD ]", fc="#EDEFF4", ec=NAVY)
-    arrow(ax, 1.8, 7.9, 1.8, 7.0)
+    ax.text(5.0, 9.55, sub, fontsize=8, color=subcolor, ha="center", style="italic", fontweight="bold")
+    box(ax, 0.3, 7.6, 3.0, 1.4, "Router /\nScheduler", fc=PANEL)
+    box(ax, 0.3, 5.2, 3.0, 1.6, "Prefill\nPipeline", fc=PANEL)
+    box(ax, 4.4, 6.4, 5.2, 2.4, "", fc="#FFFFFF", ec=NAVY)
+    ax.text(7.0, 8.45, "Chunk KV Index (non-contiguous, dedup)", fontsize=8.2,
+            color=NAVY, fontweight="bold", ha="center")
+    box(ax, 4.7, 6.6, 4.6, 1.4, "content-addressed chunks\n+ session/user persistence", fc=PANEL, fs=8)
+    box(ax, 0.3, 0.7, 9.4, 1.5, "Tiered KV Store   [ HBM | DRAM | SSD ]", fc="#EDEFF4", ec=NAVY)
+    arrow(ax, 1.8, 7.6, 1.8, 6.8)
+    arrow(ax, 3.3, 6.0, 4.4, 6.9)
 
-fig, (c1, c2) = plt.subplots(1, 2, figsize=(11.6, 4.4), dpi=200)
+fig, (c1, c2) = plt.subplots(1, 2, figsize=(11.6, 4.6), dpi=200)
 
-# ── C1: prefix-conservative
-base(c1, "C1  Prefix-exact / immediate-restore")
-box(c1, 4.4, 5.4, 5.2, 3.0, "", fc="#FFFFFF", ec=NAVY)
-c1.text(7.0, 8.0, "KV Index", fontsize=9.5, color=NAVY, fontweight="bold", ha="center")
-box(c1, 4.8, 6.7, 4.4, 0.9, "Prefix (radix) tree\nexact-match HIT only", fc=CREAM, ec="#7A5C2E", fs=8)
-box(c1, 4.8, 5.6, 4.4, 0.9, "session / user persistence", fc=PANEL, fs=8)
-arrow(c1, 3.3, 6.2, 4.4, 6.6)
-box(c1, 4.4, 3.2, 5.2, 1.3, "HIT => always restore\n(fixed rule, no estimator)", fc=PANEL, ec=GRAY, fs=8.5)
-arrow(c1, 7.0, 5.4, 7.0, 4.5)
-arrow(c1, 7.0, 3.2, 7.0, 2.3)
-c1.text(5.0, 9.6, "no new components - module-local change", fontsize=8, color=GREEN,
-        ha="center", style="italic", fontweight="bold")
+# ── C1: store-time pre-blending
+base(c1, "C1  Store-time pre-blend (eager)", "new: background refiner + popularity predictor + warm path", ORANGE)
+box(c1, 4.4, 3.6, 5.2, 1.9, "Background KV Refiner\npre-blend hot combos on idle\n(recompute done OFF the request path)", fc="#FDEBDD", ec=ORANGE, fs=8, bold=True)
+box(c1, 0.3, 3.6, 3.4, 1.9, "Popularity /\nCombo Predictor", fc="#FDEBDD", ec=ORANGE, fs=8.5, bold=True)
+arrow(c1, 3.7, 4.55, 4.4, 4.55, color=ORANGE, ls="--")
+arrow(c1, 7.0, 6.4, 7.0, 5.5)
+arrow(c1, 7.0, 3.6, 7.0, 2.2, color=ORANGE)           # fused KV -> warm upper tier
+c1.text(7.35, 2.8, "warm fused KV\nto upper tier", fontsize=7.4, color=ORANGE)
+arrow(c1, 1.8, 5.2, 1.8, 2.2)
+c1.text(2.1, 3.0, "online HIT =\npure load (no recompute)", fontsize=7.6, color=GREEN, fontweight="bold")
 
-# ── C2: non-prefix extended
-base(c2, "C2  Content-addressed / selective-recompute / cost-decided")
-box(c2, 4.4, 5.4, 5.2, 3.0, "", fc="#FFFFFF", ec=NAVY)
-c2.text(7.0, 8.0, "KV Index", fontsize=9.5, color=NAVY, fontweight="bold", ha="center")
-box(c2, 4.8, 6.7, 4.4, 0.9, "Content-addressed chunk index\nnon-prefix HIT + chunk dedup", fc="#FDEBDD", ec=ORANGE, fs=8, bold=True)
-box(c2, 4.8, 5.6, 4.4, 0.9, "session / user persistence", fc=PANEL, fs=8)
-arrow(c2, 3.3, 6.2, 4.4, 6.6)
-box(c2, 0.3, 3.2, 3.0, 1.5, "Selective\nrecompute (HKVD)", fc="#FDEBDD", ec=ORANGE, fs=8, bold=True)
-arrow(c2, 1.8, 5.4, 1.8, 4.7)
-box(c2, 4.4, 3.2, 5.2, 1.5, "Cost estimator\nrestore vs recompute (telemetry)", fc="#FDEBDD", ec=ORANGE, fs=8.5, bold=True)
-arrow(c2, 7.0, 5.4, 7.0, 4.7)
-arrow(c2, 7.0, 3.2, 7.0, 2.3)
-arrow(c2, 3.3, 3.95, 4.4, 3.95, color=ORANGE, ls="--")
-c2.text(5.0, 9.6, "new: chunk index + recompute path + estimator (highlighted)", fontsize=8,
-        color=ORANGE, ha="center", style="italic", fontweight="bold")
+# ── C2: read-time adaptive recompute
+base(c2, "C2  Read-time adaptive recompute (lazy)", "new: quality-budget controller + load-recompute pipelining", ORANGE)
+box(c2, 4.4, 3.6, 5.2, 1.9, "Quality-budget Recompute Controller\nper-request ratio from SLO/budget\n(raw chunks stored as-is)", fc="#FDEBDD", ec=ORANGE, fs=8, bold=True)
+box(c2, 0.3, 3.6, 3.4, 1.9, "Load-Recompute\nPipelining\n(overlap I/O & GPU)", fc="#FDEBDD", ec=ORANGE, fs=8.5, bold=True)
+arrow(c2, 4.4, 4.55, 3.7, 4.55, color=ORANGE, ls="--")
+arrow(c2, 7.0, 6.4, 7.0, 5.5)
+arrow(c2, 1.8, 5.2, 1.8, 4.0)   # hmm keep visual simple
+arrow(c2, 1.9, 3.6, 1.9, 2.2)
+c2.text(2.3, 2.9, "online HIT = load ∥ recompute\n(budgeted, per request)", fontsize=7.6, color=NAVY, fontweight="bold")
 
 plt.tight_layout()
 plt.savefig(os.path.join(OUT, "dp1s1_candidates.png"), bbox_inches="tight")
 plt.close(fig)
 
-# split into two files for the compare-table cells
 import PIL.Image as I
 img = I.open(os.path.join(OUT, "dp1s1_candidates.png"))
 w, h = img.size
