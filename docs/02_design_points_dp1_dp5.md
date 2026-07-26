@@ -420,7 +420,7 @@ HKVD 10–15% 재계산으로 TTFT 2.2–3.3×, 품질 저하 0.01–0.03(B)). �
 
 ### 후보구조 설계도
 
-![DP3 후보구조 설계도 — 본체 융합형 vs 경량 선행형](../diagrams/kv_dp3_candidates.png)
+![DP3 후보구조 설계도 — 본체 융합형 vs 경량 선행형](../diagrams/kv_dp3_candidates.svg)
 
 *draw.io 소스: [`kv_dp3_candidates.drawio`](../diagrams/kv_dp3_candidates.drawio)*
 
@@ -536,7 +536,7 @@ proxy**(축소 모델/저차원 근사, CPU·보조 스트림)로 선택을 선�
 
 ### 후보구조 설계도
 
-![DP4 후보구조 설계도 — 입장 시 고정 예산·단일 사본형 vs 수명주기 적응·이중 표현형](../diagrams/kv_dp4_candidates.png)
+![DP4 후보구조 설계도 — 입장 시 고정 예산·단일 사본형 vs 수명주기 적응·이중 표현형](../diagrams/kv_dp4_candidates.svg)
 
 *draw.io 소스: [`kv_dp4_candidates.drawio`](../diagrams/kv_dp4_candidates.drawio)*
 
@@ -653,7 +653,7 @@ QA3 ↔ QA1 정면 충돌.)
 
 ### 후보구조 설계도
 
-![DP5 후보구조 설계도 — locality 우선형 vs 부하 우선형](../diagrams/kv_dp5_candidates.png)
+![DP5 후보구조 설계도 — locality 우선형 vs 부하 우선형](../diagrams/kv_dp5_candidates.svg)
 
 *draw.io 소스: [`kv_dp5_candidates.drawio`](../diagrams/kv_dp5_candidates.drawio)*
 

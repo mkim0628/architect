@@ -1,0 +1,131 @@
+<svg viewBox="0 0 1400 1010" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr3" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrRed3" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B3402A"/>
+    </marker>
+    <marker id="arrGrn3" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+    <marker id="arrAmb3" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP3. KV 재사용 범위·복원 전략 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">확정안 v2 패키지 구조 위에서 재계산 토큰 선택 연산의 실행 위치·시점만 다름 — 주황: 신설 컴포넌트 · 전제: 비접두 재사용 + KV Index(v2 신규)</text>
+
+  <line x1="700" y1="72" x2="700" y2="880" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 in-engine fused ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — 본체 융합형 (in-engine, exact)</text>
+
+  <rect x="60" y="124" width="580" height="150" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+  <rect x="84" y="160" width="250" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="96" y="182" font-size="11.5" font-weight="700" fill="#1F2A44">Retrieval Engine</text>
+  <text x="96" y="200" font-size="9.5" fill="#6B7A90">chunk 목록 산출</text>
+  <rect x="366" y="160" width="250" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="378" y="182" font-size="11.5" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="378" y="200" font-size="9.5" fill="#6B7A90">KV Locator 조회 → 재사용 판정</text>
+  <line x1="334" y1="190" x2="362" y2="190" stroke="#1F2A44" stroke-width="1.4" marker-end="url(#arr3)"/>
+
+  <line x1="350" y1="274" x2="350" y2="306" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr3)"/>
+  <text x="360" y="296" font-size="10.5" fill="#1F2A44">«use» prefill 실행 (선택은 엔진 안에서)</text>
+
+  <rect x="60" y="310" width="580" height="300" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="332" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine</text>
+  <rect x="84" y="346" width="250" height="54" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="96" y="368" font-size="11.5" font-weight="700" fill="#1F2A44">Step Execution Controller</text>
+  <text x="96" y="386" font-size="9.5" fill="#6B7A90">continuous batching</text>
+
+  <rect x="84" y="416" width="532" height="176" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="96" y="434" font-size="11" font-weight="700" fill="#1F2A44">«package» Kernel &amp; Layer</text>
+  <rect x="104" y="448" width="220" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="116" y="470" font-size="11.5" font-weight="700" fill="#1F2A44">Attention Engine</text>
+  <text x="116" y="488" font-size="9.5" fill="#6B7A90">1층 전체 연산</text>
+  <rect x="352" y="448" width="244" height="76" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="364" y="468" font-size="11.5" font-weight="700" fill="#8A5A08">Fused Selector (신설)</text>
+  <text x="364" y="486" font-size="9.5" fill="#8A5A08">1층 연산과 융합 — 실제 K/V deviation·</text>
+  <text x="364" y="501" font-size="9.5" fill="#8A5A08">attention 스코어로 재계산 토큰 확정</text>
+  <line x1="324" y1="478" x2="348" y2="478" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb3)"/>
+  <text x="104" y="548" font-size="10" fill="#6B7A90">2층~N층: 선택 토큰만 재계산 — chunk KV 로딩과 중첩</text>
+  <text x="104" y="576" font-size="10.5" font-weight="700" fill="#B3402A">훅 위치 = 엔진 실행 루프(layer 경계) 내부 — 코어 훅</text>
+
+  <rect x="60" y="646" width="580" height="130" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="668" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine</text>
+  <rect x="84" y="682" width="250" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="96" y="704" font-size="11.5" font-weight="700" fill="#1F2A44">KV Index (v2 신규)</text>
+  <text x="96" y="722" font-size="9.5" fill="#6B7A90">비접두 chunk lookup · KV Locator</text>
+  <rect x="366" y="682" width="250" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="378" y="704" font-size="11.5" font-weight="700" fill="#1F2A44">KV Transport</text>
+  <text x="378" y="722" font-size="9.5" fill="#6B7A90">chunk KV 로딩 (재계산과 중첩)</text>
+  <line x1="480" y1="642" x2="480" y2="614" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr3)"/>
+  <text x="492" y="632" font-size="10" fill="#1F2A44">«use» chunk KV fetch</text>
+
+  <text x="60" y="806" font-size="10.5" font-weight="700" fill="#1B7A4B">이득: 선택 근거 = 실제 모델 연산, 근사 오차 0 (QA2) · 문헌 실측 앵커 — TTFT 2.2–3.3× 직도달 (QA3)</text>
+  <text x="60" y="826" font-size="10.5" font-weight="700" fill="#B3402A">제약: 선택 연산이 피크 GPU 임계 자원 소비 (QA1) · 코어 훅 — 릴리스 추종·알고리즘 교체 시 코어 재검증 (QA5)</text>
+  <text x="60" y="854" font-size="10" fill="#B3402A">DP1 커플링: layer-경계 훅은 vLLM 확장점 밖(RFC 종속) — 변형 B(LMCache 편승)는 훅 소유권이 없어 사실상 봉쇄</text>
+
+  <!-- ================= RIGHT: 후보2 proxy speculative ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 경량 선행형 (proxy, speculative)</text>
+
+  <rect x="730" y="124" width="610" height="230" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+  <rect x="754" y="160" width="250" height="60" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="766" y="182" font-size="11.5" font-weight="700" fill="#1F2A44">Retrieval Engine</text>
+  <text x="766" y="200" font-size="9.5" fill="#6B7A90">반환 즉시 query+chunk 존재</text>
+  <rect x="1046" y="160" width="270" height="76" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="1058" y="180" font-size="11.5" font-weight="700" fill="#8A5A08">Proxy Selector (신설)</text>
+  <text x="1058" y="198" font-size="9.5" fill="#8A5A08">축소 모델/저차원 근사 attention</text>
+  <text x="1058" y="213" font-size="9.5" fill="#8A5A08">CPU·보조 스트림 — 엔진 밖 독립 컴포넌트</text>
+  <line x1="1004" y1="190" x2="1042" y2="190" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb3)"/>
+  <rect x="754" y="270" width="562" height="56" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="766" y="292" font-size="11.5" font-weight="700" fill="#8A5A08">재계산·로딩 Plan — prefill 시작 전 확정 (선행 계획)</text>
+  <text x="766" y="310" font-size="9.5" fill="#8A5A08">재계산 토큰 집합 + chunk 로딩 순서 + prefetch 지시</text>
+  <line x1="1120" y1="236" x2="1060" y2="266" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb3)"/>
+
+  <line x1="900" y1="354" x2="900" y2="386" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr3)"/>
+  <text x="910" y="376" font-size="10.5" fill="#1F2A44">Plan 전달 (엔진은 계획대로만 실행)</text>
+
+  <rect x="730" y="390" width="610" height="130" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="412" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Engine — 무수정 (신설 컴포넌트 없음)</text>
+  <rect x="754" y="426" width="250" height="54" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="766" y="448" font-size="11.5" font-weight="700" fill="#1F2A44">Step Execution Controller</text>
+  <rect x="1066" y="426" width="250" height="54" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1078" y="448" font-size="11.5" font-weight="700" fill="#1F2A44">Attention Engine</text>
+  <text x="754" y="504" font-size="10" fill="#1B7A4B" font-weight="700">prefill = 로딩 ∥ 재계산 ∥ prefetch 파이프라인 극대 (선행 확정 이득)</text>
+
+  <rect x="730" y="546" width="610" height="130" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="568" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine</text>
+  <rect x="754" y="582" width="250" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="766" y="604" font-size="11.5" font-weight="700" fill="#1F2A44">KV Index (v2 신규)</text>
+  <text x="766" y="622" font-size="9.5" fill="#6B7A90">Proxy가 chunk 메타데이터 참조</text>
+  <rect x="1066" y="582" width="250" height="58" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1078" y="604" font-size="11.5" font-weight="700" fill="#1F2A44">KV Transport</text>
+  <text x="1078" y="622" font-size="9.5" fill="#6B7A90">Plan 순서로 선행 prefetch</text>
+  <line x1="1000" y1="326" x2="1180" y2="578" stroke="#1F2A44" stroke-width="1.4" stroke-dasharray="4,4" marker-end="url(#arr3)"/>
+  <text x="1130" y="530" font-size="10" fill="#6B7A90">prefetch 지시</text>
+
+  <text x="730" y="706" font-size="10.5" font-weight="700" fill="#1B7A4B">이득: 선택 연산이 GPU 임계 경로 밖 (QA1) · 엔진 무수정 — proxy 교체 = 알고리즘 교체 (QA5, 연구 트랙 정합)</text>
+  <text x="730" y="726" font-size="10.5" font-weight="700" fill="#B3402A">제약: 근사 오차 — 정찰 오류 시 엉뚱한 토큰 재계산(ΔF1 리스크) → 방어 시 재계산율 보수 상향 → TTFT 반납 (QA2↔QA3)</text>
+  <text x="730" y="754" font-size="10" fill="#6B7A90">DP1 커플링: 전 채택안에서 성립 — 변형 B(LMCache 편승)에서는 사실상 유일 후보</text>
+
+  <!-- common note + legend -->
+  <rect x="40" y="900" width="1320" height="46" fill="#FBFCFE" stroke="#44546A" stroke-width="1"/>
+  <text x="56" y="920" font-size="11" font-weight="700" fill="#1F2A44">직교 축 (두 후보 공통 결합): SLO/품질 예산 기반 동적 재계산율 컨트롤러 — QA2 요청별 bound 집행의 실현 수단 (정책 소재는 DP2 채택안을 따름)</text>
+  <text x="56" y="938" font-size="10" fill="#6B7A90">결정 변수: 경량 근사의 선택 일치율(실제 1층 선택과의 겹침)이 ΔF1 bound를 지킬 만큼 높은가 — 팀 알고리즘 연구가 실측으로 답할 질문</text>
+
+  <rect x="44" y="966" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="74" y="978" font-size="10.5" fill="#1F2A44">신설 컴포넌트/산출물</text>
+  <line x1="240" y1="972" x2="290" y2="972" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr3)"/>
+  <text x="298" y="978" font-size="10.5" fill="#1F2A44">의존 («use»)</text>
+  <line x1="420" y1="972" x2="470" y2="972" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb3)"/>
+  <text x="478" y="978" font-size="10.5" fill="#1F2A44">신설 데이터 흐름</text>
+  <line x1="620" y1="972" x2="670" y2="972" stroke="#1F2A44" stroke-width="1.4" stroke-dasharray="4,4" marker-end="url(#arr3)"/>
+  <text x="678" y="978" font-size="10.5" fill="#1F2A44">지시/telemetry</text>
+</svg>
