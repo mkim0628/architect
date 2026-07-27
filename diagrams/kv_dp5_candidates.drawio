@@ -1,0 +1,47 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DP5 candidates" id="kv-dp5">
+    <mxGraphModel dx="1420" dy="980" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1010" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ttl" value="&lt;b&gt;DP5. KV 캐시 인지형 동적 스케줄링 — 후보구조 설계도&lt;/b&gt;&lt;br&gt;확정안 v2 패키지 구조 위에서 Router의 1차 기준·KV 가시성만 다름 — 주황: 신설 컴포넌트/경로 · 화살표 굵기 = 인터페이스 폭" style="text;html=1;fontSize=14;fontColor=#1F2A44;" vertex="1" parent="1"><mxGeometry x="40" y="10" width="1000" height="46" as="geometry"/></mxCell>
+
+        <mxCell id="h1" value="&lt;b&gt;후보구조 1 — locality 우선형 (KV-affinity 라우팅 + 지연 대기)&lt;/b&gt;" style="fillColor=#DCE3EE;strokeColor=#44546A;html=1;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="40" y="70" width="620" height="30" as="geometry"/></mxCell>
+        <mxCell id="c1orch" value="«MCR» Inference Orchestration / «package» Scheduling" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="60" y="112" width="580" height="190" as="geometry"/></mxCell>
+        <mxCell id="c1rt" value="&lt;b&gt;KV-aware Router&lt;/b&gt;&lt;br&gt;1차 기준 = KV 위치 (affinity)&lt;br&gt;chunk별 KV Locator 조회" style="html=1;fillColor=#FFFFFF;strokeColor=#44546A;" vertex="1" parent="1"><mxGeometry x="104" y="160" width="240" height="70" as="geometry"/></mxCell>
+        <mxCell id="c1dq" value="&lt;b&gt;Delay Queue (신설)&lt;/b&gt;&lt;br&gt;대상 포화 시 상한부 대기 — locality 유지, 임계 초과 시 차선지" style="html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;" vertex="1" parent="1"><mxGeometry x="366" y="160" width="230" height="70" as="geometry"/></mxCell>
+        <mxCell id="c1e0" style="html=1;strokeColor=#B45309;dashed=1;" edge="1" parent="1" source="c1rt" target="c1dq"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c1inst" value="서빙 인스턴스 (Inference Engine + Memory Engine, P/D)" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="60" y="350" width="580" height="200" as="geometry"/></mxCell>
+        <mxCell id="c1i1" value="&lt;b&gt;instance 1&lt;/b&gt;&lt;br&gt;재사용 KV 보유 · 붐빔&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;hotspot: 부하·용량 압박 집중&lt;/font&gt;" style="html=1;fillColor=#EAF1E7;strokeColor=#1B7A4B;" vertex="1" parent="1"><mxGeometry x="84" y="390" width="170" height="120" as="geometry"/></mxCell>
+        <mxCell id="c1i2" value="&lt;b&gt;instance 2&lt;/b&gt;&lt;br&gt;한산 · KV 없음&lt;br&gt;임계 초과 시만 배치" style="html=1;fillColor=#FFFFFF;strokeColor=#7A8699;" vertex="1" parent="1"><mxGeometry x="284" y="390" width="160" height="120" as="geometry"/></mxCell>
+        <mxCell id="c1i3" value="&lt;b&gt;instance 3&lt;/b&gt;&lt;br&gt;한산 · KV 없음" style="html=1;fillColor=#FFFFFF;strokeColor=#7A8699;" vertex="1" parent="1"><mxGeometry x="464" y="390" width="160" height="120" as="geometry"/></mxCell>
+        <mxCell id="c1e1" value="affinity 배치 (hit)" style="html=1;strokeColor=#1B7A4B;strokeWidth=3;" edge="1" parent="1" source="c1rt" target="c1i1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c1e2" value="임계 초과 시만" style="html=1;strokeColor=#7A8699;dashed=1;" edge="1" parent="1" source="c1dq" target="c1i2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c1me" value="«MCR» Memory Engine — KV Index: 위치 정보의 원천 (KV 이동 없음, 원위치 유지) · KV Locator I/F로 Router에 노출" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="60" y="586" width="580" height="70" as="geometry"/></mxCell>
+        <mxCell id="c1e3" value="KV Index 직조회 — control↔data plane 결합" style="html=1;strokeColor=#B3402A;strokeWidth=3;dashed=1;" edge="1" parent="1" source="c1orch" target="c1me"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c1note" value="&lt;font color=&quot;#1B7A4B&quot;&gt;&lt;b&gt;이득: hit rate 극대 (QA3) · 축출·이동 최소 — 품질 교란 최소 (QA2)&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;제약: hotspot 집중·TPOT tail (QA1)·국소 포화 (QA4) · head-of-line 대기 · Index 스키마 결합 (QA5)&lt;/b&gt;&lt;/font&gt;&lt;br&gt;동형성: Hadoop delay scheduling — data locality vs fairness의 고전 해" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1"><mxGeometry x="60" y="672" width="580" height="86" as="geometry"/></mxCell>
+
+        <mxCell id="h2" value="&lt;b&gt;후보구조 2 — 부하 우선형 (+ KV 이동/재계산)&lt;/b&gt;" style="fillColor=#DCE3EE;strokeColor=#44546A;html=1;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="710" y="70" width="650" height="30" as="geometry"/></mxCell>
+        <mxCell id="c2orch" value="«MCR» Inference Orchestration / «package» Scheduling · Resource Manager" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="730" y="112" width="610" height="190" as="geometry"/></mxCell>
+        <mxCell id="c2rt" value="&lt;b&gt;Router (부하 우선)&lt;/b&gt;&lt;br&gt;1차 기준 = 부하 (대기열·TPOT·잔량)&lt;br&gt;KV는 요약 힌트만 수신 — Index 무결합" style="html=1;fillColor=#FFFFFF;strokeColor=#44546A;" vertex="1" parent="1"><mxGeometry x="774" y="160" width="250" height="70" as="geometry"/></mxCell>
+        <mxCell id="c2hm" value="&lt;b&gt;Hardware Monitor&lt;/b&gt;&lt;br&gt;부하·잔량 지표 공급" style="html=1;fillColor=#FFFFFF;strokeColor=#44546A;" vertex="1" parent="1"><mxGeometry x="1046" y="160" width="250" height="70" as="geometry"/></mxCell>
+        <mxCell id="c2e0" style="html=1;strokeColor=#1F2A44;" edge="1" parent="1" source="c2hm" target="c2rt"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2inst" value="서빙 인스턴스 (Inference Engine + Memory Engine, P/D)" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="730" y="350" width="610" height="200" as="geometry"/></mxCell>
+        <mxCell id="c2i1" value="instance 1 (균형 배치)" style="html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="754" y="390" width="180" height="120" as="geometry"/></mxCell>
+        <mxCell id="c2i2" value="instance 2 (균형 배치)&lt;br&gt;KV 없음 → Transport가 가져오거나 재계산" style="html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="954" y="390" width="180" height="120" as="geometry"/></mxCell>
+        <mxCell id="c2i3" value="instance 3 (균형 배치)" style="html=1;fillColor=#EDEFF4;strokeColor=#1F3864;" vertex="1" parent="1"><mxGeometry x="1154" y="390" width="166" height="120" as="geometry"/></mxCell>
+        <mxCell id="c2e1" value="균형 배치" style="html=1;strokeColor=#1F2A44;" edge="1" parent="1" source="c2orch" target="c2i1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2e2" style="html=1;strokeColor=#1F2A44;" edge="1" parent="1" source="c2orch" target="c2i2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2e3" style="html=1;strokeColor=#1F2A44;" edge="1" parent="1" source="c2orch" target="c2i3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2me" value="«MCR» Memory Engine" style="rounded=0;html=1;fillColor=#F4F6FA;strokeColor=#44546A;verticalAlign=top;align=left;spacingLeft=8;fontStyle=1" vertex="1" parent="1"><mxGeometry x="730" y="586" width="610" height="110" as="geometry"/></mxCell>
+        <mxCell id="c2tr" value="&lt;b&gt;KV Transport — 이동 경로 확장 (신설)&lt;/b&gt;&lt;br&gt;tier/인스턴스 간 전송·복원 — 비용 우위면 재계산(DP3 추정기)" style="html=1;fillColor=#FDF6E9;strokeColor=#B45309;dashed=1;" vertex="1" parent="1"><mxGeometry x="754" y="620" width="330" height="62" as="geometry"/></mxCell>
+        <mxCell id="c2ix" value="&lt;b&gt;KV Index&lt;/b&gt;&lt;br&gt;요약 힌트 산출 (상향, 얇은 I/F)" style="html=1;fillColor=#FFFFFF;strokeColor=#44546A;" vertex="1" parent="1"><mxGeometry x="1104" y="620" width="212" height="62" as="geometry"/></mxCell>
+        <mxCell id="c2e4" value="KV를 요청에게 이동" style="html=1;strokeColor=#B45309;dashed=1;" edge="1" parent="1" source="c2tr" target="c2i2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2e5" value="요약 힌트 (얇은 I/F)" style="html=1;strokeColor=#6B7A90;dashed=1;" edge="1" parent="1" source="c2ix" target="c2orch"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2note" value="&lt;font color=&quot;#1B7A4B&quot;&gt;&lt;b&gt;이득: 배치 균형 — iso-latency 처리량 최대 (QA1) · 전 용량 균등 활용 (QA4) · Index 무결합 (QA5)&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#B3402A&quot;&gt;&lt;b&gt;제약: GB급 KV 전송·복원이 hit 이득 부분 반납 (QA3) · 부하 사유 축출의 품질 blind (QA2)&lt;/b&gt;&lt;/font&gt;&lt;br&gt;검토 노트: bounded-wait delay scheduling hybrid 유력 — 1차 affinity + 상한부 대기, 초과 시 이동/재계산 전환" style="text;html=1;fontSize=11;align=left;" vertex="1" parent="1"><mxGeometry x="730" y="712" width="610" height="86" as="geometry"/></mxCell>
+
+        <mxCell id="orth" value="&lt;b&gt;공통 쟁점(직교): KV 공간 확보의 선택 구조 — pruning 상향/강등/축출/preempt의 우선순위. 실현 형태는 DP4 자산 표현에, 정책 소재는 DP2 채택안에 종속&lt;/b&gt;" style="rounded=0;html=1;fillColor=#FBFCFE;strokeColor=#44546A;align=left;spacingLeft=8;" vertex="1" parent="1"><mxGeometry x="40" y="890" width="1320" height="44" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

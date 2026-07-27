@@ -1,0 +1,141 @@
+<svg viewBox="0 0 1400 1010" xmlns="http://www.w3.org/2000/svg" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="arr5" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1F2A44"/>
+    </marker>
+    <marker id="arrRed5" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B3402A"/>
+    </marker>
+    <marker id="arrGrn5" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#1B7A4B"/>
+    </marker>
+    <marker id="arrAmb5" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#B45309"/>
+    </marker>
+  </defs>
+
+  <text x="44" y="36" font-size="20" font-weight="700" fill="#1F2A44">DP5. KV 캐시 인지형 동적 스케줄링 — 후보구조 설계도</text>
+  <text x="44" y="57" font-size="11.5" fill="#6B7A90">확정안 v2 패키지 구조 위에서 Router의 1차 기준·KV 가시성만 다름 — 주황: 신설 컴포넌트/경로 · 화살표 굵기 = 인터페이스 폭</text>
+
+  <line x1="700" y1="72" x2="700" y2="880" stroke="#C9D2DE" stroke-width="1"/>
+
+  <!-- ================= LEFT: 후보1 locality-first ================= -->
+  <rect x="40" y="76" width="620" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="52" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 1 — locality 우선형 (KV-affinity 라우팅 + 지연 대기)</text>
+
+  <rect x="60" y="124" width="580" height="210" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+  <rect x="84" y="160" width="532" height="160" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="96" y="178" font-size="11" font-weight="700" fill="#1F2A44">«package» Scheduling</text>
+  <rect x="104" y="192" width="240" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="116" y="212" font-size="11.5" font-weight="700" fill="#1F2A44">KV-aware Router</text>
+  <text x="116" y="230" font-size="9.5" fill="#6B7A90">1차 기준 = KV 위치 (affinity)</text>
+  <text x="116" y="245" font-size="9.5" fill="#6B7A90">chunk별 KV Locator 조회</text>
+  <rect x="366" y="192" width="230" height="66" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="378" y="212" font-size="11.5" font-weight="700" fill="#8A5A08">Delay Queue (신설)</text>
+  <text x="378" y="230" font-size="9.5" fill="#8A5A08">대상 포화 시 상한부 대기 —</text>
+  <text x="378" y="245" font-size="9.5" fill="#8A5A08">locality 유지, 임계 초과 시 차선지</text>
+  <line x1="344" y1="225" x2="362" y2="225" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb5)"/>
+  <text x="104" y="304" font-size="9.5" fill="#6B7A90">SLO/QoS Monitor — 대기 상한·임계 관측</text>
+
+  <!-- instances -->
+  <rect x="60" y="380" width="580" height="200" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="402" font-size="12" font-weight="700" fill="#1F2A44">서빙 인스턴스 (Inference Engine + Memory Engine, P/D)</text>
+  <rect x="84" y="420" width="170" height="120" fill="#EAF1E7" stroke="#1B7A4B" stroke-width="1.6"/>
+  <text x="96" y="442" font-size="11" font-weight="700" fill="#155F3B">instance 1</text>
+  <text x="96" y="460" font-size="9.5" fill="#155F3B">재사용 KV 보유 · 붐빔</text>
+  <text x="96" y="475" font-size="9.5" fill="#155F3B">(인기 KV = 인기 인스턴스)</text>
+  <text x="96" y="496" font-size="9.5" font-weight="700" fill="#B3402A">hotspot: 부하·용량</text>
+  <text x="96" y="511" font-size="9.5" font-weight="700" fill="#B3402A">압박 집중</text>
+  <rect x="284" y="420" width="160" height="120" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="296" y="442" font-size="11" font-weight="700" fill="#1F2A44">instance 2</text>
+  <text x="296" y="460" font-size="9.5" fill="#6B7A90">한산 · KV 없음</text>
+  <text x="296" y="478" font-size="9.5" fill="#6B7A90">임계 초과 시만 배치</text>
+  <rect x="464" y="420" width="160" height="120" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="476" y="442" font-size="11" font-weight="700" fill="#1F2A44">instance 3</text>
+  <text x="476" y="460" font-size="9.5" fill="#6B7A90">한산 · KV 없음</text>
+
+  <line x1="169" y1="334" x2="169" y2="416" stroke="#1B7A4B" stroke-width="3.2" marker-end="url(#arrGrn5)"/>
+  <text x="180" y="366" font-size="10" font-weight="700" fill="#1B7A4B">affinity 배치 (hit)</text>
+  <line x1="480" y1="334" x2="364" y2="416" stroke="#7A8699" stroke-width="1.3" stroke-dasharray="5,4" marker-end="url(#arr5)"/>
+  <text x="450" y="366" font-size="9.5" fill="#6B7A90">임계 초과 시만</text>
+
+  <!-- KV index coupling -->
+  <rect x="60" y="616" width="580" height="90" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="74" y="638" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine</text>
+  <rect x="84" y="650" width="532" height="42" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="96" y="668" font-size="11" font-weight="700" fill="#1F2A44">KV Index — 위치 정보의 원천 (KV 이동 없음, 원위치 유지)</text>
+  <text x="96" y="685" font-size="9.5" fill="#6B7A90">KV Locator I/F로 Router에 노출 (확정안 v2)</text>
+  <path d="M 616 300 L 650 300 L 650 612" fill="none" stroke="#B3402A" stroke-width="3.2" stroke-dasharray="8,5" marker-end="url(#arrRed5)"/>
+  <text x="664" y="440" font-size="10" font-weight="700" fill="#B3402A" transform="rotate(90 664 440)">KV Index 직조회 — control↔data plane 결합</text>
+
+  <text x="60" y="742" font-size="10.5" font-weight="700" fill="#1B7A4B">이득: hit rate 극대 — 재사용 배율을 라우팅이 깎지 않음 (QA3) · 축출·이동 최소 — 품질 교란 최소 (QA2)</text>
+  <text x="60" y="762" font-size="10.5" font-weight="700" fill="#B3402A">제약: hotspot 부하·용량 집중, TPOT tail 악화 (QA1)·국소 포화 (QA4) · head-of-line 대기 · Index 스키마 결합 (QA5)</text>
+  <text x="60" y="790" font-size="10" fill="#6B7A90">동형성: Hadoop delay scheduling — data locality vs fairness의 고전 해</text>
+
+  <!-- ================= RIGHT: 후보2 load-first ================= -->
+  <rect x="710" y="76" width="650" height="30" fill="#DCE3EE" stroke="#44546A" stroke-width="1.2"/>
+  <text x="722" y="96" font-size="13.5" font-weight="700" fill="#1F2A44">후보구조 2 — 부하 우선형 (+ KV 이동/재계산)</text>
+
+  <rect x="730" y="124" width="610" height="210" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="146" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Inference Orchestration</text>
+  <rect x="754" y="160" width="562" height="160" fill="#FFFFFF" stroke="#7A8699" stroke-width="1"/>
+  <text x="766" y="178" font-size="11" font-weight="700" fill="#1F2A44">«package» Scheduling · Resource Manager</text>
+  <rect x="774" y="192" width="250" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="786" y="212" font-size="11.5" font-weight="700" fill="#1F2A44">Router (부하 우선)</text>
+  <text x="786" y="230" font-size="9.5" fill="#6B7A90">1차 기준 = 부하 (대기열·TPOT·잔량)</text>
+  <text x="786" y="245" font-size="9.5" fill="#6B7A90">KV는 요약 힌트만 수신 — Index 무결합</text>
+  <rect x="1046" y="192" width="250" height="66" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1058" y="212" font-size="11.5" font-weight="700" fill="#1F2A44">Hardware Monitor</text>
+  <text x="1058" y="230" font-size="9.5" fill="#6B7A90">부하·잔량 지표 공급</text>
+  <line x1="1042" y1="225" x2="1028" y2="225" stroke="#1F2A44" stroke-width="1.4" marker-end="url(#arr5)"/>
+  <text x="774" y="304" font-size="9.5" fill="#6B7A90">요약 힌트(hit 예상·복원 비용 추정)는 Memory Engine이 산출해 얇은 I/F로 상향</text>
+
+  <!-- instances -->
+  <rect x="730" y="380" width="610" height="200" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="402" font-size="12" font-weight="700" fill="#1F2A44">서빙 인스턴스 (Inference Engine + Memory Engine, P/D)</text>
+  <rect x="754" y="420" width="180" height="120" fill="#EDEFF4" stroke="#1F3864" stroke-width="1.2"/>
+  <text x="766" y="442" font-size="11" font-weight="700" fill="#1F3864">instance 1 (균형 배치)</text>
+  <rect x="954" y="420" width="180" height="120" fill="#EDEFF4" stroke="#1F3864" stroke-width="1.2"/>
+  <text x="966" y="442" font-size="11" font-weight="700" fill="#1F3864">instance 2 (균형 배치)</text>
+  <text x="966" y="460" font-size="9.5" fill="#6B7A90">KV 없음 → Transport가</text>
+  <text x="966" y="475" font-size="9.5" fill="#6B7A90">가져오거나 재계산</text>
+  <rect x="1154" y="420" width="166" height="120" fill="#EDEFF4" stroke="#1F3864" stroke-width="1.2"/>
+  <text x="1166" y="442" font-size="11" font-weight="700" fill="#1F3864">instance 3 (균형 배치)</text>
+  <line x1="844" y1="334" x2="844" y2="416" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr5)"/>
+  <line x1="1044" y1="334" x2="1044" y2="416" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr5)"/>
+  <line x1="1237" y1="334" x2="1237" y2="416" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr5)"/>
+  <text x="1250" y="376" font-size="10" font-weight="700" fill="#1F2A44">균형 배치</text>
+
+  <rect x="730" y="616" width="610" height="110" fill="#F4F6FA" stroke="#44546A" stroke-width="1.2"/>
+  <text x="744" y="638" font-size="12" font-weight="700" fill="#1F2A44">«MCR» Memory Engine</text>
+  <rect x="754" y="650" width="330" height="62" fill="#FDF6E9" stroke="#B45309" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="766" y="670" font-size="11.5" font-weight="700" fill="#8A5A08">KV Transport — 이동 경로 확장 (신설)</text>
+  <text x="766" y="688" font-size="9.5" fill="#8A5A08">tier/인스턴스 간 전송·복원 — 비용 우위면 재계산(DP3 추정기)</text>
+  <rect x="1104" y="650" width="212" height="62" fill="#FFFFFF" stroke="#44546A" stroke-width="1.2"/>
+  <text x="1116" y="670" font-size="11" font-weight="700" fill="#1F2A44">KV Index</text>
+  <text x="1116" y="688" font-size="9.5" fill="#6B7A90">요약 힌트 산출 (상향)</text>
+  <line x1="1000" y1="646" x2="1044" y2="544" stroke="#B45309" stroke-width="1.6" stroke-dasharray="7,5" marker-end="url(#arrAmb5)"/>
+  <text x="1010" y="606" font-size="9.5" font-weight="700" fill="#8A5A08">KV를 요청에게 이동</text>
+  <path d="M 1316 680 L 1330 680 L 1330 340" fill="none" stroke="#6B7A90" stroke-width="1.3" stroke-dasharray="4,4" marker-end="url(#arr5)"/>
+  <text x="1198" y="602" font-size="9.5" fill="#6B7A90">요약 힌트 (얇은 I/F)</text>
+
+  <text x="730" y="762" font-size="10.5" font-weight="700" fill="#1B7A4B">이득: 배치 균형 — TPOT p99 방어, iso-latency 처리량 최대 (QA1) · 전 용량 균등 활용 (QA4) · Index 무결합 (QA5)</text>
+  <text x="730" y="782" font-size="10.5" font-weight="700" fill="#B3402A">제약: GB급 KV 전송·복원(tier 계단 ~10×/tier)이 hit 이득 부분 반납 (QA3) · 부하 사유 축출의 품질 blind (QA2)</text>
+  <text x="730" y="810" font-size="10" fill="#6B7A90">검토 노트: bounded-wait delay scheduling hybrid 유력 — 1차 affinity + 상한부 대기, 초과 시 이동/재계산 전환</text>
+
+  <!-- common note + legend -->
+  <rect x="40" y="900" width="1320" height="40" fill="#FBFCFE" stroke="#44546A" stroke-width="1"/>
+  <text x="56" y="925" font-size="11" font-weight="700" fill="#1F2A44">공통 쟁점(직교): KV 공간 확보의 선택 구조 — pruning 상향/강등/축출/preempt의 우선순위. 실현 형태는 DP4 자산 표현에, 정책 소재는 DP2 채택안에 종속</text>
+
+  <rect x="44" y="960" width="22" height="14" fill="#FDF6E9" stroke="#B45309" stroke-width="1.2" stroke-dasharray="5,3"/>
+  <text x="74" y="972" font-size="10.5" fill="#1F2A44">신설 컴포넌트/경로</text>
+  <line x1="240" y1="966" x2="290" y2="966" stroke="#1B7A4B" stroke-width="3.2" marker-end="url(#arrGrn5)"/>
+  <text x="298" y="972" font-size="10.5" fill="#1F2A44">affinity 배치 (locality)</text>
+  <line x1="470" y1="966" x2="520" y2="966" stroke="#B3402A" stroke-width="3.2" stroke-dasharray="8,5" marker-end="url(#arrRed5)"/>
+  <text x="528" y="972" font-size="10.5" fill="#1F2A44">굵은 결합 I/F (Index 직조회)</text>
+  <line x1="740" y1="966" x2="790" y2="966" stroke="#6B7A90" stroke-width="1.3" stroke-dasharray="4,4" marker-end="url(#arr5)"/>
+  <text x="798" y="972" font-size="10.5" fill="#1F2A44">얇은 힌트 I/F</text>
+  <line x1="940" y1="966" x2="990" y2="966" stroke="#1F2A44" stroke-width="1.8" marker-end="url(#arr5)"/>
+  <text x="998" y="972" font-size="10.5" fill="#1F2A44">배치/의존</text>
+</svg>
