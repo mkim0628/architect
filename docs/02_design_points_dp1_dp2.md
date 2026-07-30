@@ -1,6 +1,10 @@
-# MCR 설계포인트 전개 — DP1 · DP2 (v0.5)
+# MCR 설계포인트 전개 — DP1 · DP2 (v0.6)
 
-변경 이력: v0.5 — DP1을 **후보구조 2개** 구도로 재편: 후보1 = 외부 스택
+변경 이력: v0.6 — DP2 두 후보의 **구조적 배타성 보강**: 후보1에 Global KV
+Index·telemetry 상향 계약·명령형(command) 인터페이스, 후보2에 온도/watermark
+로컬 제어 루프·권고형(hint) 인터페이스·상향 계약 부재를 구조 커밋으로 명시,
+후보별 동작 흐름(①–⑦) 추가, "상호 배타성" 절 신설 (발표자료 DP-01 후보구조
+슬라이드와 정합). v0.5 — DP1을 **후보구조 2개** 구도로 재편: 후보1 = 외부 스택
 활용형(Inference Engine + KV 계층을 외부 생태계에서 채택 — 내부 변형 A: vLLM
 확장/KV 골격 자체, 변형 B: LMCache 편승), 후보2 = 자체 구현형(독립 framework).
 구 후보3은 후보1의 변형 B로 흡수(QA 델타 표로 유지), 변형 A/B 선택은 하위
@@ -219,7 +223,13 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 ### 후보구조 1 — Orchestration 중앙 정책 (central policy, memory engine은 mechanism 전담)
 
-**구조**: Scheduling 패키지에 KV Placement & Compression Policy 컴포넌트를 신설. KV-aware Router가 요청 배치 시 KV의 목표 tier·압축 수준·재사용/재계산 여부까지 함께 결정해 Memory Engine에 지시. Memory Engine은 지시 집행(mechanism)만 담당.
+**구조**: Scheduling 패키지에 KV Placement & Compression Policy 컴포넌트를 신설. KV-aware Router가 요청 배치 시 KV의 목표 tier·압축 수준·재사용/재계산 여부까지 함께 결정해 Memory Engine에 지시. Memory Engine은 지시 집행(mechanism)만 담당. 이 후보만의 구조 커밋 3가지:
+
+- **Global KV Index** (orchestration 내 신설): 전 노드 KV chunk의 위치·압축 상태·참조도(공유 chunk)·소유 요청 SLO class를 담는 전역 메타데이터 저장소. 중앙 결정의 전제 조건 — 후보2에는 존재하지 않는 컴포넌트.
+- **Telemetry 상향 계약**: 각 노드가 tier 잔량·대역폭 포화도를 고정 epoch 주기로 상향 보고할 **의무**. 중앙 정책의 품질은 이 상태의 신선도에 종속된다.
+- **명령형(command) 하향 인터페이스**: PLACE(chunk, tier)·COMPRESS(chunk, level)·EVICT·PREFETCH 형태의 지시 + 집행 ack. Memory Engine에는 자체 결정 루프가 없다 — 로컬 정책을 하나라도 넣는 순간 결정 주체가 둘이 되어 이 후보의 불변식(단일 결정점·설명가능성)이 깨진다.
+
+**동작 흐름**: ① 요청 도착 시 SLO class·세션 태깅 → ② KV Policy가 Global KV Index 조회(어느 chunk가 어느 노드·tier·압축 상태로 존재하는가) → ③ 큐 lookahead + 품질 예산으로 재사용/재계산·목표 tier·압축 수준·prefetch 스케줄을 결정, Router 배치와 함께 명령 번들 하향 → ④⑤ 추론 실행·KV R/W → ⑥ Memory Engine은 명령 집행만(승격·강등·압축·해제) → ⑦ epoch마다 telemetry 상향 보고로 Index 갱신. 제어 루프 = 요청/epoch 단위. epoch 사이에 발생하는 μs 메모리 압박 스파이크에는 로컬 재량이 없어 stall로 나타난다 — 이것이 이 후보의 구조적 비용.
 
 **장점**
 - 전역 최적화: SLO class·재사용 확률·품질 예산을 반영한 배치 — quality-aware joint orchestration 연구의 자연스러운 구현 위치
@@ -243,7 +253,13 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 
 ### 후보구조 2 — Memory Engine 자율 (autonomous local policy)
 
-**구조**: Cache Manager가 자체 정책(접근 온도 기반 승격/강등, watermark 기반 압축 트리거)을 내장. Orchestration은 얇은 힌트 API(pin, priority, 총 품질 예산)만 제공 — madvise 모델.
+**구조**: Cache Manager가 자체 정책(접근 온도 기반 승격/강등, watermark 기반 압축 트리거)을 내장. Orchestration은 얇은 힌트 API(pin, priority, 총 품질 예산)만 제공 — madvise 모델. 이 후보만의 구조 커밋 3가지:
+
+- **로컬 제어 루프**: local telemetry가 μs~ms 주기로 tier 점유율·대역폭을 샘플링, chunk별 접근 온도 추적 + watermark(high/critical/low) 트리거로 압축·강등·승격을 즉시 결정. 전역 KV Index는 존재하지 않는다(진실의 원천 = 각 노드 로컬 메타데이터).
+- **권고형(hint) 하향 인터페이스**: pin(chunk)·priority(class)·전역 품질 예산만 fire-and-forget으로 전달 — Memory Engine이 **무시할 수 있고**, ack·집행 보증이 없다.
+- **상향 계약 부재**: 노드→orchestration 상태 보고 의무가 없다. Orchestration은 KV-blind(부하 기반 라우팅)이며 전역 상태 동기화 비용이 0 — 이것이 얇은 인터페이스·이식성의 원천이다.
+
+**동작 흐름**: ① 요청 도착 → ② Router는 노드 부하만 보고 배치(KV 위치 비의존) → ③ hint가 비동기로 하향(권고) → ④⑤ 추론 실행·KV R/W → ⑥ 실행 중 local telemetry가 압박 감지 시 온도·watermark 판단으로 재사용·압축·강등을 자율 집행(μs 반응) → ⑦ 상향 보고 없음. 재사용 판단도 로컬 — 타 노드에 있는 chunk는 보이지 않으므로 노드 간 재사용·선제적 prefetch가 구조적으로 불가능하다 — 이것이 이 후보의 구조적 비용.
 
 **장점**
 - μs 반응: 자원 상태 변화에 즉시 대응, 압박 스파이크 흡수
@@ -263,6 +279,18 @@ tier topology 인지 배치·요청별 SLO 정책의 자리가 제한되고, 근
 | QA3 | ★★☆ (F) | 1.5–3× bin 예측: watermark 압축 트리거로 기본 배율은 확보하나, 문맥 없는 온도 정책이 재사용 예정 KV를 오강등 → miss·재계산 비용이 ≥3× 도달을 막음(C) |
 | QA4 | ★★★ (F) | (a) tier 추가 = Cache Manager 내 어댑터 모듈, 얇은 hint API라 코어(인터페이스) 무수정(C); (b) KV 구조 변화도 Memory Engine 모듈 내 수용 — +2주 추종 가능(C, 2주 주기(B)). 독립 이식성 최고 |
 | QA5 | ★★★ (F) | 얇은 인터페이스·단계적 구현 — 초기 ≤6인월·유지 ≤0.5 FTE 예측(C) |
+
+### 두 후보의 상호 배타성 (순수형 근거)
+
+두 후보는 "정책 컴포넌트의 위치"만 다른 것이 아니라 **세 축에서 동시에 반대 방향의 구조 커밋**을 하므로 합성할 수 없다:
+
+| 축 | 후보1 (중앙 정책) | 후보2 (자율) |
+|----|------------------|--------------|
+| 결정 주체 | Orchestration 단일점 | 각 노드 Memory Engine 단일점 |
+| 인터페이스 계약 | 명령(command) + 집행 ack 보증 | 권고(hint) + 무시 가능, 보증 없음 |
+| 상태의 위치 | Global KV Index = 진실의 원천, telemetry 상향 의무 | 로컬 메타데이터 = 진실의 원천, 상향 계약 없음 |
+
+동일 chunk의 tier·압축 상태에 결정 주체가 둘이면 지시와 자율 결정이 충돌한다(중앙이 HBM 승격을 지시한 chunk를 로컬이 압박 대응으로 강등하는 경우) — 이를 중재하려면 우선순위 규약·조정 프로토콜이 필요해지고, 그 순간 제3의 구조(hybrid)가 된다. 즉 "위쪽 KV Policy Manager와 아래쪽 Local Policy Manager를 둘 다 두는" 안은 두 후보의 합집합이 아니라 별도 후보이며, 검토 노트의 진화 경로로만 다룬다.
 
 ### 검토 노트
 
